@@ -14,7 +14,8 @@ public class Market {
 
     public static Market getInstance() throws IOException {
         if (myMarket == null) {
-            myMarket = new Market(OnlineBroker.MKT_NAME);
+            //myMarket = new Market(OnlineBroker.MKT_NAME);
+            myMarket = new Market("nasdaq");
         } else
             readMarket();
 
