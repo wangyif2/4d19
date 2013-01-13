@@ -10,6 +10,7 @@ import java.net.Socket;
 public class OnlineBrokerHandler extends Thread {
     private Socket socket;
     private Market myMarket;
+    private String localBroker;
 
     public OnlineBrokerHandler(Socket socket) {
         this.socket = socket;
@@ -36,18 +37,22 @@ public class OnlineBrokerHandler extends Thread {
 
                 switch (packetFromClient.type) {
                     case BrokerPacket.BROKER_REQUEST:
+                        localBroker = packetFromClient.exchange;
                         packetToClient = queryBrokerRequest(packetFromClient.symbol);
                         toClient.writeObject(packetToClient);
                         break;
                     case BrokerPacket.EXCHANGE_ADD:
+                        localBroker = packetFromClient.exchange;
                         packetToClient = addBrokerRequest(packetFromClient.symbol);
                         toClient.writeObject(packetToClient);
                         break;
                     case BrokerPacket.EXCHANGE_REMOVE:
+                        localBroker = packetFromClient.exchange;
                         packetToClient = removeBrokerRequest(packetFromClient.symbol);
                         toClient.writeObject(packetToClient);
                         break;
                     case BrokerPacket.EXCHANGE_UPDATE:
+                        localBroker = packetFromClient.exchange;
                         packetToClient = updateBrokerRequest(packetFromClient.symbol, packetFromClient.quote);
                         toClient.writeObject(packetToClient);
                         break;
@@ -71,10 +76,10 @@ public class OnlineBrokerHandler extends Thread {
     private BrokerPacket updateBrokerRequest(String symbol, Long quote) throws IOException {
         BrokerPacket packetToClient = new BrokerPacket();
 
-        myMarket = Market.getInstance();
+        myMarket = Market.getInstance(localBroker);
 
         if(myMarket.lookUpStock(symbol) != null){
-            myMarket.updateStock(symbol, quote);
+            myMarket.updateStock(localBroker, symbol, quote);
             packetToClient.symbol = symbol.toUpperCase() + " updated to " + quote.toString() + '.';
         }
         else {
@@ -89,10 +94,10 @@ public class OnlineBrokerHandler extends Thread {
     private BrokerPacket removeBrokerRequest(String symbol) throws IOException {
         BrokerPacket packetToClient = new BrokerPacket();
 
-        myMarket = Market.getInstance();
+        myMarket = Market.getInstance(localBroker);
 
         if(myMarket.lookUpStock(symbol) != null){
-            myMarket.removeStock(symbol);
+            myMarket.removeStock(localBroker, symbol);
             packetToClient.symbol = symbol.toUpperCase() + " removed.";
         }
         else {
@@ -107,10 +112,10 @@ public class OnlineBrokerHandler extends Thread {
     private BrokerPacket addBrokerRequest(String symbol) throws IOException {
         BrokerPacket packetToClient = new BrokerPacket();
 
-        myMarket = Market.getInstance();
+        myMarket = Market.getInstance(localBroker);
 
         if(myMarket.lookUpStock(symbol) == null){
-            myMarket.addStock(symbol);
+            myMarket.addStock(localBroker, symbol);
             packetToClient.symbol = symbol.toUpperCase() + " added.";
         }
         else {
@@ -125,10 +130,10 @@ public class OnlineBrokerHandler extends Thread {
     private BrokerPacket queryBrokerRequest(String symbol) throws IOException {
         BrokerPacket packetToClient = new BrokerPacket();
 
-        myMarket = Market.getInstance();
+        myMarket = Market.getInstance(localBroker);
 
         if(myMarket.lookUpStock(symbol) == null){
-            packetToClient.symbol = symbol.toUpperCase() + " invalid.";
+            packetToClient.quote = symbol.toUpperCase() + " invalid.";
         }
         else {
             packetToClient.symbol = symbol;

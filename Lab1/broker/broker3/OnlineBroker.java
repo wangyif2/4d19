@@ -31,25 +31,30 @@ public class OnlineBroker {
 
             lookupSocket = new Socket(hostname_lookup, port_lookup);
 
-            ObjectInputStream fromLookup = new ObjectInputStream(lookupSocket.getInputStream());
             ObjectOutputStream toLookup = new ObjectOutputStream(lookupSocket.getOutputStream());
+            ObjectInputStream fromLookup = new ObjectInputStream(lookupSocket.getInputStream());
 
             BrokerPacket packetToLookup = new BrokerPacket();
             String hostname = java.net.InetAddress.getLocalHost().getHostName();
             BrokerLocation loc = new BrokerLocation(hostname, port);
             packetToLookup.type = BrokerPacket.LOOKUP_REGISTER;
             packetToLookup.exchange = myName;
+            packetToLookup.locations = new BrokerLocation[1];
             packetToLookup.locations[0] = loc;
             toLookup.writeObject(packetToLookup);
+            
+            fromLookup.readObject();
 
             toLookup.close();
             fromLookup.close();
             lookupSocket.close();
 
-            serverSocket = new ServerSocket(Integer.parseInt(args[0]));
+            serverSocket = new ServerSocket(port);
         } catch (IOException e) {
             System.err.println("ERROR: Could not listen on port!");
             System.exit(-1);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
         if (DEBUG) System.out.println("Server up and running...");

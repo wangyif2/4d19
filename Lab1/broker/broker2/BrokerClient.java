@@ -39,7 +39,7 @@ public class BrokerClient {
         String userInput;
 
         System.out.print("Enter queries or x for exit: \n > ");
-        while ((userInput = stdIn.readLine()) != null && !userInput.toLowerCase().contains("x")) {
+        while ((userInput = stdIn.readLine()) != null && !userInput.toLowerCase().equals("x")) {
             BrokerPacket packetToServer = new BrokerPacket();
 
             packetToServer.symbol = userInput.toLowerCase();

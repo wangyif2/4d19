@@ -26,7 +26,7 @@ public class BrokerLookupHandler extends Thread {
             /* stream to write back to client */
             ObjectOutputStream toClient = new ObjectOutputStream(socket.getOutputStream());
 
-            while ((packetFromClient = (BrokerPacket) fromClient.readObject()) != null) {
+            if ((packetFromClient = (BrokerPacket) fromClient.readObject()) != null) {
                 /* create a packet to send reply back to client */
                 BrokerPacket packetToClient = new BrokerPacket();
                 packetToClient.type = BrokerPacket.LOOKUP_REPLY;
@@ -72,12 +72,13 @@ public class BrokerLookupHandler extends Thread {
         BrokerPacket packetToClient = new BrokerPacket();
 
         myBrokers = Brokers.getInstance();
-        BrokerLocation loc = myBrokers.lookupBroker(packetFromClient.exchange);
+        BrokerLocation loc = myBrokers.lookupBrokerLoc(packetFromClient.exchange);
 
         if (loc == null){
             packetToClient.num_locations = 0;
         }
         else {
+            packetToClient.locations = new BrokerLocation[1];
             packetToClient.locations[0] = loc;
             packetToClient.num_locations = 1;
         }

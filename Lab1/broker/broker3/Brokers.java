@@ -12,8 +12,10 @@ public class Brokers {
     private static Brokers myBrokers = null;
 
     public static Brokers getInstance() throws IOException {
-        if (myBrokers == null)
+        if (myBrokers == null) {
             myBrokers = new Brokers();
+            brokers = new HashMap<String, BrokerLocation>();
+        }
 
         return myBrokers;
     }
@@ -29,7 +31,7 @@ public class Brokers {
             brokers.put(brokerName, brokerLoc);
     }
 
-    public BrokerLocation lookupBroker(String brokerName) {
+    public BrokerLocation lookupBrokerLoc(String brokerName) {
         return brokers.containsKey(brokerName) ? brokers.get(brokerName) : null;
     }
 
