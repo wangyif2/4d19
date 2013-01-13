@@ -22,9 +22,11 @@ public class OnlineBroker {
                 System.exit(-1);
             }
         } catch (IOException e) {
+            if (OnlineBroker.DEBUG) e.printStackTrace();
             System.err.println("ERROR: Could not listen on port!");
             System.exit(-1);
         } catch (Exception e) {
+            if (OnlineBroker.DEBUG) e.printStackTrace();
             System.err.println("ERROR: Invalid arguments!");
             System.exit(-1);
         }
