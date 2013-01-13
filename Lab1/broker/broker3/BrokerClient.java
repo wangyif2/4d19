@@ -83,7 +83,6 @@ public class BrokerClient {
 
                     packetToServer.symbol = userInput.toLowerCase();
                     packetToServer.type = BrokerPacket.BROKER_REQUEST;
-                    packetToServer.exchange = localBroker;
                     out.writeObject(packetToServer);
 
                     BrokerPacket packetFromServer;
@@ -94,7 +93,7 @@ public class BrokerClient {
                             System.out.println("Quote from broker: " + packetFromServer.quote);
                             break;
                         default:
-                            System.out.println(command[1].toUpperCase() + " invalid.");
+                            System.out.println(command[0].toUpperCase() + " invalid.");
                             break;
                     }
 

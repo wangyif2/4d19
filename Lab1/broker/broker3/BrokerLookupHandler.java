@@ -2,6 +2,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * User: robert
@@ -9,7 +11,7 @@ import java.net.Socket;
  */
 public class BrokerLookupHandler extends Thread {
     private Socket socket;
-    private Brokers myBrokers;
+    private BrokerLookup myBrokerLookup;
 
     public BrokerLookupHandler(Socket socket) {
         this.socket = socket;
@@ -33,7 +35,10 @@ public class BrokerLookupHandler extends Thread {
 
                 switch (packetFromClient.type) {
                     case BrokerPacket.LOOKUP_REQUEST:
-                        packetToClient = lookupBroker(packetFromClient);
+                        if (packetFromClient.exchange == null)
+                            packetToClient = lookupBrokers();
+                        else
+                            packetToClient = lookupSingleBroker(packetFromClient.exchange);
                         toClient.writeObject(packetToClient);
                         break;
                     case BrokerPacket.LOOKUP_REGISTER:
@@ -57,30 +62,55 @@ public class BrokerLookupHandler extends Thread {
         }
     }
 
-    private BrokerPacket registerBroker(BrokerPacket packetFromClient) throws IOException {
+    private BrokerPacket lookupSingleBroker(String exchange) throws IOException {
         BrokerPacket packetToClient = new BrokerPacket();
 
-        myBrokers = Brokers.getInstance();
-        myBrokers.addBroker(packetFromClient.exchange, packetFromClient.locations[0]);
+        myBrokerLookup = BrokerLookup.getInstance();
+        BrokerLocation loc = myBrokerLookup.lookupBrokerLoc(exchange);
+
+        if (loc == null) {
+            packetToClient.num_locations = 0;
+        } else {
+            packetToClient.num_locations = 1;
+            packetToClient.locations = new BrokerLocation[]{loc};
+        }
 
         packetToClient.type = BrokerPacket.LOOKUP_REPLY;
 
         return packetToClient;
     }
 
-    private BrokerPacket lookupBroker(BrokerPacket packetFromClient) throws IOException {
+    private BrokerPacket registerBroker(BrokerPacket packetFromClient) throws IOException {
         BrokerPacket packetToClient = new BrokerPacket();
 
-        myBrokers = Brokers.getInstance();
-        BrokerLocation loc = myBrokers.lookupBrokerLoc(packetFromClient.exchange);
+        myBrokerLookup = BrokerLookup.getInstance();
+        myBrokerLookup.addBroker(packetFromClient.exchange, packetFromClient.locations[0]);
 
-        if (loc == null){
-            packetToClient.num_locations = 0;
+        packetToClient.type = BrokerPacket.LOOKUP_REPLY;
+
+        return packetToClient;
+    }
+
+    private BrokerPacket lookupBrokers() throws IOException {
+        BrokerPacket packetToClient = new BrokerPacket();
+
+        myBrokerLookup = BrokerLookup.getInstance();
+
+        Collection<BrokerLocation> locationCollection = myBrokerLookup.lookupBrokerLoc();
+        Iterator iterator = locationCollection.iterator();
+        int numBrokers = locationCollection.size();
+
+        BrokerLocation[] loc = new BrokerLocation[numBrokers];
+
+        for(int i = 0; i < locationCollection.size(); i++){
+            loc[i] = (BrokerLocation) iterator.next();
         }
-        else {
-            packetToClient.locations = new BrokerLocation[1];
-            packetToClient.locations[0] = loc;
-            packetToClient.num_locations = 1;
+
+        if (loc.length == 0) {
+            packetToClient.num_locations = 0;
+        } else {
+            packetToClient.num_locations = loc.length;
+            packetToClient.locations = loc;
         }
 
         packetToClient.type = BrokerPacket.LOOKUP_REPLY;

@@ -23,6 +23,7 @@ public class Market {
     private static void readMarket(String exchange) throws IOException {
         stocks = new HashMap<String, Long>();
 
+        System.out.println("Looking at exchange " + exchange);
         BufferedReader bufferedReader = new BufferedReader(new FileReader(exchange));
         String line;
 

@@ -45,7 +45,7 @@ public class BrokerExchange {
 
             BrokerPacket packetFromLookup;
             packetFromLookup = (BrokerPacket) fromLookup.readObject();
- 
+
             switch (packetFromLookup.num_locations) {
                 case 1:
                     hostname = packetFromLookup.locations[0].broker_host;

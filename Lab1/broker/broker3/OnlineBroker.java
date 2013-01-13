@@ -7,6 +7,11 @@ import java.net.*;
  */
 public class OnlineBroker {
     public static boolean DEBUG = true;
+    public static String hostname_lookup;
+    public static int port_lookup;
+    public static String hostname;
+    public static int port;
+    public static String myName;
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
@@ -14,11 +19,6 @@ public class OnlineBroker {
         boolean listening = true;
 
         try {
-            String hostname_lookup = "localhost";
-            int port_lookup = 4444;
-            int port = 4445;
-            String myName = "nasdaq";
-
             if(args.length == 4) {
                 hostname_lookup = args[0];
                 port_lookup = Integer.parseInt(args[1]);
@@ -35,7 +35,7 @@ public class OnlineBroker {
             ObjectInputStream fromLookup = new ObjectInputStream(lookupSocket.getInputStream());
 
             BrokerPacket packetToLookup = new BrokerPacket();
-            String hostname = java.net.InetAddress.getLocalHost().getHostName();
+            hostname = InetAddress.getLocalHost().getHostName();
             BrokerLocation loc = new BrokerLocation(hostname, port);
             packetToLookup.type = BrokerPacket.LOOKUP_REGISTER;
             packetToLookup.exchange = myName;
