@@ -9,11 +9,10 @@ import java.net.Socket;
  */
 public class OnlineBrokerHandler extends Thread {
     private Socket socket;
-    private Market myMarket;
 
     public OnlineBrokerHandler(Socket socket) {
         this.socket = socket;
-        System.out.println("Created new Thread to handle BrokerClient request");
+        if (OnlineBroker.DEBUG) System.out.println("Created new Thread to handle BrokerClient request");
     }
 
     @Override
@@ -36,7 +35,7 @@ public class OnlineBrokerHandler extends Thread {
 
                 switch (packetFromClient.type) {
                     case BrokerPacket.BROKER_REQUEST:
-                        packetToClient = queryBrokerRequest(packetFromClient.symbol);
+                        packetToClient.quote = queryBrokerRequest(packetFromClient.symbol);
                         toClient.writeObject(packetToClient);
                         break;
                     default:
@@ -56,16 +55,8 @@ public class OnlineBrokerHandler extends Thread {
         }
     }
 
-    private BrokerPacket queryBrokerRequest(String symbol) throws IOException {
-        BrokerPacket packetToClient = new BrokerPacket();
-
-        myMarket = Market.getInstance();
-
-        packetToClient.symbol = symbol;
-        packetToClient.quote = myMarket.lookUpStock(symbol);
-        packetToClient.type = BrokerPacket.BROKER_QUOTE;
-
-        return packetToClient;
+    private Long queryBrokerRequest(String symbol) throws IOException {
+        return Market.getInstance().lookUpStock(symbol);
     }
 
 }

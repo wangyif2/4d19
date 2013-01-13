@@ -11,9 +11,9 @@ public class Market {
     private static Market myMarket = null;
 
     public static Market getInstance() throws IOException {
-        if (myMarket == null) {
+        if (myMarket == null)
             myMarket = new Market(OnlineBroker.MKT_NAME);
-        } else
+        else
             updateMarketStockPrice(OnlineBroker.MKT_NAME);
 
         return myMarket;
@@ -45,39 +45,5 @@ public class Market {
 
     public Long lookUpStock(String symbol) {
         return stocks.containsKey(symbol) ? stocks.get(symbol) : 0;
-    }
-
-    public class Stock {
-        @Override
-        public String toString() {
-            return "Stock{" +
-                    "stockName='" + stockName + '\'' +
-                    ", stockPrice=" + stockPrice +
-                    '}';
-        }
-
-        private String stockName;
-        private long stockPrice;
-
-        public Stock(String name, long price) {
-            stockName = name;
-            stockPrice = price;
-        }
-
-        public String getStockName() {
-            return stockName;
-        }
-
-        public void setStockName(String stockName) {
-            this.stockName = stockName;
-        }
-
-        public long getStockPrice() {
-            return stockPrice;
-        }
-
-        public void setStockPrice(long stockPrice) {
-            this.stockPrice = stockPrice;
-        }
     }
 }

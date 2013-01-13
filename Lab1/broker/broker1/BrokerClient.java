@@ -1,13 +1,11 @@
 import java.io.*;
-import java.net.Socket;
+import java.net.*;
 
 /**
  * User: robert
  * Date: 11/01/13
  */
 public class BrokerClient {
-    private static final boolean DEBUG = true;
-
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         Socket brokerSocket = null;
         ObjectOutputStream out = null;
@@ -25,27 +23,36 @@ public class BrokerClient {
                 System.err.println("ERROR: Invalid arguments!");
                 System.exit(-1);
             }
-            brokerSocket = new Socket(hostname, port);
 
+            /* Connect to server */
+            brokerSocket = new Socket(hostname, port);
 
             out = new ObjectOutputStream(brokerSocket.getOutputStream());
             in = new ObjectInputStream(brokerSocket.getInputStream());
 
+        } catch (UnknownHostException e) {
+            if (OnlineBroker.DEBUG) e.printStackTrace();
+			System.err.println("ERROR: Don't know where to connect!!");
+			System.exit(1);
         } catch (IOException e) {
-            e.printStackTrace();
+            if (OnlineBroker.DEBUG) e.printStackTrace();
+			System.err.println("ERROR: Couldn't get I/O for the connection.");
+			System.exit(1);
         }
 
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
         String userInput;
 
-        System.out.print("Enter queries or x for exit: \n > ");
+        System.out.print("Enter queries or x for exit: \n> ");
         while ((userInput = stdIn.readLine()) != null && !userInput.toLowerCase().contains("x")) {
+            /* Send query request packet to server */
             BrokerPacket packetToServer = new BrokerPacket();
 
             packetToServer.symbol = userInput.toLowerCase();
             packetToServer.type = BrokerPacket.BROKER_REQUEST;
             out.writeObject(packetToServer);
 
+            /* Read quote packet from server */
             BrokerPacket packetFromServer;
             packetFromServer = (BrokerPacket) in.readObject();
 
