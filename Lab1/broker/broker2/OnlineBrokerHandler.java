@@ -13,7 +13,7 @@ public class OnlineBrokerHandler extends Thread {
 
     public OnlineBrokerHandler(Socket socket) {
         this.socket = socket;
-        System.out.println("Created new Thread to handle BrokerClient request");
+        if (OnlineBroker.DEBUG) System.out.println("Created new Thread to handle BrokerClient request");
     }
 
     @Override
@@ -32,7 +32,6 @@ public class OnlineBrokerHandler extends Thread {
 
                 /* create a packet to send reply back to client */
                 BrokerPacket packetToClient = new BrokerPacket();
-                packetToClient.type = BrokerPacket.BROKER_QUOTE;
 
                 switch (packetFromClient.type) {
                     case BrokerPacket.BROKER_REQUEST:
@@ -52,7 +51,7 @@ public class OnlineBrokerHandler extends Thread {
                         toClient.writeObject(packetToClient);
                         break;
                     default:
-                        System.out.println("Unknown Request from client");
+                        System.out.println("ERROR: Unknown Request from client.");
                         break;
                 }
             }
@@ -73,15 +72,17 @@ public class OnlineBrokerHandler extends Thread {
 
         myMarket = Market.getInstance();
 
-        if(myMarket.lookUpStock(symbol) != null){
+        if (quote < 1 || quote > 300) {
+            packetToClient.type = BrokerPacket.ERROR_OUT_OF_RANGE;
+        }
+        else if (myMarket.lookUpStock(symbol) != null) {
             myMarket.updateStock(symbol, quote);
+            packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
             packetToClient.symbol = symbol.toUpperCase() + " updated to " + quote.toString() + '.';
         }
         else {
-            packetToClient.symbol = symbol.toUpperCase() + " invalid.";
+            packetToClient.type = BrokerPacket.ERROR_INVALID_SYMBOL;
         }
-
-        packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
 
         return packetToClient;
     }
@@ -93,13 +94,12 @@ public class OnlineBrokerHandler extends Thread {
 
         if(myMarket.lookUpStock(symbol) != null){
             myMarket.removeStock(symbol);
+            packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
             packetToClient.symbol = symbol.toUpperCase() + " removed.";
         }
         else {
-            packetToClient.symbol = symbol.toUpperCase() + " invalid.";
+            packetToClient.type = BrokerPacket.ERROR_INVALID_SYMBOL;
         }
-
-        packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
 
         return packetToClient;
     }
@@ -111,13 +111,12 @@ public class OnlineBrokerHandler extends Thread {
 
         if(myMarket.lookUpStock(symbol) == null){
             myMarket.addStock(symbol);
+            packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
             packetToClient.symbol = symbol.toUpperCase() + " added.";
         }
         else {
-            packetToClient.symbol = symbol.toUpperCase() + " exists.";
+            packetToClient.type = BrokerPacket.ERROR_SYMBOL_EXISTS;
         }
-
-        packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
 
         return packetToClient;
     }
@@ -128,12 +127,11 @@ public class OnlineBrokerHandler extends Thread {
         myMarket = Market.getInstance();
 
         if(myMarket.lookUpStock(symbol) == null){
-            packetToClient.symbol = symbol.toUpperCase() + " invalid.";
+            packetToClient.type = BrokerPacket.BROKER_ERROR;
         }
         else {
-            packetToClient.symbol = symbol;
-            packetToClient.quote = myMarket.lookUpStock(symbol);
             packetToClient.type = BrokerPacket.BROKER_QUOTE;
+            packetToClient.quote = myMarket.lookUpStock(symbol);
         }
 
         return packetToClient;

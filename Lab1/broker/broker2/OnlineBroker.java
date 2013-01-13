@@ -7,7 +7,7 @@ import java.net.ServerSocket;
  */
 public class OnlineBroker {
     public static final String MKT_NAME= "nasdaq";
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
@@ -15,13 +15,19 @@ public class OnlineBroker {
 
         try {
             if(args.length == 1) {
-                serverSocket = new ServerSocket(Integer.parseInt(args[0]));
+                int port = Integer.parseInt(args[0]);
+                serverSocket = new ServerSocket(port);
             } else {
                 System.err.println("ERROR: Invalid arguments!");
                 System.exit(-1);
             }
         } catch (IOException e) {
+            if (OnlineBroker.DEBUG) e.printStackTrace();
             System.err.println("ERROR: Could not listen on port!");
+            System.exit(-1);
+        } catch (Exception e) {
+            if (OnlineBroker.DEBUG) e.printStackTrace();
+            System.err.println("ERROR: Invalid arguments!");
             System.exit(-1);
         }
 

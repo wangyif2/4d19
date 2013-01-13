@@ -48,7 +48,6 @@ public class Market {
 
     private void updateMarket(HashMap<String, Long> stocks) throws IOException {
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(myMarketName));
-
         String line = "";
 
         for (Map.Entry<String, Long> stock : stocks.entrySet()) {
@@ -77,39 +76,5 @@ public class Market {
     public void removeStock(String symbol) throws IOException {
         stocks.remove(symbol);
         updateMarket(stocks);
-    }
-
-    public class Stock {
-        @Override
-        public String toString() {
-            return "Stock{" +
-                    "stockName='" + stockName + '\'' +
-                    ", stockPrice=" + stockPrice +
-                    '}';
-        }
-
-        private String stockName;
-        private long stockPrice;
-
-        public Stock(String name, long price) {
-            stockName = name;
-            stockPrice = price;
-        }
-
-        public String getStockName() {
-            return stockName;
-        }
-
-        public void setStockName(String stockName) {
-            this.stockName = stockName;
-        }
-
-        public long getStockPrice() {
-            return stockPrice;
-        }
-
-        public void setStockPrice(long stockPrice) {
-            this.stockPrice = stockPrice;
-        }
     }
 }
