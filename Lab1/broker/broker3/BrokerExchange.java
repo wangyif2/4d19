@@ -129,7 +129,12 @@ public class BrokerExchange {
                 if (DEBUG) System.out.println(EXCHANGE_UPDATE + " received: " + symbol + quote);
                 packetToServer.type = BrokerPacket.EXCHANGE_UPDATE;
                 packetToServer.symbol = symbol;
-                packetToServer.quote = Long.parseLong(quote);
+                try {
+                    packetToServer.quote = Long.parseLong(quote);
+                } catch (NumberFormatException e) {
+                    System.out.print("ERROR: Invalid command!\n> ");
+                    continue;
+                }
             } else if (command.equals(EXCHANGE_REMOVE)) {
                 if (DEBUG) System.out.println(EXCHANGE_REMOVE + " received: " + symbol);
                 packetToServer.type = BrokerPacket.EXCHANGE_REMOVE;

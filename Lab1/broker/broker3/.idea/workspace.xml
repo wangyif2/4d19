@@ -2,18 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fe21048b-b461-4ade-bb94-2dc6562360b7" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/ant.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/Brokers.java" afterPath="$PROJECT_DIR$/BrokerLookup.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/BrokerClient.java" afterPath="$PROJECT_DIR$/BrokerClient.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/BrokerExchange.java" afterPath="$PROJECT_DIR$/BrokerExchange.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/BrokerLookupHandler.java" afterPath="$PROJECT_DIR$/BrokerLookupHandler.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Market.java" afterPath="$PROJECT_DIR$/Market.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OnlineBroker.java" afterPath="$PROJECT_DIR$/OnlineBroker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/OnlineBrokerHandler.java" afterPath="$PROJECT_DIR$/OnlineBrokerHandler.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nasdaq" afterPath="$PROJECT_DIR$/nasdaq" />
     </list>
     <ignored path="broker3.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -74,19 +64,16 @@
       <file leaf-file-name="BrokerLookupHandler.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/BrokerLookupHandler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="104" column="21" selection-start="3713" selection-end="3713" vertical-scroll-proportion="0.0">
-              <folding>
-                <element signature="imports" expanded="true" />
-                <marker date="1358046775000" expanded="true" signature="1206:1971" placeholder="{...}" />
-              </folding>
+            <state line="104" column="21" selection-start="3819" selection-end="3819" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="BrokerExchange.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="BrokerExchange.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/BrokerExchange.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="43" column="49" selection-start="1608" selection-end="1608" vertical-scroll-proportion="0.0">
+            <state line="134" column="29" selection-start="5364" selection-end="5364" vertical-scroll-proportion="0.38434783">
               <folding />
             </state>
           </provider>
@@ -95,7 +82,7 @@
       <file leaf-file-name="BrokerLookup.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/BrokerLookup.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="28" column="38" selection-start="812" selection-end="812" vertical-scroll-proportion="0.0">
+            <state line="28" column="0" selection-start="744" selection-end="744" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -104,7 +91,7 @@
       <file leaf-file-name="BrokerClient.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/BrokerClient.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="85" column="52" selection-start="3388" selection-end="3388" vertical-scroll-proportion="0.0">
+            <state line="85" column="52" selection-start="3415" selection-end="3415" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -113,25 +100,7 @@
       <file leaf-file-name="OnlineBrokerHandler.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/OnlineBrokerHandler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="79" column="0" selection-start="3131" selection-end="3131" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="nasdaq" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/nasdaq">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="0" selection-start="48" selection-end="48" vertical-scroll-proportion="0.15652174">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="tse" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tse">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="4" column="0" selection-start="32" selection-end="32" vertical-scroll-proportion="0.0">
+            <state line="79" column="0" selection-start="3127" selection-end="3127" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -140,7 +109,7 @@
       <file leaf-file-name="Market.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Market.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="25" column="60" selection-start="635" selection-end="635" vertical-scroll-proportion="0.0">
+            <state line="33" column="42" selection-start="957" selection-end="957" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -149,7 +118,7 @@
       <file leaf-file-name="OnlineBroker.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/OnlineBroker.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="25" column="16" selection-start="714" selection-end="714" vertical-scroll-proportion="0.0">
+            <state line="25" column="16" selection-start="734" selection-end="734" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -180,19 +149,19 @@
         <option value="$PROJECT_DIR$/BrokerLookupServer.java" />
         <option value="$PROJECT_DIR$/BrokerPacket.java" />
         <option value="$PROJECT_DIR$/OnlineBroker.java" />
-        <option value="$PROJECT_DIR$/BrokerExchange.java" />
         <option value="$PROJECT_DIR$/BrokerLookup.java" />
         <option value="$PROJECT_DIR$/BrokerLookupHandler.java" />
         <option value="$PROJECT_DIR$/Market.java" />
         <option value="$PROJECT_DIR$/BrokerClient.java" />
         <option value="$PROJECT_DIR$/OnlineBrokerHandler.java" />
         <option value="$PROJECT_DIR$/nasdaq" />
+        <option value="$PROJECT_DIR$/BrokerExchange.java" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="49" />
-    <option name="y" value="24" />
+    <option name="x" value="48" />
+    <option name="y" value="-14" />
     <option name="width" value="1633" />
     <option name="height" value="1065" />
   </component>
@@ -224,12 +193,22 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Project Files">
+      <pane id="ProjectPane">
+        <subPane>
           <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
+            <PATH_ELEMENT>
+              <option name="myItemId" value="broker3" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="broker3" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="broker3" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -248,22 +227,12 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="ProjectPane">
-        <subPane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
           <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="broker3" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="broker3" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="broker3" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -285,11 +254,11 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="dynamic.classpath" value="false" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="dynamic.classpath" value="false" />
   </component>
-  <component name="RunManager" selected="Application.BrokerClient">
+  <component name="RunManager" selected="Application.BrokerExchange">
     <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
       <module name="" />
       <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m" />
@@ -310,24 +279,6 @@
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
-      </method>
-    </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
-        <option name="Make" enabled="true" />
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
@@ -357,6 +308,24 @@
       <envs />
       <properties />
       <listeners />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Make" enabled="true" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
@@ -535,7 +504,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="49" y="24" width="1633" height="1065" extended-state="6" />
+    <frame x="48" y="-14" width="1633" height="1065" extended-state="6" />
     <editor active="false" />
     <layout>
       <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -550,13 +519,13 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3297414" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3297414" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19432177" sideWeight="0.67025864" order="8" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3297414" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19684543" sideWeight="0.67025864" order="8" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3297414" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="7" side_tool="false" content_ui="combo" />
@@ -658,35 +627,70 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/client.sh">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="244" selection-end="244" vertical-scroll-proportion="0.14966741">
-          <folding />
-        </state>
+        <state line="9" column="0" selection-start="244" selection-end="244" vertical-scroll-proportion="0.14966741" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server.sh">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="25" selection-start="162" selection-end="162" vertical-scroll-proportion="0.11640798">
-          <folding />
-        </state>
+        <state line="7" column="25" selection-start="162" selection-end="162" vertical-scroll-proportion="0.11640798" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lookup.sh">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="181" selection-end="181" vertical-scroll-proportion="0.14966741">
-          <folding />
-        </state>
+        <state line="9" column="0" selection-start="181" selection-end="181" vertical-scroll-proportion="0.14966741" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/exchange.sh">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="0" selection-start="360" selection-end="360" vertical-scroll-proportion="0.24944568">
-          <folding />
-        </state>
+        <state line="15" column="0" selection-start="360" selection-end="360" vertical-scroll-proportion="0.24944568" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/BrokerLookupServer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="13" selection-start="535" selection-end="535" vertical-scroll-proportion="0.0">
+        <state line="21" column="13" selection-start="535" selection-end="535" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tse">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="0" selection-start="32" selection-end="32" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nasdaq">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="0" selection-start="48" selection-end="48" vertical-scroll-proportion="0.15652174" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/BrokerLookupHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="104" column="21" selection-start="3819" selection-end="3819" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/BrokerLookup.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="0" selection-start="744" selection-end="744" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/BrokerClient.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="85" column="52" selection-start="3415" selection-end="3415" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OnlineBrokerHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="79" column="0" selection-start="3127" selection-end="3127" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/OnlineBroker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="25" column="16" selection-start="734" selection-end="734" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -698,68 +702,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/BrokerExchange.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="49" selection-start="1608" selection-end="1608" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/BrokerLookup.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="38" selection-start="812" selection-end="812" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/BrokerLookupHandler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="104" column="21" selection-start="3713" selection-end="3713" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="imports" expanded="true" />
-            <marker date="1358046775000" expanded="true" signature="1206:1971" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Market.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="60" selection-start="635" selection-end="635" vertical-scroll-proportion="0.0">
+        <state line="33" column="42" selection-start="957" selection-end="957" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/OnlineBroker.java">
+    <entry file="file://$PROJECT_DIR$/BrokerExchange.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="16" selection-start="714" selection-end="714" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/BrokerClient.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="85" column="52" selection-start="3388" selection-end="3388" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/OnlineBrokerHandler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="79" column="0" selection-start="3131" selection-end="3131" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tse">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="0" selection-start="32" selection-end="32" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/nasdaq">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="0" selection-start="48" selection-end="48" vertical-scroll-proportion="0.15652174">
+        <state line="134" column="29" selection-start="5364" selection-end="5364" vertical-scroll-proportion="0.38434783">
           <folding />
         </state>
       </provider>
