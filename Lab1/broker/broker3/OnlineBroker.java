@@ -6,7 +6,7 @@ import java.net.*;
  * Date: 11/01/13
  */
 public class OnlineBroker {
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
     public static String hostname_lookup;
     public static int port_lookup;
     public static String hostname;
@@ -22,6 +22,7 @@ public class OnlineBroker {
             if(args.length == 4) {
                 hostname_lookup = args[0];
                 port_lookup = Integer.parseInt(args[1]);
+                hostname = InetAddress.getLocalHost().getHostName();
                 port = Integer.parseInt(args[2]);
                 myName = args[3];
             } else {
@@ -34,27 +35,45 @@ public class OnlineBroker {
             ObjectOutputStream toLookup = new ObjectOutputStream(lookupSocket.getOutputStream());
             ObjectInputStream fromLookup = new ObjectInputStream(lookupSocket.getInputStream());
 
-            BrokerPacket packetToLookup = new BrokerPacket();
-            hostname = InetAddress.getLocalHost().getHostName();
             BrokerLocation loc = new BrokerLocation(hostname, port);
+            /* Send register request to naming service */
+            BrokerPacket packetToLookup = new BrokerPacket();
             packetToLookup.type = BrokerPacket.LOOKUP_REGISTER;
             packetToLookup.exchange = myName;
-            packetToLookup.locations = new BrokerLocation[1];
-            packetToLookup.locations[0] = loc;
+            packetToLookup.locations = new BrokerLocation[]{loc};
             toLookup.writeObject(packetToLookup);
             
-            fromLookup.readObject();
+            /* Read register reply from naming service */
+            BrokerPacket packetFromLookup = (BrokerPacket) fromLookup.readObject();
 
-            toLookup.close();
-            fromLookup.close();
-            lookupSocket.close();
+            switch (packetFromLookup.type) {
+                case BrokerPacket.LOOKUP_REPLY:
+                    break;
+                case BrokerPacket.ERROR_INVALID_EXCHANGE:
+                    System.out.println("ERROR: " + myName + " already exists!");
+                    
+                    toLookup.close();
+                    fromLookup.close();
+                    lookupSocket.close();
+                    System.exit(-1);
+                default:
+                    System.out.println("ERROR: Invalid packet!");
+                    
+                    toLookup.close();
+                    fromLookup.close();
+                    lookupSocket.close();
+                    System.exit(-1);
+            }
 
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
+            if (OnlineBroker.DEBUG) e.printStackTrace();
             System.err.println("ERROR: Could not listen on port!");
             System.exit(-1);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            if (OnlineBroker.DEBUG) e.printStackTrace();
+            System.err.println("ERROR: Invalid arguments!");
+            System.exit(-1);
         }
 
         if (DEBUG) System.out.println("Server up and running...");

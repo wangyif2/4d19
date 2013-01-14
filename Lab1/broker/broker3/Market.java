@@ -23,7 +23,6 @@ public class Market {
     private static void readMarket(String exchange) throws IOException {
         stocks = new HashMap<String, Long>();
 
-        System.out.println("Looking at exchange " + exchange);
         BufferedReader bufferedReader = new BufferedReader(new FileReader(exchange));
         String line;
 
@@ -72,39 +71,5 @@ public class Market {
     public void removeStock(String exchange, String symbol) throws IOException {
         stocks.remove(symbol);
         updateMarket(exchange, stocks);
-    }
-
-    public class Stock {
-        @Override
-        public String toString() {
-            return "Stock{" +
-                    "stockName='" + stockName + '\'' +
-                    ", stockPrice=" + stockPrice +
-                    '}';
-        }
-
-        private String stockName;
-        private long stockPrice;
-
-        public Stock(String name, long price) {
-            stockName = name;
-            stockPrice = price;
-        }
-
-        public String getStockName() {
-            return stockName;
-        }
-
-        public void setStockName(String stockName) {
-            this.stockName = stockName;
-        }
-
-        public long getStockPrice() {
-            return stockPrice;
-        }
-
-        public void setStockPrice(long stockPrice) {
-            this.stockPrice = stockPrice;
-        }
     }
 }

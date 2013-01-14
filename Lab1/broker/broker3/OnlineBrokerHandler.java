@@ -13,7 +13,7 @@ public class OnlineBrokerHandler extends Thread {
 
     public OnlineBrokerHandler(Socket socket) {
         this.socket = socket;
-        System.out.println("Created new Thread to handle BrokerClient request");
+        if (OnlineBroker.DEBUG) System.out.println("Created new Thread to handle BrokerClient request");
     }
 
     @Override
@@ -32,7 +32,6 @@ public class OnlineBrokerHandler extends Thread {
 
                 /* create a packet to send reply back to client */
                 BrokerPacket packetToClient = new BrokerPacket();
-                packetToClient.type = BrokerPacket.BROKER_QUOTE;
 
                 switch (packetFromClient.type) {
                     case BrokerPacket.BROKER_REQUEST:
@@ -54,8 +53,9 @@ public class OnlineBrokerHandler extends Thread {
                     case BrokerPacket.BROKER_FORWARD:
                         packetToClient = queryLocalBrokerRequest(packetFromClient.symbol);
                         toClient.writeObject(packetToClient);
+                        break;
                     default:
-                        System.out.println("Unknown Request from client");
+                        System.out.println("ERROR: Unknown Request from client.");
                         break;
                 }
             }
@@ -76,12 +76,12 @@ public class OnlineBrokerHandler extends Thread {
 
         myMarket = Market.getInstance(OnlineBroker.myName);
 
-        if (myMarket.lookUpStock(symbol) == null) {
-            packetToClient.symbol = symbol.toUpperCase() + " invalid.";
-        } else {
-            packetToClient.symbol = symbol;
-            packetToClient.quote = myMarket.lookUpStock(symbol);
+        if(myMarket.lookUpStock(symbol) == null){
+            packetToClient.type = BrokerPacket.BROKER_ERROR;
+        }
+        else {
             packetToClient.type = BrokerPacket.BROKER_QUOTE;
+            packetToClient.quote = myMarket.lookUpStock(symbol);
         }
 
         return packetToClient;
@@ -92,14 +92,17 @@ public class OnlineBrokerHandler extends Thread {
 
         myMarket = Market.getInstance(OnlineBroker.myName);
 
-        if (myMarket.lookUpStock(symbol) != null) {
-            myMarket.updateStock(OnlineBroker.myName, symbol, quote);
-            packetToClient.symbol = symbol.toUpperCase() + " updated to " + quote.toString() + '.';
-        } else {
-            packetToClient.symbol = symbol.toUpperCase() + " invalid.";
+        if (quote < 1 || quote > 300) {
+            packetToClient.type = BrokerPacket.ERROR_OUT_OF_RANGE;
         }
-
-        packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
+        else if (myMarket.lookUpStock(symbol) != null) {
+            myMarket.updateStock(OnlineBroker.myName, symbol, quote);
+            packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
+            packetToClient.symbol = symbol.toUpperCase() + " updated to " + quote.toString() + '.';
+        }
+        else {
+            packetToClient.type = BrokerPacket.ERROR_INVALID_SYMBOL;
+        }
 
         return packetToClient;
     }
@@ -109,14 +112,14 @@ public class OnlineBrokerHandler extends Thread {
 
         myMarket = Market.getInstance(OnlineBroker.myName);
 
-        if (myMarket.lookUpStock(symbol) != null) {
+        if(myMarket.lookUpStock(symbol) != null){
             myMarket.removeStock(OnlineBroker.myName, symbol);
+            packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
             packetToClient.symbol = symbol.toUpperCase() + " removed.";
-        } else {
-            packetToClient.symbol = symbol.toUpperCase() + " invalid.";
         }
-
-        packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
+        else {
+            packetToClient.type = BrokerPacket.ERROR_INVALID_SYMBOL;
+        }
 
         return packetToClient;
     }
@@ -126,14 +129,14 @@ public class OnlineBrokerHandler extends Thread {
 
         myMarket = Market.getInstance(OnlineBroker.myName);
 
-        if (myMarket.lookUpStock(symbol) == null) {
+        if(myMarket.lookUpStock(symbol) == null){
             myMarket.addStock(OnlineBroker.myName, symbol);
+            packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
             packetToClient.symbol = symbol.toUpperCase() + " added.";
-        } else {
-            packetToClient.symbol = symbol.toUpperCase() + " exists.";
         }
-
-        packetToClient.type = BrokerPacket.EXCHANGE_REPLY;
+        else {
+            packetToClient.type = BrokerPacket.ERROR_SYMBOL_EXISTS;
+        }
 
         return packetToClient;
     }
@@ -143,22 +146,19 @@ public class OnlineBrokerHandler extends Thread {
 
         myMarket = Market.getInstance(OnlineBroker.myName);
 
-        if (myMarket.lookUpStock(symbol) == null) {
-            packetToClient = forwardQueryBrokerRequest(symbol);
-
-            if (packetToClient.quote == null)
-                packetToClient.symbol = symbol.toUpperCase() + " invalid.";
-        } else {
-            packetToClient.symbol = symbol;
-            packetToClient.quote = myMarket.lookUpStock(symbol);
+        if (myMarket.lookUpStock(symbol) != null) {
             packetToClient.type = BrokerPacket.BROKER_QUOTE;
+            packetToClient.quote = myMarket.lookUpStock(symbol);
         }
+        else
+            packetToClient = forwardQueryBrokerRequest(symbol);
 
         return packetToClient;
     }
 
     private BrokerPacket forwardQueryBrokerRequest(String symbol) throws IOException, ClassNotFoundException {
         Socket lookupSocket;
+
         BrokerPacket packetToLookup, packetFromLookup, packetToBroker, packetFromBroker;
         BrokerPacket packetToClient = new BrokerPacket();
 
@@ -167,16 +167,28 @@ public class OnlineBrokerHandler extends Thread {
         ObjectOutputStream toLookup = new ObjectOutputStream(lookupSocket.getOutputStream());
         ObjectInputStream fromLookup = new ObjectInputStream(lookupSocket.getInputStream());
 
+        /* Send lookup request to naming service */
         packetToLookup = new BrokerPacket();
         packetToLookup.type = BrokerPacket.LOOKUP_REQUEST;
         toLookup.writeObject(packetToLookup);
 
+        /* Read lookup reply from naming service */
         packetFromLookup = (BrokerPacket) fromLookup.readObject();
+        switch (packetFromLookup.type) {
+            case BrokerPacket.LOOKUP_REPLY:
+                toLookup.close();
+                fromLookup.close();
+                lookupSocket.close();
+                break;
+            default:
+                packetToClient.type = BrokerPacket.ERROR_INVALID_SYMBOL;
 
-        toLookup.close();
-        fromLookup.close();
-        lookupSocket.close();
-
+                toLookup.close();
+                fromLookup.close();
+                lookupSocket.close();
+                return packetToClient;
+        }
+                
         // iterate through brokers to get quote
         int numBrokers = packetFromLookup.num_locations;
         BrokerLocation[] brokerLocations = packetFromLookup.locations;
@@ -190,20 +202,30 @@ public class OnlineBrokerHandler extends Thread {
             ObjectOutputStream toBroker = new ObjectOutputStream(brokerSocket.getOutputStream());
             ObjectInputStream fromBroker = new ObjectInputStream(brokerSocket.getInputStream());
 
+            /* Send query request to server */
             packetToBroker = new BrokerPacket();
             packetToBroker.type = BrokerPacket.BROKER_FORWARD;
             packetToBroker.symbol = symbol;
 
             toBroker.writeObject(packetToBroker);
 
+            /* Read reply from server */
             packetFromBroker = (BrokerPacket) fromBroker.readObject();
 
-            if (packetFromBroker.quote != null) {
-                toBroker.close();
-                fromBroker.close();
-                brokerSocket.close();
-                packetToClient = packetFromBroker;
-                break;
+            switch (packetFromBroker.type) {
+                case BrokerPacket.BROKER_QUOTE:
+                    packetToClient = packetFromBroker;
+
+                    toBroker.close();
+                    fromBroker.close();
+                    brokerSocket.close();
+                    return packetToClient;
+                case BrokerPacket.BROKER_ERROR:
+                    packetToClient = packetFromBroker;
+                    break;
+                default:
+                    System.out.println("ERROR: Invalid packet type");
+                    break;
             }
 
             toBroker.close();

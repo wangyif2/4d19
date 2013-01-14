@@ -15,7 +15,7 @@ public class BrokerLookupHandler extends Thread {
 
     public BrokerLookupHandler(Socket socket) {
         this.socket = socket;
-        System.out.println("Created new Thread to handle lookup request");
+        if (OnlineBroker.DEBUG) System.out.println("Created new Thread to handle lookup request");
     }
 
     @Override
@@ -31,7 +31,6 @@ public class BrokerLookupHandler extends Thread {
             if ((packetFromClient = (BrokerPacket) fromClient.readObject()) != null) {
                 /* create a packet to send reply back to client */
                 BrokerPacket packetToClient = new BrokerPacket();
-                packetToClient.type = BrokerPacket.LOOKUP_REPLY;
 
                 switch (packetFromClient.type) {
                     case BrokerPacket.LOOKUP_REQUEST:
@@ -46,7 +45,7 @@ public class BrokerLookupHandler extends Thread {
                         toClient.writeObject(packetToClient);
                         break;
                     default:
-                        System.out.println("Unknown lookup request");
+                        System.out.println("ERROR: Unknown lookup request.");
                         break;
                 }
             }
@@ -69,13 +68,11 @@ public class BrokerLookupHandler extends Thread {
         BrokerLocation loc = myBrokerLookup.lookupBrokerLoc(exchange);
 
         if (loc == null) {
-            packetToClient.num_locations = 0;
+            packetToClient.type = BrokerPacket.ERROR_INVALID_EXCHANGE;
         } else {
-            packetToClient.num_locations = 1;
+            packetToClient.type = BrokerPacket.LOOKUP_REPLY;
             packetToClient.locations = new BrokerLocation[]{loc};
         }
-
-        packetToClient.type = BrokerPacket.LOOKUP_REPLY;
 
         return packetToClient;
     }
@@ -84,9 +81,15 @@ public class BrokerLookupHandler extends Thread {
         BrokerPacket packetToClient = new BrokerPacket();
 
         myBrokerLookup = BrokerLookup.getInstance();
-        myBrokerLookup.addBroker(packetFromClient.exchange, packetFromClient.locations[0]);
+        BrokerLocation loc = myBrokerLookup.lookupBrokerLoc(packetFromClient.exchange);
 
-        packetToClient.type = BrokerPacket.LOOKUP_REPLY;
+        if (loc == null) {
+            packetToClient.type = BrokerPacket.LOOKUP_REPLY;
+            myBrokerLookup.addBroker(packetFromClient.exchange, packetFromClient.locations[0]);
+
+        } else {
+            packetToClient.type = BrokerPacket.ERROR_INVALID_EXCHANGE;
+        }
 
         return packetToClient;
     }
@@ -99,21 +102,20 @@ public class BrokerLookupHandler extends Thread {
         Collection<BrokerLocation> locationCollection = myBrokerLookup.lookupBrokerLoc();
         Iterator iterator = locationCollection.iterator();
         int numBrokers = locationCollection.size();
-
-        BrokerLocation[] loc = new BrokerLocation[numBrokers];
+        BrokerLocation[] locations = new BrokerLocation[numBrokers];
 
         for(int i = 0; i < locationCollection.size(); i++){
-            loc[i] = (BrokerLocation) iterator.next();
+            locations[i] = (BrokerLocation) iterator.next();
         }
 
-        if (loc.length == 0) {
-            packetToClient.num_locations = 0;
+        if (locations.length == 0) {
+            packetToClient.type = BrokerPacket.ERROR_INVALID_EXCHANGE;
         } else {
-            packetToClient.num_locations = loc.length;
-            packetToClient.locations = loc;
+            packetToClient.type = BrokerPacket.LOOKUP_REPLY;
+            packetToClient.num_locations = locations.length;
+            packetToClient.locations = locations;
         }
 
-        packetToClient.type = BrokerPacket.LOOKUP_REPLY;
 
         return packetToClient;
     }

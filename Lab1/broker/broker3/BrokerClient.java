@@ -1,21 +1,22 @@
 import java.io.*;
-import java.net.Socket;
+import java.net.*;
 
 /**
  * User: robert
  * Date: 11/01/13
  */
 public class BrokerClient {
-    private static final boolean DEBUG = true;
-    private static String localBroker = "nasdaq";
+    private static boolean isLocalBrokerSet = false;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         Socket lookupSocket = null;
         Socket brokerSocket = null;
+
         ObjectOutputStream toLookup = null;
         ObjectInputStream fromLookup = null;
         ObjectOutputStream out = null;
         ObjectInputStream in = null;
+
         BufferedReader stdIn = null;
 
         /* variables for hostname/port */
@@ -25,7 +26,6 @@ public class BrokerClient {
         int port = 4445;
 
         try {
-
             if (args.length == 2) {
                 hostname_lookup = args[0];
                 port_lookup = Integer.parseInt(args[1]);
@@ -34,57 +34,26 @@ public class BrokerClient {
                 System.exit(-1);
             }
 
+            /* Show start up message */
+            System.out.print("Enter command, symbol or x for exit: \n> ");
+
             stdIn = new BufferedReader(new InputStreamReader(System.in));
             String userInput;
-
-            System.out.print("Enter command, symbol or x for exit: \n> ");
             while ((userInput = stdIn.readLine()) != null && !userInput.toLowerCase().equals("x")) {
-                String[] command = userInput.toLowerCase().split(" ");
+                String[] commands = userInput.toLowerCase().split(" ");
+                String exchange = null;
+                String symbol = null;
+                if (commands.length == 1 && isLocalBrokerSet) {
+                    symbol = commands[0];
 
-                if (command[0].equals("local") && command[1] != null) {
-                    lookupSocket = new Socket(hostname_lookup, port_lookup);
-
-                    toLookup = new ObjectOutputStream(lookupSocket.getOutputStream());
-                    fromLookup = new ObjectInputStream(lookupSocket.getInputStream());
-
-                    BrokerPacket packetToLookup = new BrokerPacket();
-                    packetToLookup.type = BrokerPacket.LOOKUP_REQUEST;
-                    packetToLookup.exchange = command[1];
-                    toLookup.writeObject(packetToLookup);
-
-                    BrokerPacket packetFromLookup;
-                    packetFromLookup = (BrokerPacket) fromLookup.readObject();
- 
-                    switch (packetFromLookup.num_locations) {
-                        case 1:
-                            hostname = packetFromLookup.locations[0].broker_host;
-                            port = packetFromLookup.locations[0].broker_port;
-                            break;
-                        default:
-                            System.out.println("Broker " + command[1] + " not found!");
-                            break;
-                    }
-
-                    toLookup.close();
-                    fromLookup.close();
-                    lookupSocket.close();
-
-                    brokerSocket = new Socket(hostname, port);
-
-                    out = new ObjectOutputStream(brokerSocket.getOutputStream());
-                    in = new ObjectInputStream(brokerSocket.getInputStream());
-
-                    localBroker = command[1];
-                    System.out.println(command[1] + " as local.");
-                    System.out.print("> ");
-                }
-                else {
+                    /* Send query request packet to server */
                     BrokerPacket packetToServer = new BrokerPacket();
 
-                    packetToServer.symbol = userInput.toLowerCase();
+                    packetToServer.symbol = symbol;
                     packetToServer.type = BrokerPacket.BROKER_REQUEST;
                     out.writeObject(packetToServer);
 
+                    /* Read quote packet from server */
                     BrokerPacket packetFromServer;
                     packetFromServer = (BrokerPacket) in.readObject();
 
@@ -92,17 +61,84 @@ public class BrokerClient {
                         case BrokerPacket.BROKER_QUOTE:
                             System.out.println("Quote from broker: " + packetFromServer.quote);
                             break;
+                        case BrokerPacket.BROKER_ERROR:
+                            System.out.println(symbol.toUpperCase() + " invalid.");
+                            break;
                         default:
-                            System.out.println(command[0].toUpperCase() + " invalid.");
+                            System.out.println("ERROR: Invalid packet type");
                             break;
                     }
 
                     System.out.print("> ");
                 }
+                else if (commands.length == 2 && commands[0].equals("local")) {
+                    exchange = commands[1];
+
+                    /* Look up broker location using naming service */
+                    lookupSocket = new Socket(hostname_lookup, port_lookup);
+
+                    toLookup = new ObjectOutputStream(lookupSocket.getOutputStream());
+                    fromLookup = new ObjectInputStream(lookupSocket.getInputStream());
+
+                    /* Send lookup request to naming service */
+                    BrokerPacket packetToLookup = new BrokerPacket();
+                    packetToLookup.type = BrokerPacket.LOOKUP_REQUEST;
+                    packetToLookup.exchange = exchange;
+                    toLookup.writeObject(packetToLookup);
+
+                    /* Read lookup reply from naming service */
+                    BrokerPacket packetFromLookup;
+                    packetFromLookup = (BrokerPacket) fromLookup.readObject();
+ 
+                    switch (packetFromLookup.type) {
+                        case BrokerPacket.LOOKUP_REPLY:
+                            hostname = packetFromLookup.locations[0].broker_host;
+                            port = packetFromLookup.locations[0].broker_port;
+                            System.out.println(exchange.toUpperCase() + " as local.");
+                            
+                            toLookup.close();
+                            fromLookup.close();
+                            lookupSocket.close();
+                            break;
+                        case BrokerPacket.ERROR_INVALID_EXCHANGE:
+                            System.out.print(exchange.toUpperCase() + " does not exist.\n> ");
+                            
+                            toLookup.close();
+                            fromLookup.close();
+                            lookupSocket.close();
+                            continue;
+                        default:
+                            System.out.print("ERROR: Invalid packet type\n> ");
+                            
+                            toLookup.close();
+                            fromLookup.close();
+                            lookupSocket.close();
+                            continue;
+                    }
+                    isLocalBrokerSet = true;
+
+                    /* Connect to local server to perform query */
+                    brokerSocket = new Socket(hostname, port);
+
+                    out = new ObjectOutputStream(brokerSocket.getOutputStream());
+                    in = new ObjectInputStream(brokerSocket.getInputStream());
+
+                    System.out.print("> ");
+                }
+                else {
+                    System.out.print("ERROR: Invalid command!\n> ");
+                    continue;
+                }
             }
 
+        } catch (UnknownHostException e) {
+            if (OnlineBroker.DEBUG) e.printStackTrace();
+			System.err.println("ERROR: Don't know where to connect!!");
+			System.exit(1);
         } catch (IOException e) {
-            e.printStackTrace();
+            if (OnlineBroker.DEBUG) e.printStackTrace();
+			System.err.println("ERROR: Couldn't get I/O for the connection.");
+			System.exit(1);
         }
 
         /* tell server that i'm quitting */

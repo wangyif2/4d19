@@ -20,10 +20,7 @@ public class BrokerLookup {
     }
 
     public void addBroker(String brokerName, BrokerLocation brokerLoc) {
-        if (brokers.containsKey(brokerName))
-            System.out.println(brokerName + " already exists!");
-        else
-            brokers.put(brokerName, brokerLoc);
+        brokers.put(brokerName, brokerLoc);
     }
 
     public Collection<BrokerLocation> lookupBrokerLoc() {

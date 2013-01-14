@@ -6,7 +6,7 @@ import java.net.*;
  * Date: 11/01/13
  */
 public class BrokerLookupServer {
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
@@ -17,14 +17,19 @@ public class BrokerLookupServer {
 
             if(args.length == 1) {
                 port = Integer.parseInt(args[0]);
+                serverSocket = new ServerSocket(port);
             } else {
                 System.err.println("ERROR: Invalid arguments!");
                 System.exit(-1);
             }
 
-            serverSocket = new ServerSocket(port);
         } catch (IOException e) {
+            if (DEBUG) e.printStackTrace();
             System.err.println("ERROR: Could not listen on port!");
+            System.exit(-1);
+        } catch (Exception e) {
+            if (DEBUG) e.printStackTrace();
+            System.err.println("ERROR: Invalid arguments!");
             System.exit(-1);
         }
 
