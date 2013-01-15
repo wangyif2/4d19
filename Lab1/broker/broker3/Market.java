@@ -45,13 +45,17 @@ public class Market {
 
         String line = "";
 
-        for (Map.Entry<String, Long> stock : stocks.entrySet()) {
-            Map.Entry pairs = (Map.Entry) stock;
-            line += pairs.getKey() + " " + pairs.getValue().toString() + "\n";
+        try {
+            for (Map.Entry<String, Long> stock : stocks.entrySet()) {
+                Map.Entry pairs = (Map.Entry) stock;
+                line += pairs.getKey() + " " + pairs.getValue().toString() + "\n";
+            }
+        } finally {
+            bufferedWriter.write(line);
+            bufferedWriter.flush();
+            bufferedWriter.close();
         }
 
-        bufferedWriter.write(line);
-        bufferedWriter.close();
     }
 
     public Long lookUpStock(String symbol) {
