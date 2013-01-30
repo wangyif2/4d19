@@ -47,39 +47,47 @@ public class GUIClient extends LocalClient implements KeyListener {
      */
     public void keyPressed(KeyEvent e) {
         // If the user pressed Q, invoke the cleanup code and quit.
+        MazewarPacket toServer = new MazewarPacket();
+
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
             // Send movement request to server
-            sendRequestToServer("Quit Request");
+            toServer.type = MazewarPacket.QUIT;
+            sendRequestToServer(toServer);
 
             Mazewar.quit();
             // Up-arrow moves forward.
         } else if (e.getKeyCode() == KeyEvent.VK_UP) {
             // Send movement request to server
-            sendRequestToServer("Move Forward Request");
+            toServer.type = MazewarPacket.DIR_FORWARD;
+            sendRequestToServer(toServer);
 
             forward();
             // Down-arrow moves backward.
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             // Send movement request to server
-            sendRequestToServer("Move Backward Request");
+            toServer.type = MazewarPacket.DIR_BACKWARD;
+            sendRequestToServer(toServer);
 
             backup();
             // Left-arrow turns left.
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             // Send movement request to server
-            sendRequestToServer("Turn Counter-Clockwise Request");
+            toServer.type = MazewarPacket.DIR_LEFT;
+            sendRequestToServer(toServer);
 
             turnLeft();
             // Right-arrow turns right.
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             // Send movement request to server
-            sendRequestToServer("Turn Clockwise Request");
+            toServer.type = MazewarPacket.DIR_RIGHT;
+            sendRequestToServer(toServer);
 
             turnRight();
             // Spacebar fires.
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             // Send movement request to server
-            sendRequestToServer("Fire Request");
+            toServer.type = MazewarPacket.FIRE;
+            sendRequestToServer(toServer);
 
             fire();
         }
@@ -101,7 +109,7 @@ public class GUIClient extends LocalClient implements KeyListener {
     public void keyTyped(KeyEvent e) {
     }
 
-    public void sendRequestToServer(String message) {
+    public void sendRequestToServer(MazewarPacket toServer) {
 
         try {
             /* stream to write back to server */
@@ -109,16 +117,14 @@ public class GUIClient extends LocalClient implements KeyListener {
             /* stream to read from server */
             //Mazewar.in = new ObjectInputStream(Mazewar.playerSocket.getInputStream());
 
-            MazewarPacket packetToServer = new MazewarPacket();
-            MazewarPacket packetFromServer;
+            MazewarPacket fromServer;
 
             // Send request packet to server
-            packetToServer.message = message;
-            Mazewar.out.writeObject(packetToServer);
+            Mazewar.out.writeObject(toServer);
 
             // Receive ACK packet from server
-            packetFromServer = (MazewarPacket) Mazewar.in.readObject();
-            System.out.println(packetFromServer.message);
+            fromServer = (MazewarPacket) Mazewar.in.readObject();
+            System.out.println(fromServer.message);
 
         } catch (IOException e) {
             if (DEBUG) e.printStackTrace();
