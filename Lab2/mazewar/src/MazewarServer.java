@@ -2,7 +2,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.util.HashMap;
-import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * User: Ivan
@@ -16,12 +16,13 @@ public class MazewarServer {
     public static int port;
 
     public static HashMap<String, ObjectOutputStream> connectedClients;
-    public static Queue actionQueue;
+    public static ConcurrentLinkedQueue<MazewarAction> actionQueue;
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
         connectedClients = new HashMap<String, ObjectOutputStream>();
-        actionQueue = new MazewarActionQueue();
+        actionQueue = new ConcurrentLinkedQueue<MazewarAction>();
+
         boolean listening = true;
 
         try {

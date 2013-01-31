@@ -44,41 +44,54 @@ public class MazewarServerHandler extends Thread {
             polling:
             while ((packetFromClient = (MazewarPacket) in.readObject()) != null) {
 
+                MazewarAction action;
                 // Print the packet message on screen for now
                 switch (packetFromClient.type) {
                     case MazewarPacket.REGISTER:
+                        //action = new MazewarAction(packetFromClient.owner, packetFromClient.type);
                         synchronized (this) {
-                            if (!MazewarServer.connectedClients.containsKey(packetFromClient.clientName))
-                                MazewarServer.connectedClients.put(packetFromClient.clientName, out);
+                            if (!MazewarServer.connectedClients.containsKey(packetFromClient.owner))
+                                MazewarServer.connectedClients.put(packetFromClient.owner, out);
                             else
-                                if (DEBUG) System.out.println("Client " + packetFromClient.clientName + " already exists!");
+                                if (DEBUG) System.out.println("Client " + packetFromClient.owner + " already exists!");
                         }
-                        if (DEBUG) System.out.println("REGISTER: " + packetFromClient.clientName);
+                        if (DEBUG) System.out.println("REGISTER: " + packetFromClient.owner);
                         break;
                     case MazewarPacket.MOVE_FORWARD:
+                        action = new MazewarAction(packetFromClient.owner, packetFromClient.type);
+                        MazewarServer.actionQueue.add(action);
                         if (DEBUG) System.out.println("ACTION: Moving forward!");
                         break;
                     case MazewarPacket.MOVE_BACKWARD:
+                        action = new MazewarAction(packetFromClient.owner, packetFromClient.type);
+                        MazewarServer.actionQueue.add(action);
                         if (DEBUG) System.out.println("ACTION: Moving backward!");
                         break;
                     case MazewarPacket.TURN_LEFT:
+                        action = new MazewarAction(packetFromClient.owner, packetFromClient.type);
+                        MazewarServer.actionQueue.add(action);
                         if (DEBUG) System.out.println("ACTION: Turning left!");
                         break;
                     case MazewarPacket.TURN_RIGHT:
+                        action = new MazewarAction(packetFromClient.owner, packetFromClient.type);
+                        MazewarServer.actionQueue.add(action);
                         if (DEBUG) System.out.println("ACTION: Turning right!");
                         break;
                     case MazewarPacket.FIRE:
+                        action = new MazewarAction(packetFromClient.owner, packetFromClient.type);
+                        MazewarServer.actionQueue.add(action);
                         if (DEBUG) System.out.println("ACTION: Firing!");
                         break;
                     case MazewarPacket.QUIT:
+                        //action = new MazewarAction(packetFromClient.owner, packetFromClient.type);
                         synchronized (this) {
-                            if (MazewarServer.connectedClients.containsKey(packetFromClient.clientName))
-                                MazewarServer.connectedClients.remove(packetFromClient.clientName);
+                            if (MazewarServer.connectedClients.containsKey(packetFromClient.owner))
+                                MazewarServer.connectedClients.remove(packetFromClient.owner);
                             else
-                                if (DEBUG) System.out.println("Client " + packetFromClient.clientName + " doesn't exists!");
+                                if (DEBUG) System.out.println("Client " + packetFromClient.owner + " doesn't exists!");
                         }
                         if (DEBUG) System.out.println("ACTION: Quiting!");
-                        if (DEBUG) System.out.println(packetFromClient.clientName + "Disconnected!");
+                        if (DEBUG) System.out.println(packetFromClient.owner + "Disconnected!");
                         break polling;
                     default:
                         System.out.println("ERROR: Unrecognized packet!");

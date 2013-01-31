@@ -21,6 +21,5 @@ public class MazewarPacket implements Serializable {
 
     public int type = MazewarPacket.NULL;
 
-    public String clientName;
-
+    public String owner;
 }
