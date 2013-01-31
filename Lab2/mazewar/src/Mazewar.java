@@ -154,16 +154,17 @@ public class Mazewar extends JFrame {
             /* stream to read from server */
             in = new ObjectInputStream(playerSocket.getInputStream());
 
+            // Send register packet to server
             MazewarPacket packetToServer = new MazewarPacket();
-            MazewarPacket packetFromServer;
+            packetToServer.type = MazewarPacket.REGISTER;
+            packetToServer.clientName = name;
 
-            // Send request packet to server
-            packetToServer.message = "Start Connection Request";
             out.writeObject(packetToServer);
 
             // Receive ACK packet from server
+            MazewarPacket packetFromServer;
             packetFromServer = (MazewarPacket) in.readObject();
-            System.out.println(packetFromServer.message);
+            if (DEBUG) System.out.println("Successfully registered!");
 
         } catch (UnknownHostException e) {
             if (DEBUG) e.printStackTrace();

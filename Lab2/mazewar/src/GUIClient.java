@@ -43,53 +43,44 @@ public class GUIClient extends LocalClient implements KeyListener {
     /**
      * Handle a key press.
      *
-     * @param e The {@link KeyEvent} that occurred.
+     * @param e The {@link java.awt.event.KeyEvent} that occurred.
      */
     public void keyPressed(KeyEvent e) {
         // If the user pressed Q, invoke the cleanup code and quit.
-        MazewarPacket toServer = new MazewarPacket();
+        MazewarPacket packetToServer = new MazewarPacket();
 
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
             // Send movement request to server
-            toServer.type = MazewarPacket.QUIT;
-            sendRequestToServer(toServer);
+            packetToServer.type = MazewarPacket.QUIT;
+            packetToServer.clientName = getName();
+            sendRequestToServer(packetToServer);
 
             Mazewar.quit();
             // Up-arrow moves forward.
         } else if (e.getKeyCode() == KeyEvent.VK_UP) {
             // Send movement request to server
-            toServer.type = MazewarPacket.DIR_FORWARD;
-            sendRequestToServer(toServer);
-
-            forward();
+            packetToServer.type = MazewarPacket.MOVE_FORWARD;
+            sendRequestToServer(packetToServer);
             // Down-arrow moves backward.
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             // Send movement request to server
-            toServer.type = MazewarPacket.DIR_BACKWARD;
-            sendRequestToServer(toServer);
-
-            backup();
+            packetToServer.type = MazewarPacket.MOVE_BACKWARD;
+            sendRequestToServer(packetToServer);
             // Left-arrow turns left.
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             // Send movement request to server
-            toServer.type = MazewarPacket.DIR_LEFT;
-            sendRequestToServer(toServer);
-
-            turnLeft();
+            packetToServer.type = MazewarPacket.TURN_LEFT;
+            sendRequestToServer(packetToServer);
             // Right-arrow turns right.
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             // Send movement request to server
-            toServer.type = MazewarPacket.DIR_RIGHT;
-            sendRequestToServer(toServer);
-
-            turnRight();
+            packetToServer.type = MazewarPacket.TURN_RIGHT;
+            sendRequestToServer(packetToServer);
             // Spacebar fires.
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             // Send movement request to server
-            toServer.type = MazewarPacket.FIRE;
-            sendRequestToServer(toServer);
-
-            fire();
+            packetToServer.type = MazewarPacket.FIRE;
+            sendRequestToServer(packetToServer);
         }
     }
 
@@ -112,19 +103,40 @@ public class GUIClient extends LocalClient implements KeyListener {
     public void sendRequestToServer(MazewarPacket toServer) {
 
         try {
-            /* stream to write back to server */
-            //Mazewar.out = new ObjectOutputStream(Mazewar.playerSocket.getOutputStream());
-            /* stream to read from server */
-            //Mazewar.in = new ObjectInputStream(Mazewar.playerSocket.getInputStream());
-
-            MazewarPacket fromServer;
+            MazewarPacket packetFromServer;
 
             // Send request packet to server
             Mazewar.out.writeObject(toServer);
 
             // Receive ACK packet from server
-            fromServer = (MazewarPacket) Mazewar.in.readObject();
-            System.out.println(fromServer.message);
+            packetFromServer = (MazewarPacket) Mazewar.in.readObject();
+            switch (packetFromServer.type) {
+                case MazewarPacket.MOVE_FORWARD:
+                    forward();
+                    if (DEBUG) System.out.println("Moving forward!");
+                    break;
+                case MazewarPacket.MOVE_BACKWARD:
+                    backup();
+                    if (DEBUG) System.out.println("Moving backward!");
+                    break;
+                case MazewarPacket.TURN_LEFT:
+                    turnLeft();
+                    if (DEBUG) System.out.println("Turning left!");
+                    break;
+                case MazewarPacket.TURN_RIGHT:
+                    turnLeft();
+                    if (DEBUG) System.out.println("Turning right!");
+                    break;
+                case MazewarPacket.FIRE:
+                    fire();
+                    if (DEBUG) System.out.println("Firing!");
+                    break;
+                case MazewarPacket.KILLED:
+                    if (DEBUG) System.out.println("I am killed!");
+                    break;
+                default:
+                    System.out.println("ERROR: Unrecognized packet!");
+            }
 
         } catch (IOException e) {
             if (DEBUG) e.printStackTrace();

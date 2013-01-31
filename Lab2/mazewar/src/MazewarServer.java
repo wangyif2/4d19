@@ -1,25 +1,31 @@
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
+import java.util.HashMap;
+import java.util.Queue;
 
 /**
- * Created with IntelliJ IDEA.
  * User: Ivan
  * Date: 30/01/13
- * Time: 8:38 AM
- * To change this template use File | Settings | File Templates.
  */
 public class MazewarServer {
 
+    private static boolean DEBUG = true;
+
     public static String hostname;
     public static int port;
-    private static boolean DEBUG = true;
+
+    public static HashMap<String, ObjectOutputStream> connectedClients;
+    public static Queue actionQueue;
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
+        connectedClients = new HashMap<String, ObjectOutputStream>();
+        actionQueue = new MazewarActionQueue();
         boolean listening = true;
 
         try {
-            if(args.length == 1) {
+            if (args.length == 1) {
                 int port = Integer.parseInt(args[0]);
                 serverSocket = new ServerSocket(port);
             } else {
