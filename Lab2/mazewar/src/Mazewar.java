@@ -154,17 +154,15 @@ public class Mazewar extends JFrame {
             /* stream to read from server */
             in = new ObjectInputStream(playerSocket.getInputStream());
 
+            // Start the maze thread to poll for updates
+            maze.startThread();
+
             // Send register packet to server
             MazewarPacket packetToServer = new MazewarPacket();
             packetToServer.type = MazewarPacket.REGISTER;
-            packetToServer.clientName = name;
+            packetToServer.owner = name;
 
             out.writeObject(packetToServer);
-
-            // Receive ACK packet from server
-            MazewarPacket packetFromServer;
-            packetFromServer = (MazewarPacket) in.readObject();
-            if (DEBUG) System.out.println("Successfully registered!");
 
         } catch (UnknownHostException e) {
             if (DEBUG) e.printStackTrace();
@@ -174,8 +172,6 @@ public class Mazewar extends JFrame {
             if (DEBUG) e.printStackTrace();
             System.err.println("ERROR: Couldn't get I/O for the connection.");
             System.exit(1);
-        } catch (ClassNotFoundException e) {
-            if (DEBUG) e.printStackTrace();
         }
 
         // Create the GUIClient and connect it to the KeyListener queue

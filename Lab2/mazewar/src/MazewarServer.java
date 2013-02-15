@@ -16,12 +16,12 @@ public class MazewarServer {
     public static int port;
 
     public static HashMap<String, ObjectOutputStream> connectedClients;
-    public static ConcurrentLinkedQueue<MazewarAction> actionQueue;
+    public static ConcurrentLinkedQueue<MazewarPacket> actionQueue;
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
         connectedClients = new HashMap<String, ObjectOutputStream>();
-        actionQueue = new ConcurrentLinkedQueue<MazewarAction>();
+        actionQueue = new ConcurrentLinkedQueue<MazewarPacket>();
 
         boolean listening = true;
 
@@ -42,6 +42,8 @@ public class MazewarServer {
             System.err.println("ERROR: Invalid arguments!");
             System.exit(-1);
         }
+
+        new MazewarServerBroadcast().start();
 
         if (DEBUG) System.out.println("Mazewar Server up and running...");
 

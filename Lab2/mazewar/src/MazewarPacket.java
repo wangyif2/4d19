@@ -5,7 +5,7 @@ import java.io.Serializable;
  * Date: 31/01/13
  */
 public class MazewarPacket implements Serializable {
-    public static final int  NULL = 0;
+    public static final int NULL = 0;
 
     public static final int REGISTER = 100;
 
