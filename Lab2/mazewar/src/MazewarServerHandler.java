@@ -1,3 +1,6 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -11,8 +14,7 @@ import java.net.Socket;
  * To change this temp use File | Settings | File Templates.
  */
 public class MazewarServerHandler extends Thread {
-
-    private boolean DEBUG = true;
+    final static Logger logger = LoggerFactory.getLogger(MazewarServerHandler.class);
 
     private Socket socket;
 
@@ -25,10 +27,10 @@ public class MazewarServerHandler extends Thread {
         try {
             out = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            if (DEBUG) e.printStackTrace();
+            e.printStackTrace();
         }
 
-        if (DEBUG) System.out.println("Created a new thread to handle Mazewar Client");
+        logger.info("Created a new thread to handle Mazewar Client");
     }
 
     @Override
@@ -49,39 +51,39 @@ public class MazewarServerHandler extends Thread {
                         synchronized (this) {
                             if (!MazewarServer.connectedClients.containsKey(packetFromClient.owner))
                                 MazewarServer.connectedClients.put(packetFromClient.owner, out);
-                            else if (DEBUG) System.out.println("Client " + packetFromClient.owner + " already exists!");
+                            else
+                                logger.info("Client " + packetFromClient.owner + " already exists!");
                         }
                         //TODO: Handle client registration with same name
                         MazewarServer.actionQueue.add(packetFromClient);
-                        if (DEBUG) System.out.println("REGISTER: " + packetFromClient.owner);
+                        logger.info("REGISTER: " + packetFromClient.owner);
                         break;
                     case MazewarPacket.MOVE_FORWARD:
                         MazewarServer.actionQueue.add(packetFromClient);
-                        if (DEBUG) System.out.println("ACTION: Moving forward!");
+                        logger.info("ACTION: Moving forward!");
                         break;
                     case MazewarPacket.MOVE_BACKWARD:
                         MazewarServer.actionQueue.add(packetFromClient);
-                        if (DEBUG) System.out.println("ACTION: Moving backward!");
+                        logger.info("ACTION: Moving backward!");
                         break;
                     case MazewarPacket.TURN_LEFT:
                         MazewarServer.actionQueue.add(packetFromClient);
-                        if (DEBUG) System.out.println("ACTION: Turning left!");
+                        logger.info("ACTION: Turning left!");
                         break;
                     case MazewarPacket.TURN_RIGHT:
                         MazewarServer.actionQueue.add(packetFromClient);
-                        if (DEBUG) System.out.println("ACTION: Turning right!");
+                        logger.info("ACTION: Turning right!");
                         break;
                     case MazewarPacket.FIRE:
                         MazewarServer.actionQueue.add(packetFromClient);
-                        if (DEBUG) System.out.println("ACTION: Firing!");
+                        logger.info("ACTION: Firing!");
                         break;
                     case MazewarPacket.QUIT:
                         MazewarServer.actionQueue.add(packetFromClient);
-                        if (DEBUG) System.out.println("ACTION: Quiting!");
-                        if (DEBUG) System.out.println(packetFromClient.owner + "Disconnected!");
+                        logger.info("ACTION: Quiting!\n" + packetFromClient.owner + "Disconnected!");
                         break polling;
                     default:
-                        System.out.println("ERROR: Unrecognized packet!");
+                        logger.info("ERROR: Unrecognized packet!");
                 }
             }
 
@@ -90,9 +92,9 @@ public class MazewarServerHandler extends Thread {
             out.close();
             socket.close();
         } catch (IOException e) {
-            if (DEBUG) e.printStackTrace();
+            e.printStackTrace();
         } catch (ClassNotFoundException e) {
-            if (DEBUG) e.printStackTrace();
+            e.printStackTrace();
         }
     }
 }

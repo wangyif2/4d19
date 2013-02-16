@@ -1,3 +1,6 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Map;
@@ -7,8 +10,7 @@ import java.util.Map;
  * Date: 01/02/13
  */
 public class MazewarServerBroadcast extends Thread {
-
-    private boolean DEBUG = true;
+    private static final Logger logger = LoggerFactory.getLogger(MazewarServerBroadcast.class);
 
     @Override
     public void run() {
@@ -26,8 +28,8 @@ public class MazewarServerBroadcast extends Thread {
                                 synchronized (this) {
                                     if (MazewarServer.connectedClients.containsKey(broadcastPacket.owner))
                                         MazewarServer.connectedClients.remove(broadcastPacket.owner);
-                                    else if (DEBUG)
-                                        System.out.println("Client " + broadcastPacket.owner + " doesn't exists!");
+                                    else
+                                        logger.info("Client " + broadcastPacket.owner + " doesn't exists!");
                                 }
                                 break;
                             case MazewarPacket.MOVE_BACKWARD:
@@ -39,14 +41,14 @@ public class MazewarServerBroadcast extends Thread {
                                 break;
                             default:
                         }
-                        System.out.println("broadcasting to " + broadcastPacket.owner + " " + broadcastPacket.type);
+                        logger.info("broadcasting to " + broadcastPacket.owner + " " + broadcastPacket.type);
                         entry.getValue().writeObject(broadcastPacket);
                     }
 
                 }
             }
         } catch (IOException e) {
-            if (DEBUG) e.printStackTrace();
+            e.printStackTrace();
         }
     }
 }

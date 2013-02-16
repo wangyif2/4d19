@@ -17,6 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.util.*;
 
@@ -29,7 +32,7 @@ import java.util.*;
 
 public class MazeImpl extends Maze implements Serializable, ClientListener, Runnable {
 
-    private static boolean DEBUG = true;
+    private static final Logger logger = LoggerFactory.getLogger(MazeImpl.class);
 
     /**
      * Create a {@link Maze}.
@@ -339,45 +342,41 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         Collection deadPrj = new HashSet();
         MazewarPacket broadcastPacket;
         while (true) {
-
-            System.out.println("Starting polling for update");
-            synchronized (this) {
-                while (Mazewar.in == null) {
-                }
-            }
-            System.out.println("Finished polling for update");
+            while (Mazewar.in == null) ;
             try {
                 while ((broadcastPacket = (MazewarPacket) Mazewar.in.readObject()) != null) {
-                    System.out.println("Received packet: " + broadcastPacket.owner + " " + broadcastPacket.type);
+                    logger.info("Received packet: " + broadcastPacket.owner + " " + broadcastPacket.type);
                     switch (broadcastPacket.type) {
                         case MazewarPacket.REGISTER:
                             addClient(new RemoteClient(broadcastPacket.owner));
+                            logger.info(getClientByName(broadcastPacket.owner) + " added");
                             break;
                         case MazewarPacket.QUIT:
                             removeClient(getClientByName(broadcastPacket.owner));
+                            logger.info(getClientByName(broadcastPacket.owner) + " quitting");
                             break;
                         case MazewarPacket.MOVE_FORWARD:
                             getClientByName(broadcastPacket.owner).forward();
-                            if (DEBUG) System.out.println("Moving forward!");
+                            logger.info("Moving forward!");
                             break;
                         case MazewarPacket.MOVE_BACKWARD:
                             getClientByName(broadcastPacket.owner).backup();
-                            if (DEBUG) System.out.println("Moving backward!");
+                            logger.info("Moving backward!");
                             break;
                         case MazewarPacket.TURN_LEFT:
                             getClientByName(broadcastPacket.owner).turnLeft();
-                            if (DEBUG) System.out.println("Turning left!");
+                            logger.info("Turning left!");
                             break;
                         case MazewarPacket.TURN_RIGHT:
                             getClientByName(broadcastPacket.owner).turnRight();
-                            if (DEBUG) System.out.println("Turning right!");
+                            logger.info("Turning right!");
                             break;
                         case MazewarPacket.FIRE:
                             getClientByName(broadcastPacket.owner).fire();
-                            if (DEBUG) System.out.println("Firing!");
+                            logger.info("Firing!");
                             break;
                         case MazewarPacket.KILLED:
-                            if (DEBUG) System.out.println("I am killed!");
+                            logger.info("I am killed!");
                             break;
                         default:
                             System.out.println("ERROR: Unrecognized packet!");
@@ -406,9 +405,9 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                     }
                 }
             } catch (IOException e) {
-                if (DEBUG) e.printStackTrace();
+                e.printStackTrace();
             } catch (ClassNotFoundException e) {
-                if (DEBUG) e.printStackTrace();
+                e.printStackTrace();
             }
         }
     }

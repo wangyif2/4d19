@@ -1,3 +1,6 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -10,7 +13,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class MazewarServer {
 
-    private static boolean DEBUG = true;
+    private static final Logger logger = LoggerFactory.getLogger(MazewarServer.class);
 
     public static String hostname;
     public static int port;
@@ -30,22 +33,22 @@ public class MazewarServer {
                 int port = Integer.parseInt(args[0]);
                 serverSocket = new ServerSocket(port);
             } else {
-                System.err.println("ERROR: Invalid arguments!");
+                logger.error("ERROR: Invalid arguments!");
                 System.exit(-1);
             }
         } catch (IOException e) {
-            if (DEBUG) e.printStackTrace();
-            System.err.println("ERROR: Could not listen on port!");
+            e.printStackTrace();
+            logger.error("ERROR: Could not listen on port!");
             System.exit(-1);
         } catch (Exception e) {
-            if (DEBUG) e.printStackTrace();
-            System.err.println("ERROR: Invalid arguments!");
+            e.printStackTrace();
+            logger.error("ERROR: Invalid arguments!");
             System.exit(-1);
         }
 
         new MazewarServerBroadcast().start();
 
-        if (DEBUG) System.out.println("Mazewar Server up and running...");
+        logger.info("Mazewar Server up and running...");
 
         while (listening) {
             new MazewarServerHandler(serverSocket.accept()).start();
