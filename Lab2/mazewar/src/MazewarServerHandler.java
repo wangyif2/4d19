@@ -79,8 +79,15 @@ public class MazewarServerHandler extends Thread {
                         logger.info("ACTION: Firing!");
                         break;
                     case MazewarPacket.QUIT:
+                        synchronized (this) {
+                            if (MazewarServer.connectedClients.containsKey(packetFromClient.owner))
+                                MazewarServer.connectedClients.remove(packetFromClient.owner);
+                            else
+                                logger.info("Client " + packetFromClient.owner + " doesn't exists!");
+                        }
                         MazewarServer.actionQueue.add(packetFromClient);
-                        logger.info("ACTION: Quiting!\n" + packetFromClient.owner + "Disconnected!");
+                        logger.info("ACTION: Quiting!");
+                        logger.info(packetFromClient.owner + "Disconnected!");
                         break polling;
                     default:
                         logger.info("ERROR: Unrecognized packet!");
