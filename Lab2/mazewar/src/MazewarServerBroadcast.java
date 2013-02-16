@@ -20,31 +20,32 @@ public class MazewarServerBroadcast extends Thread {
             while (true) {
                 while ((broadcastPacket = MazewarServer.actionQueue.poll()) != null) {
                     for (Map.Entry<String, ObjectOutputStream> entry : MazewarServer.connectedClients.entrySet()) {
-                        switch (broadcastPacket.type) {
-                            case MazewarPacket.REGISTER:
-                                if (broadcastPacket.owner == entry.getKey()) continue;
-                                break;
-                            case MazewarPacket.QUIT:
-                                synchronized (this) {
-                                    if (MazewarServer.connectedClients.containsKey(broadcastPacket.owner))
-                                        MazewarServer.connectedClients.remove(broadcastPacket.owner);
-                                    else
-                                        logger.info("Client " + broadcastPacket.owner + " doesn't exists!");
-                                }
-                                break;
-                            case MazewarPacket.MOVE_BACKWARD:
-                            case MazewarPacket.MOVE_FORWARD:
-                            case MazewarPacket.TURN_LEFT:
-                            case MazewarPacket.TURN_RIGHT:
-                            case MazewarPacket.FIRE:
-                            case MazewarPacket.KILLED:
-                                break;
-                            default:
+                        if (broadcastPacket.owner.equals(entry.getKey())) {
+                        } else {
+                            switch (broadcastPacket.type) {
+                                case MazewarPacket.REGISTER:
+//                                    broadcastPacket.type = MazewarPacket.REGISTER;
+                                    break;
+                                case MazewarPacket.QUIT:
+                                    break;
+                                case MazewarPacket.MOVE_BACKWARD:
+                                    break;
+                                case MazewarPacket.MOVE_FORWARD:
+                                    break;
+                                case MazewarPacket.TURN_LEFT:
+                                    break;
+                                case MazewarPacket.TURN_RIGHT:
+                                    break;
+                                case MazewarPacket.FIRE:
+                                    break;
+                                case MazewarPacket.KILLED:
+                                    break;
+                                default:
+                            }
+                            logger.info("broadcasting to " + entry.getKey() + " " + broadcastPacket.type);
+                            entry.getValue().writeObject(broadcastPacket);
                         }
-                        logger.info("broadcasting to " + broadcastPacket.owner + " " + broadcastPacket.type);
-                        entry.getValue().writeObject(broadcastPacket);
                     }
-
                 }
             }
         } catch (IOException e) {
