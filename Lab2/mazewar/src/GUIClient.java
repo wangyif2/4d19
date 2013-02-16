@@ -48,13 +48,12 @@ public class GUIClient extends LocalClient implements KeyListener {
     public void keyPressed(KeyEvent e) {
         // If the user pressed Q, invoke the cleanup code and quit.
         MazewarPacket packetToServer = new MazewarPacket();
+        packetToServer.owner = getName();
 
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
             // Send movement request to server
             packetToServer.type = MazewarPacket.QUIT;
-            packetToServer.owner = getName();
             sendRequestToServer(packetToServer);
-
             Mazewar.quit();
             // Up-arrow moves forward.
         } else if (e.getKeyCode() == KeyEvent.VK_UP) {
@@ -103,44 +102,9 @@ public class GUIClient extends LocalClient implements KeyListener {
     public void sendRequestToServer(MazewarPacket toServer) {
 
         try {
-            MazewarPacket packetFromServer;
-
             // Send request packet to server
             Mazewar.out.writeObject(toServer);
-
-            // Receive ACK packet from server
-            packetFromServer = (MazewarPacket) Mazewar.in.readObject();
-            switch (packetFromServer.type) {
-                case MazewarPacket.MOVE_FORWARD:
-                    forward();
-                    if (DEBUG) System.out.println("Moving forward!");
-                    break;
-                case MazewarPacket.MOVE_BACKWARD:
-                    backup();
-                    if (DEBUG) System.out.println("Moving backward!");
-                    break;
-                case MazewarPacket.TURN_LEFT:
-                    turnLeft();
-                    if (DEBUG) System.out.println("Turning left!");
-                    break;
-                case MazewarPacket.TURN_RIGHT:
-                    turnLeft();
-                    if (DEBUG) System.out.println("Turning right!");
-                    break;
-                case MazewarPacket.FIRE:
-                    fire();
-                    if (DEBUG) System.out.println("Firing!");
-                    break;
-                case MazewarPacket.KILLED:
-                    if (DEBUG) System.out.println("I am killed!");
-                    break;
-                default:
-                    System.out.println("ERROR: Unrecognized packet!");
-            }
-
         } catch (IOException e) {
-            if (DEBUG) e.printStackTrace();
-        } catch (ClassNotFoundException e) {
             if (DEBUG) e.printStackTrace();
         }
     }
