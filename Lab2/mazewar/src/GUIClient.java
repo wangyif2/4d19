@@ -52,7 +52,7 @@ public class GUIClient extends LocalClient implements KeyListener {
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
             // Send movement request to server
             packetToServer.type = MazewarPacket.QUIT;
-            packetToServer.clientName = getName();
+            packetToServer.owner = getName();
             sendRequestToServer(packetToServer);
 
             Mazewar.quit();

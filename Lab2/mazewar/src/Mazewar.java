@@ -157,7 +157,7 @@ public class Mazewar extends JFrame {
             // Send register packet to server
             MazewarPacket packetToServer = new MazewarPacket();
             packetToServer.type = MazewarPacket.REGISTER;
-            packetToServer.clientName = name;
+            packetToServer.owner = name;
 
             out.writeObject(packetToServer);
 
@@ -177,6 +177,7 @@ public class Mazewar extends JFrame {
         } catch (ClassNotFoundException e) {
             if (DEBUG) e.printStackTrace();
         }
+
 
         // Create the GUIClient and connect it to the KeyListener queue
         guiClient = new GUIClient(name);
