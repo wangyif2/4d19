@@ -25,12 +25,7 @@ public class MazewarServerBroadcast extends Thread {
                                 if (broadcastPacket.owner == entry.getKey()) continue;
                                 break;
                             case MazewarPacket.QUIT:
-                                synchronized (this) {
-                                    if (MazewarServer.connectedClients.containsKey(broadcastPacket.owner))
-                                        MazewarServer.connectedClients.remove(broadcastPacket.owner);
-                                    else
-                                        logger.info("Client " + broadcastPacket.owner + " doesn't exists!");
-                                }
+                                if (broadcastPacket.owner == entry.getKey()) continue;
                                 break;
                             case MazewarPacket.MOVE_BACKWARD:
                             case MazewarPacket.MOVE_FORWARD:

@@ -349,11 +349,11 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                     switch (broadcastPacket.type) {
                         case MazewarPacket.REGISTER:
                             addClient(new RemoteClient(broadcastPacket.owner));
-                            logger.info(getClientByName(broadcastPacket.owner) + " added");
+                            logger.info(broadcastPacket.owner + " added");
                             break;
                         case MazewarPacket.QUIT:
                             removeClient(getClientByName(broadcastPacket.owner));
-                            logger.info(getClientByName(broadcastPacket.owner) + " quitting");
+                            logger.info(broadcastPacket.owner + " quitting");
                             break;
                         case MazewarPacket.MOVE_FORWARD:
                             getClientByName(broadcastPacket.owner).forward();
