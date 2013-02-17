@@ -150,15 +150,6 @@ public abstract class Client {
             logger.info("isClientForwardValid is false");
             return false;
         }
-
-//        if (maze.moveClientForward(this)) {
-//            logger.info("moveClientForward is true");
-//            notifyMoveForward();
-//            return true;
-//        } else {
-//            logger.info("moveClientForward is false");
-//            return false;
-//        }
     }
 
     /**
@@ -177,15 +168,6 @@ public abstract class Client {
             logger.info("isClientBackwardValid is false");
             return false;
         }
-
-//        if (maze.moveClientBackward(this)) {
-//            logger.info("moveClientBackward is true");
-//            notifyMoveBackward();
-//            return true;
-//        } else {
-//            logger.info("moveClientBackward is false");
-//            return false;
-//        }
     }
 
     private void notifyServerMoveForward() {
@@ -252,14 +234,80 @@ public abstract class Client {
      * Turn the client ninety degrees counter-clockwise.
      */
     protected void turnLeft() {
-        notifyTurnLeft();
+        assert (maze != null);
+
+        logger.info("Notify server turning left");
+        notifyServerTurnLeft();
     }
 
     /**
      * Turn the client ninety degrees clockwise.
      */
     protected void turnRight() {
-        notifyTurnRight();
+        assert (maze != null);
+
+        logger.info("Notify server turning right");
+        notifyServerTurnRight();
+    }
+
+    private void notifyServerTurnLeft() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
+
+        logger.info("moveClient old: " + getName() +
+                "\n\tto old X: " + oldPoint.getX() +
+                "\n\tto old Y: " + oldPoint.getY() +
+                "\n\told orientation : " + d
+        );
+
+        logger.info("moveClient: " + getName() +
+                "\n\tto X: " + newDp.getX() +
+                "\n\tto Y: " + newDp.getY() +
+                "\n\torientation : " + newDp.getDirection()
+        );
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.TURN_LEFT;
+        toServer.mazeMap.put(getName(), newDp);
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void notifyServerTurnRight() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnRight());
+
+        logger.info("moveClient old: " + getName() +
+                "\n\tto old X: " + oldPoint.getX() +
+                "\n\tto old Y: " + oldPoint.getY() +
+                "\n\told orientation : " + d
+        );
+
+        logger.info("moveClient: " + getName() +
+                "\n\tto X: " + newDp.getX() +
+                "\n\tto Y: " + newDp.getY() +
+                "\n\torientation : " + newDp.getDirection()
+        );
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.TURN_RIGHT;
+        toServer.mazeMap.put(getName(), newDp);
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -278,7 +326,6 @@ public abstract class Client {
         }
     }
 
-
     /**
      * Notify listeners that the client moved forward.
      */
@@ -296,14 +343,14 @@ public abstract class Client {
     /**
      * Notify listeners that the client turned right.
      */
-    private void notifyTurnRight() {
+    public void notifyTurnRight() {
         notifyListeners(ClientEvent.turnRight);
     }
 
     /**
      * Notify listeners that the client turned left.
      */
-    private void notifyTurnLeft() {
+    public void notifyTurnLeft() {
         notifyListeners(ClientEvent.turnLeft);
     }
 

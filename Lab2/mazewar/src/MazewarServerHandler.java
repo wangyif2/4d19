@@ -50,6 +50,9 @@ public class MazewarServerHandler extends Thread {
                     case MazewarPacket.MOVE_BACKWARD:
                         moveClient(fromClient);
                         break;
+                    case MazewarPacket.TURN_LEFT:
+                    case MazewarPacket.TURN_RIGHT:
+                        rotateClient(fromClient);
                     default:
                         logger.info("ERROR: Unrecognized packet!");
                 }
@@ -67,6 +70,19 @@ public class MazewarServerHandler extends Thread {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private void rotateClient(MazewarPacket fromClient) {
+        String clientName = fromClient.owner;
+        DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
+        logger.info("rotateClient: " + clientName +
+                "\n\tto X: " + clientDp.getX() +
+                "\n\tto Y: " + clientDp.getY() +
+                "\n\torientation : " + clientDp.getDirection()
+        );
+
+        MazewarServer.mazeMap.put(clientName, clientDp);
+        MazewarServer.actionQueue.add(fromClient);
     }
 
     private void moveClient(MazewarPacket fromClient) {

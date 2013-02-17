@@ -450,6 +450,14 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                             if (moveClientBackward(c))
                                 c.notifyMoveBackward();
                             break;
+                        case MazewarPacket.TURN_LEFT:
+                            c = getClientByName(fromServer.owner);
+                            c.notifyTurnLeft();
+                            break;
+                        case MazewarPacket.TURN_RIGHT:
+                            c = getClientByName(fromServer.owner);
+                            c.notifyTurnRight();
+                            break;
                         default:
                             break;
                     }
