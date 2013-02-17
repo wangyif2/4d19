@@ -115,5 +115,6 @@ public abstract class Maze {
      * @param ml An object implementing the {@link MazeListener} interface.
      */
     public abstract void removeMazeListener(MazeListener ml);
-    
+
+    public abstract void threadStart();
 }
