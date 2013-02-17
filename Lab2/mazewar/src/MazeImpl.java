@@ -233,6 +233,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         MazewarPacket toServer = new MazewarPacket();
         MazewarPacket fromServer;
         toServer.type = MazewarPacket.ADD;
+        toServer.owner = client.getName();
         toServer.mazeMap.put(client.getName(), dp);
 
         try {
@@ -497,7 +498,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                             logger.info("I am killed!");
                             break;
                         default:
-                            System.out.println("ERROR: Unrecognized packet!");
+                            logger.info("ERROR: Unrecognized packet!");
+                            logger.info(broadcastPacket.owner + " " + broadcastPacket.type);
                     }
 
                     // Update project tiles

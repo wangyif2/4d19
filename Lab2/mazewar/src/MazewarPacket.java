@@ -29,6 +29,6 @@ public class MazewarPacket implements Serializable {
     public String owner;
 
     public int type = MazewarPacket.NULL;
-    public HashMap<String, DirectedPoint> mazeMap;
+    public HashMap<String, DirectedPoint> mazeMap = new HashMap<String, DirectedPoint>();
     ;
 }

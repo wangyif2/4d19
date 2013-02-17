@@ -36,8 +36,6 @@ public class Mazewar extends JFrame {
     public static ObjectOutputStream out;
     public static ObjectInputStream in;
 
-    private static boolean DEBUG = true;
-
     /**
      * The default width of the {@link Maze}.
      */
@@ -155,23 +153,28 @@ public class Mazewar extends JFrame {
             in = new ObjectInputStream(playerSocket.getInputStream());
 
             // Start the maze thread to poll for updates
-            maze.startThread();
+            //maze.startThread();
 
             // Send register packet to server
-            MazewarPacket packetToServer = new MazewarPacket();
-            packetToServer.type = MazewarPacket.REGISTER;
-            packetToServer.owner = name;
+            MazewarPacket toServer = new MazewarPacket();
+            MazewarPacket fromServer;
+            toServer.type = MazewarPacket.REGISTER;
+            toServer.owner = name;
 
-            out.writeObject(packetToServer);
+            out.writeObject(toServer);
+            fromServer = (MazewarPacket) in.readObject();
+            // TODO: add existing clients to clientMap using mazemap from packet
 
         } catch (UnknownHostException e) {
-            if (DEBUG) e.printStackTrace();
+            e.printStackTrace();
             System.err.println("ERROR: Don't know where to connect!!");
             System.exit(1);
         } catch (IOException e) {
-            if (DEBUG) e.printStackTrace();
+            e.printStackTrace();
             System.err.println("ERROR: Couldn't get I/O for the connection.");
             System.exit(1);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
 
@@ -183,12 +186,14 @@ public class Mazewar extends JFrame {
         // Use braces to force constructors not to be called at the beginning of the
         // constructor.
         {
+            // TODO: Register before adding
             maze.addClient(new RobotClient("Norby"));
             maze.addClient(new RobotClient("Robbie"));
             maze.addClient(new RobotClient("Clango"));
             maze.addClient(new RobotClient("Marvin"));
         }
 
+        maze.startThread();
 
         // Create the panel that will display the maze.
         overheadPanel = new OverheadMazePanel(maze, guiClient);

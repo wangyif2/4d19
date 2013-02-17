@@ -90,9 +90,9 @@ public class MazewarServerHandler extends Thread {
             if (MazewarServer.mazeMap.containsValue(clientLocation)) {
                 toClient.type = MazewarPacket.ERROR_DUPLICATED_LOCATION;
             }
-            //all good, go ahead and register
+            //all good, go ahead and add
             else {
-                logger.info("ADDED: " + clientName + "at location " + clientLocation.toString());
+                logger.info("ADDED: " + clientName + " at location " + clientLocation);
                 MazewarServer.mazeMap.put(clientName, clientLocation);
 
                 toClient.type = MazewarPacket.ADD_SUCCESS;
