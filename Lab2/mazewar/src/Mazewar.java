@@ -21,6 +21,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
+import java.util.Map;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -164,6 +165,7 @@ public class Mazewar extends JFrame {
             out.writeObject(toServer);
             fromServer = (MazewarPacket) in.readObject();
             // TODO: add existing clients to clientMap using mazemap from packet
+            syncClientsFromServer(fromServer);
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -185,13 +187,13 @@ public class Mazewar extends JFrame {
 
         // Use braces to force constructors not to be called at the beginning of the
         // constructor.
-        {
-            // TODO: Register before adding
-            maze.addClient(new RobotClient("Norby"));
-            maze.addClient(new RobotClient("Robbie"));
-            maze.addClient(new RobotClient("Clango"));
-            maze.addClient(new RobotClient("Marvin"));
-        }
+//        {
+//            // TODO: Register before adding
+//            maze.addClient(new RobotClient("Norby"));
+//            maze.addClient(new RobotClient("Robbie"));
+//            maze.addClient(new RobotClient("Clango"));
+//            maze.addClient(new RobotClient("Marvin"));
+//        }
 
         maze.startThread();
 
@@ -252,6 +254,17 @@ public class Mazewar extends JFrame {
         setVisible(true);
         overheadPanel.repaint();
         this.requestFocusInWindow();
+    }
+
+    private void syncClientsFromServer(MazewarPacket fromServer) {
+        DirectedPoint savedClientDp;
+        String savedClientName;
+        for (Map.Entry<String,DirectedPoint> savedClient: fromServer.mazeMap.entrySet()) {
+            savedClientName = savedClient.getKey();
+            savedClientDp = savedClient.getValue();
+
+            maze.addClient(new RemoteClient(savedClientName), savedClientDp);
+        }
     }
 
 

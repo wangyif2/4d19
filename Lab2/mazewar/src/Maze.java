@@ -68,6 +68,16 @@ public abstract class Maze {
      */
     public abstract void addClient(Client client);
 
+    /* Client functionality ************************************************/
+
+    /**
+     * Add a {@link Client} at random location in the {@link Maze}.
+     *
+     * @param client {@link Client} to be added to the {@link Maze}.
+     */
+    public abstract void addClient(Client client, DirectedPoint directedPoint);
+
+
     /**
      * Create a new {@link Projectile} from the specified {@link Client}
      *

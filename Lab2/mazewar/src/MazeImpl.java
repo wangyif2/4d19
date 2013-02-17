@@ -62,10 +62,12 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         thread = new Thread(this);
 
         // Initialized the random number generator
-        randomGen = new Random();
+        randomGen = new Random(seed);
 
         // Build the maze starting at the corner
         buildMaze(new Point(0, 0));
+
+        randomGen = new Random();
     }
 
     public void startThread() {
@@ -217,7 +219,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
      * @param client The {@link Client} to be added.
      * @param dp  The location the {@link Client} should be added.
      */
-    private synchronized void addClient(Client client, DirectedPoint dp) {
+    public synchronized void addClient(Client client, DirectedPoint dp) {
         assert (client != null);
         assert (checkBounds(dp));
         CellImpl cell = getCellImpl(dp);
@@ -384,11 +386,22 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         CellImpl oldCell = getCellImpl(oldPoint);
         CellImpl newCell = getCellImpl(newPoint);
 
+        logger.info("Client " + client.getName() + " moving to direction " + newPoint.getDirection()
+                + "with client orientation" + client.getOrientation());
+
         clientMap.put(client, newPoint);
+
+        logger.info("Client " + client.getName() + " after client map update " + newPoint.getDirection()
+                + "with client orientation" + client.getOrientation());
+
         newCell.setContents(client);
         oldCell.setContents(null);
 
         update();
+
+        logger.info("Client " + client.getName() + " after update " + newPoint.getDirection()
+                + "with client orientation" + client.getOrientation());
+
         return true;
     }
 
@@ -473,6 +486,9 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                     Client c = getClientByName(broadcastPacket.owner);
                     logger.info("Received packet: " + c.getName() + " " + broadcastPacket.type);
                     switch (broadcastPacket.type) {
+                        case MazewarPacket.ADD:
+                            addClient(new RemoteClient(broadcastPacket.owner), broadcastPacket.mazeMap.get(broadcastPacket.owner));
+                            break;
                         case MazewarPacket.MOVE:
                             moveClient(c, broadcastPacket.mazeMap.get(c.getName()));
                             break;
@@ -625,7 +641,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     /**
      * The random number generator used by the {@link Maze}.
      */
-    private final Random randomGen;
+    private Random randomGen;
 
     /**
      * The maximum X coordinate of the {@link Maze}.

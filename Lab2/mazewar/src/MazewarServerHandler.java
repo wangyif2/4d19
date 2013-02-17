@@ -45,7 +45,7 @@ public class MazewarServerHandler extends Thread {
                 // Print the packet message on screen for now
                 switch (fromClient.type) {
                     case MazewarPacket.ADD:
-                        out.writeObject(addClient(fromClient));
+                        boardcastAddClient(fromClient);
                     case MazewarPacket.REGISTER:
                         //TODO: Handle client registration with same name
                         out.writeObject(registerClient(fromClient));
@@ -79,6 +79,11 @@ public class MazewarServerHandler extends Thread {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private void boardcastAddClient(MazewarPacket fromClient) throws IOException {
+        out.writeObject(addClient(fromClient));
+        MazewarServer.actionQueue.add(fromClient);
     }
 
     private MazewarPacket addClient(MazewarPacket fromClient) {
@@ -126,6 +131,8 @@ public class MazewarServerHandler extends Thread {
 
     private boolean isValidClientLocation(MazewarPacket fromClient) {
         DirectedPoint clientLocation = fromClient.mazeMap.get(fromClient.owner);
+
+        logger.info("Client " + fromClient.owner + " facing " + clientLocation.getDirection());
 
         for (Map.Entry<String, DirectedPoint> savedClient : MazewarServer.mazeMap.entrySet()) {
             Point location = savedClient.getValue();

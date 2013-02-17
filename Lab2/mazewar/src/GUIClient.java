@@ -17,6 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
@@ -31,7 +34,7 @@ import java.io.IOException;
 
 public class GUIClient extends LocalClient implements KeyListener {
 
-    private static boolean DEBUG = true;
+    private static final Logger logger = LoggerFactory.getLogger(GUIClient.class);
 
     /**
      * Create a GUI controlled {@link LocalClient}.
@@ -97,6 +100,7 @@ public class GUIClient extends LocalClient implements KeyListener {
     private void forward(MazewarPacket toServer) {
         if (maze.moveClientForward(this)) {
             DirectedPoint dp = new DirectedPoint(getPoint().move(getOrientation()), getOrientation());
+            logger.info("Client " + getName() + " facing " + getOrientation());
 
             toServer.type = MazewarPacket.MOVE;
             toServer.mazeMap.put(getName(), dp);
@@ -126,7 +130,7 @@ public class GUIClient extends LocalClient implements KeyListener {
             // Send request packet to server
             Mazewar.out.writeObject(toServer);
         } catch (IOException e) {
-            if (DEBUG) e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
