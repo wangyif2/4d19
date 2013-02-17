@@ -17,6 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.Set;
 import java.util.HashSet;
@@ -29,6 +32,7 @@ import java.util.Iterator;
  * @version $Id: Client.java 343 2004-01-24 03:43:45Z geoffw $
  */
 public abstract class Client {
+    private static final Logger logger = LoggerFactory.getLogger(MazeImpl.class);
 
     /**
      * Register this {@link Client} as being contained by the specified
@@ -138,13 +142,23 @@ public abstract class Client {
     protected boolean forward() {
         assert (maze != null);
 
-        if (maze.moveClientForward(this)) {
-            notifyServerMove();
-            notifyMoveForward();
+        if (maze.isClientForwardValid(this)) {
+            logger.info("isClientForwardValid is true");
+            notifyServerMoveForward();
             return true;
         } else {
+            logger.info("isClientForwardValid is false");
             return false;
         }
+
+//        if (maze.moveClientForward(this)) {
+//            logger.info("moveClientForward is true");
+//            notifyMoveForward();
+//            return true;
+//        } else {
+//            logger.info("moveClientForward is false");
+//            return false;
+//        }
     }
 
     /**
@@ -155,20 +169,44 @@ public abstract class Client {
     protected boolean backup() {
         assert (maze != null);
 
-        if (maze.moveClientBackward(this)) {
-            notifyMoveBackward();
-            notifyServerMove();
+        if (maze.isClientBackwardValid(this)) {
+            logger.info("isClientBackwardValid is true");
+            notifyServerMoveBackward();
             return true;
         } else {
+            logger.info("isClientBackwardValid is false");
             return false;
         }
+
+//        if (maze.moveClientBackward(this)) {
+//            logger.info("moveClientBackward is true");
+//            notifyMoveBackward();
+//            return true;
+//        } else {
+//            logger.info("moveClientBackward is false");
+//            return false;
+//        }
     }
 
-    private void notifyServerMove() {
+    private void notifyServerMoveForward() {
         MazewarPacket toServer = new MazewarPacket();
 
         toServer.owner = getName();
-        toServer.type = MazewarPacket.MOVE;
+        toServer.type = MazewarPacket.MOVE_FORWARD;
+        toServer.mazeMap.put(getName(), new DirectedPoint(getPoint(), getOrientation()));
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void notifyServerMoveBackward() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.MOVE_BACKWARD;
         toServer.mazeMap.put(getName(), new DirectedPoint(getPoint(), getOrientation()));
 
         try {
@@ -212,14 +250,14 @@ public abstract class Client {
     /**
      * Notify listeners that the client moved forward.
      */
-    private void notifyMoveForward() {
+    public void notifyMoveForward() {
         notifyListeners(ClientEvent.moveForward);
     }
 
     /**
      * Notify listeners that the client moved backward.
      */
-    private void notifyMoveBackward() {
+    public void notifyMoveBackward() {
         notifyListeners(ClientEvent.moveBackward);
     }
 

@@ -16,15 +16,16 @@ public class MazewarPacket implements Serializable {
     public static final int ADD = 103;
     public static final int ADD_SUCCESS = 104;
 
-    public static final int MOVE = 105;
+    public static final int MOVE_FORWARD = 105;
+    public static final int MOVE_BACKWARD = 106;
 
-    public static final int TURN_LEFT = 106;
-    public static final int TURN_RIGHT = 107;
+    public static final int TURN_LEFT = 206;
+    public static final int TURN_RIGHT = 207;
 
-    public static final int FIRE = 200;
-    public static final int KILLED = 201;
+    public static final int FIRE = 300;
+    public static final int KILLED = 301;
 
-    public static final int QUIT = 300;
+    public static final int QUIT = 400;
     //packet definitions
     public String owner;
 

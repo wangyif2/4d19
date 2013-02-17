@@ -45,7 +45,8 @@ public class MazewarServerHandler extends Thread {
                     case MazewarPacket.REGISTER:
                         registerClient(fromClient);
                         break;
-                    case MazewarPacket.MOVE:
+                    case MazewarPacket.MOVE_FORWARD:
+                    case MazewarPacket.MOVE_BACKWARD:
                         moveClient(fromClient);
                         break;
                     default:

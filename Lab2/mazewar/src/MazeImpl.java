@@ -298,20 +298,60 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return true;
     }
 
-    public synchronized boolean isClientForwardValid(Client client){
+    public synchronized boolean isClientForwardValid(Client client) {
         assert (client != null);
         Object o = clientMap.get(client);
         assert (o instanceof DirectedPoint);
         DirectedPoint dp = (DirectedPoint) o;
-        return moveClient(client, dp.getDirection());
+        Direction d = dp.getDirection();
+
+        Point oldPoint = getClientPoint(client);
+        CellImpl oldCell = getCellImpl(oldPoint);
+
+                /* Check that you can move in the given direction */
+        if (oldCell.isWall(d)) {
+                        /* Move failed */
+            return false;
+        }
+
+        DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
+
+                /* Is the point withint the bounds of maze? */
+        assert (checkBounds(newPoint));
+        CellImpl newCell = getCellImpl(newPoint);
+        if (newCell.getContents() != null) {
+                        /* Move failed */
+            return false;
+        }
+        return true;
     }
 
-    public synchronized boolean isClientBackwardValid(Client client){
+    public synchronized boolean isClientBackwardValid(Client client) {
         assert (client != null);
         Object o = clientMap.get(client);
         assert (o instanceof DirectedPoint);
         DirectedPoint dp = (DirectedPoint) o;
-        return moveClient(client, dp.getDirection().invert());
+        Direction d = dp.getDirection().invert();
+
+        Point oldPoint = getClientPoint(client);
+        CellImpl oldCell = getCellImpl(oldPoint);
+
+                /* Check that you can move in the given direction */
+        if (oldCell.isWall(d)) {
+                        /* Move failed */
+            return false;
+        }
+
+        DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
+
+                /* Is the point withint the bounds of maze? */
+        assert (checkBounds(newPoint));
+        CellImpl newCell = getCellImpl(newPoint);
+        if (newCell.getContents() != null) {
+                        /* Move failed */
+            return false;
+        }
+        return true;
     }
 
     public synchronized boolean moveClientForward(Client client) {
@@ -374,19 +414,39 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return true;
     }
 
+    private void handleMove(MazewarPacket fromServer) {
+        String clientName = fromServer.owner;
+
+        logger.info("moveClient: " + clientName +
+                "\n\tto X: " + fromServer.mazeMap.get(clientName).getX() +
+                "\n\tto Y: " + fromServer.mazeMap.get(clientName).getY() +
+                "\n\torientation : " + fromServer.mazeMap.get(clientName).getDirection()
+        );
+
+
+    }
+
     /**
      * Control loop for {@link Projectile}s.
      */
     public void run() {
         Collection deadPrj = new HashSet();
         MazewarPacket fromServer;
+        Client c;
         while (true) {
             assert (Mazewar.in != null);
             try {
                 while ((fromServer = (MazewarPacket) Mazewar.in.readObject()) != null) {
                     switch (fromServer.type) {
-                        case MazewarPacket.MOVE:
-                            handleMove(fromServer);
+                        case MazewarPacket.MOVE_FORWARD:
+                            c = getClientByName(fromServer.owner);
+                            if (moveClientForward(c))
+                                c.notifyMoveForward();
+                            break;
+                        case MazewarPacket.MOVE_BACKWARD:
+                            c = getClientByName(fromServer.owner);
+                            if(moveClientBackward(c))
+                                c.notifyMoveBackward();
                             break;
                         default:
                             break;
@@ -409,18 +469,20 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         }
     }
 
-    private void handleMove(MazewarPacket fromServer) {
-        String clientName = fromServer.owner;
-
-        logger.info("moveClient: " + clientName +
-                "\n\tto X: " + fromServer.mazeMap.get(clientName).getX() +
-                "\n\tto Y: " + fromServer.mazeMap.get(clientName).getY() +
-                "\n\torientation : " + fromServer.mazeMap.get(clientName).getDirection()
-        );
-    }
-
     public synchronized Iterator getClients() {
         return clientMap.keySet().iterator();
+    }
+
+    public synchronized Client getClientByName(String name) {
+        Iterator it = getClients();
+        Client nextClient = null;
+
+        while (it.hasNext()) {
+            nextClient = (Client) it.next();
+            if (nextClient.getName().equals(name))
+                break;
+        }
+        return nextClient;
     }
 
     public void addMazeListener(MazeListener ml) {

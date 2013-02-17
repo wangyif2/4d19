@@ -97,6 +97,9 @@ public abstract class Maze {
      */
     public abstract boolean moveClientBackward(Client client);
 
+    public abstract boolean isClientForwardValid(Client client);
+    public abstract boolean isClientBackwardValid(Client client);
+
     /**
      * Obtain an {@link Iterator} over all {@link Client}s in the {@link Maze} 
      * @return {@link Iterator} over clients in the {@link Maze}. 
