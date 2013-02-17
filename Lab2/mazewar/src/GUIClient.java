@@ -47,39 +47,60 @@ public class GUIClient extends LocalClient implements KeyListener {
      */
     public void keyPressed(KeyEvent e) {
         // If the user pressed Q, invoke the cleanup code and quit.
-        MazewarPacket packetToServer = new MazewarPacket();
-        packetToServer.owner = getName();
+        MazewarPacket toServer = new MazewarPacket();
+        toServer.owner = getName();
 
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
             // Send movement request to server
-            packetToServer.type = MazewarPacket.QUIT;
-            sendRequestToServer(packetToServer);
+            toServer.type = MazewarPacket.QUIT;
+            sendRequestToServer(toServer);
             Mazewar.quit();
-            // Up-arrow moves forward.
         } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-            // Send movement request to server
-            packetToServer.type = MazewarPacket.MOVE_FORWARD;
-            sendRequestToServer(packetToServer);
-            // Down-arrow moves backward.
+            forward(toServer);
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            // Send movement request to server
-            packetToServer.type = MazewarPacket.MOVE_BACKWARD;
-            sendRequestToServer(packetToServer);
-            // Left-arrow turns left.
+            backup(toServer);
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            // Send movement request to server
-            packetToServer.type = MazewarPacket.TURN_LEFT;
-            sendRequestToServer(packetToServer);
-            // Right-arrow turns right.
+            turnLeft(toServer);
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            // Send movement request to server
-            packetToServer.type = MazewarPacket.TURN_RIGHT;
-            sendRequestToServer(packetToServer);
-            // Spacebar fires.
+            turnRight(toServer);
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             // Send movement request to server
-            packetToServer.type = MazewarPacket.FIRE;
-            sendRequestToServer(packetToServer);
+            toServer.type = MazewarPacket.FIRE;
+            sendRequestToServer(toServer);
+        }
+    }
+
+    private void turnRight(MazewarPacket toServer) {
+        DirectedPoint dp = new DirectedPoint(getPoint(), getOrientation().turnRight());
+        toServer.type = MazewarPacket.TURN_RIGHT;
+        toServer.mazeMap.put(getName(), dp);
+        sendRequestToServer(toServer);
+    }
+
+    private void turnLeft(MazewarPacket toServer) {
+        DirectedPoint dp = new DirectedPoint(getPoint(), getOrientation().turnLeft());
+        toServer.type = MazewarPacket.TURN_LEFT;
+        toServer.mazeMap.put(getName(), dp);
+        sendRequestToServer(toServer);
+    }
+
+    private void backup(MazewarPacket toServer) {
+        if (maze.moveClientBackward(this)) {
+            DirectedPoint dp = new DirectedPoint(getPoint().move(getOrientation().invert()), getOrientation());
+
+            toServer.type = MazewarPacket.MOVE;
+            toServer.mazeMap.put(getName(), dp);
+            sendRequestToServer(toServer);
+        }
+    }
+
+    private void forward(MazewarPacket toServer) {
+        if (maze.moveClientForward(this)) {
+            DirectedPoint dp = new DirectedPoint(getPoint().move(getOrientation()), getOrientation());
+
+            toServer.type = MazewarPacket.MOVE;
+            toServer.mazeMap.put(getName(), dp);
+            sendRequestToServer(toServer);
         }
     }
 

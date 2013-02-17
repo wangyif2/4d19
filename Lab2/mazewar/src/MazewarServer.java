@@ -19,11 +19,13 @@ public class MazewarServer {
     public static int port;
 
     public static HashMap<String, ObjectOutputStream> connectedClients;
+    public static HashMap<String, DirectedPoint> mazeMap;
     public static ConcurrentLinkedQueue<MazewarPacket> actionQueue;
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
         connectedClients = new HashMap<String, ObjectOutputStream>();
+        mazeMap = new HashMap<String, DirectedPoint>();
         actionQueue = new ConcurrentLinkedQueue<MazewarPacket>();
 
         boolean listening = true;

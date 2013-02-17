@@ -62,7 +62,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         thread = new Thread(this);
 
         // Initialized the random number generator
-        randomGen = new Random(seed);
+        randomGen = new Random();
 
         // Build the maze starting at the corner
         buildMaze(new Point(0, 0));
@@ -172,7 +172,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
     }
 
-
     public boolean checkBounds(Point point) {
         assert (point != null);
         return (point.getX() >= 0) && (point.getY() >= 0) &&
@@ -190,15 +189,65 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
     public synchronized void addClient(Client client) {
         assert (client != null);
-        // Pick a random starting point, and check to see if it is already occupied
-        Point point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
-        CellImpl cell = getCellImpl(point);
-        // Repeat until we find an empty cell
-        while (cell.getContents() != null) {
+        Point point;
+        Direction direction;
+        DirectedPoint dp;
+
+        do {
+            // Pick a random starting point, and check to see if it is already occupied
             point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
-            cell = getCellImpl(point);
+            CellImpl cell = getCellImpl(point);
+            // Repeat until we find an empty cell
+            while (cell.getContents() != null) {
+                point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
+                cell = getCellImpl(point);
+            }
+            direction = Direction.random();
+            while (cell.isWall(direction)) {
+                direction = Direction.random();
+            }
+            dp = new DirectedPoint(point, direction);
+        } while (!addClientToServer(client, dp));
+        addClient(client, dp);
+    }
+
+    /**
+     * Internal helper for adding a {@link Client} to the {@link Maze}.
+     *
+     * @param client The {@link Client} to be added.
+     * @param dp  The location the {@link Client} should be added.
+     */
+    private synchronized void addClient(Client client, DirectedPoint dp) {
+        assert (client != null);
+        assert (checkBounds(dp));
+        CellImpl cell = getCellImpl(dp);
+        cell.setContents(client);
+        clientMap.put(client, dp);
+        client.registerMaze(this);
+        client.addClientListener(this);
+        update();
+        notifyClientAdd(client);
+    }
+
+    private boolean addClientToServer(Client client, DirectedPoint dp) {
+        MazewarPacket toServer = new MazewarPacket();
+        MazewarPacket fromServer;
+        toServer.type = MazewarPacket.ADD;
+        toServer.mazeMap.put(client.getName(), dp);
+
+        try {
+            Mazewar.out.writeObject(toServer);
+
+            if ((fromServer = (MazewarPacket) Mazewar.in.readObject()) != null) {
+                if (fromServer.type == MazewarPacket.ADD_SUCCESS)
+                    return true;
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        addClient(client, point);
+        return false;
     }
 
     public synchronized Point getClientPoint(Client client) {
@@ -282,7 +331,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         Object o = clientMap.get(client);
         assert (o instanceof DirectedPoint);
         DirectedPoint dp = (DirectedPoint) o;
-        return moveClient(client, dp.getDirection());
+        return isMoveClientValid(client, dp.getDirection());
     }
 
     public synchronized boolean moveClientBackward(Client client) {
@@ -290,9 +339,85 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         Object o = clientMap.get(client);
         assert (o instanceof DirectedPoint);
         DirectedPoint dp = (DirectedPoint) o;
-        return moveClient(client, dp.getDirection().invert());
+        return isMoveClientValid(client, dp.getDirection().invert());
     }
 
+    private boolean isMoveClientValid(Client client, Direction d) {
+        assert (client != null);
+        assert (d != null);
+        Point oldPoint = getClientPoint(client);
+        CellImpl oldCell = getCellImpl(oldPoint);
+
+        /* Check that you can move in the given direction */
+        if (oldCell.isWall(d)) {
+            /* Move failed */
+            clientMap.put(client, oldPoint);
+            return false;
+        }
+
+        DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
+
+        /* Is the point withint the bounds of maze? */
+        assert (checkBounds(newPoint));
+        CellImpl newCell = getCellImpl(newPoint);
+        if (newCell.getContents() != null) {
+            /* Move failed */
+            clientMap.put(client, oldPoint);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Internal helper called to move a {@link Client} in the specified
+     * {@link Direction}.
+     *
+     * @param client   The {@link Client} to be move.
+     * @param newPoint The {@link Direction} to move.
+     * @return If the {@link Client} cannot move in that {@link Direction}
+     *         for some reason, return <code>false</code>, otherwise return
+     *         <code>true</code> indicating success.
+     */
+    private synchronized boolean moveClient(Client client, DirectedPoint newPoint) {
+        Point oldPoint = getClientPoint(client);
+        CellImpl oldCell = getCellImpl(oldPoint);
+        CellImpl newCell = getCellImpl(newPoint);
+
+        clientMap.put(client, newPoint);
+        newCell.setContents(client);
+        oldCell.setContents(null);
+
+        update();
+        return true;
+    }
+
+    /**
+     * Internal helper called when a {@link Client} emits a turnLeft action.
+     *
+     * @param client The {@link Client} to rotate.
+     */
+    private synchronized void rotateClientLeft(Client client) {
+        assert (client != null);
+        Object o = clientMap.get(client);
+        assert (o instanceof DirectedPoint);
+        DirectedPoint dp = (DirectedPoint) o;
+        clientMap.put(client, new DirectedPoint(dp, dp.getDirection().turnLeft()));
+        update();
+    }
+
+    /**
+     * Internal helper called when a {@link Client} emits a turnRight action.
+     *
+     * @param client The {@link Client} to rotate.
+     */
+    private synchronized void rotateClientRight(Client client) {
+        assert (client != null);
+        Object o = clientMap.get(client);
+        assert (o instanceof DirectedPoint);
+        DirectedPoint dp = (DirectedPoint) o;
+        clientMap.put(client, new DirectedPoint(dp, dp.getDirection().turnRight()));
+        update();
+    }
 
     public synchronized Iterator getClients() {
         return clientMap.keySet().iterator();
@@ -309,7 +434,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         }
         return nextClient;
     }
-
 
     public void addMazeListener(MazeListener ml) {
         listenerSet.add(ml);
@@ -345,8 +469,18 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             while (Mazewar.in == null) ;
             try {
                 while ((broadcastPacket = (MazewarPacket) Mazewar.in.readObject()) != null) {
-                    logger.info("Received packet: " + broadcastPacket.owner + " " + broadcastPacket.type);
+                    Client c = getClientByName(broadcastPacket.owner);
+                    logger.info("Received packet: " + c.getName() + " " + broadcastPacket.type);
                     switch (broadcastPacket.type) {
+                        case MazewarPacket.MOVE:
+                            moveClient(c, broadcastPacket.mazeMap.get(c.getName()));
+                            break;
+                        case MazewarPacket.TURN_LEFT:
+                            getClientByName(broadcastPacket.owner).turnLeft();
+                            break;
+                        case MazewarPacket.TURN_RIGHT:
+                            getClientByName(broadcastPacket.owner).turnRight();
+                            break;
                         case MazewarPacket.REGISTER:
                             addClient(new RemoteClient(broadcastPacket.owner));
                             logger.info(broadcastPacket.owner + " added");
@@ -354,22 +488,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                         case MazewarPacket.QUIT:
                             removeClient(getClientByName(broadcastPacket.owner));
                             logger.info(broadcastPacket.owner + " quitting");
-                            break;
-                        case MazewarPacket.MOVE_FORWARD:
-                            getClientByName(broadcastPacket.owner).forward();
-                            logger.info("Moving forward!");
-                            break;
-                        case MazewarPacket.MOVE_BACKWARD:
-                            getClientByName(broadcastPacket.owner).backup();
-                            logger.info("Moving backward!");
-                            break;
-                        case MazewarPacket.TURN_LEFT:
-                            getClientByName(broadcastPacket.owner).turnLeft();
-                            logger.info("Turning left!");
-                            break;
-                        case MazewarPacket.TURN_RIGHT:
-                            getClientByName(broadcastPacket.owner).turnRight();
-                            logger.info("Turning right!");
                             break;
                         case MazewarPacket.FIRE:
                             getClientByName(broadcastPacket.owner).fire();
@@ -469,28 +587,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     }
 
     /**
-     * Internal helper for adding a {@link Client} to the {@link Maze}.
-     *
-     * @param client The {@link Client} to be added.
-     * @param point  The location the {@link Client} should be added.
-     */
-    private synchronized void addClient(Client client, Point point) {
-        assert (client != null);
-        assert (checkBounds(point));
-        CellImpl cell = getCellImpl(point);
-        Direction d = Direction.random();
-        while (cell.isWall(d)) {
-            d = Direction.random();
-        }
-        cell.setContents(client);
-        clientMap.put(client, new DirectedPoint(point, d));
-        client.registerMaze(this);
-        client.addClientListener(this);
-        update();
-        notifyClientAdd(client);
-    }
-
-    /**
      * Internal helper for handling the death of a {@link Client}.
      *
      * @param source The {@link Client} that fired the projectile.
@@ -522,78 +618,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         clientMap.put(target, new DirectedPoint(point, d));
         update();
         notifyClientKilled(source, target);
-    }
-
-    /**
-     * Internal helper called when a {@link Client} emits a turnLeft action.
-     *
-     * @param client The {@link Client} to rotate.
-     */
-    private synchronized void rotateClientLeft(Client client) {
-        assert (client != null);
-        Object o = clientMap.get(client);
-        assert (o instanceof DirectedPoint);
-        DirectedPoint dp = (DirectedPoint) o;
-        clientMap.put(client, new DirectedPoint(dp, dp.getDirection().turnLeft()));
-        update();
-    }
-
-    /**
-     * Internal helper called when a {@link Client} emits a turnRight action.
-     *
-     * @param client The {@link Client} to rotate.
-     */
-    private synchronized void rotateClientRight(Client client) {
-        assert (client != null);
-        Object o = clientMap.get(client);
-        assert (o instanceof DirectedPoint);
-        DirectedPoint dp = (DirectedPoint) o;
-        clientMap.put(client, new DirectedPoint(dp, dp.getDirection().turnRight()));
-        update();
-    }
-
-    /**
-     * Internal helper called to move a {@link Client} in the specified
-     * {@link Direction}.
-     *
-     * @param client The {@link Client} to be move.
-     * @param d      The {@link Direction} to move.
-     * @return If the {@link Client} cannot move in that {@link Direction}
-     *         for some reason, return <code>false</code>, otherwise return
-     *         <code>true</code> indicating success.
-     */
-    private synchronized boolean moveClient(Client client, Direction d) {
-        assert (client != null);
-        assert (d != null);
-        Point oldPoint = getClientPoint(client);
-        CellImpl oldCell = getCellImpl(oldPoint);
-
-        /* Check that you can move in the given direction */
-        if (oldCell.isWall(d)) {
-            /* Move failed */
-            clientMap.put(client, oldPoint);
-            return false;
-        }
-
-        DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
-
-        /* Is the point withint the bounds of maze? */
-        assert (checkBounds(newPoint));
-        CellImpl newCell = getCellImpl(newPoint);
-        if (newCell.getContents() != null) {
-            /* Move failed */
-            clientMap.put(client, oldPoint);
-            return false;
-        }
-
-        /* Write the new cell */
-        clientMap.put(client, newPoint);
-        newCell.setContents(client);
-        /* Clear the old cell */
-        oldCell.setContents(null);
-
-        update();
-        return true;
     }
 
     /**

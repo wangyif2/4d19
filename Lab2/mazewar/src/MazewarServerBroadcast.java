@@ -20,31 +20,20 @@ public class MazewarServerBroadcast extends Thread {
             while (true) {
                 while ((broadcastPacket = MazewarServer.actionQueue.poll()) != null) {
                     for (Map.Entry<String, ObjectOutputStream> entry : MazewarServer.connectedClients.entrySet()) {
-                        if (broadcastPacket.owner.equals(entry.getKey())) {
-                        } else {
-                            switch (broadcastPacket.type) {
-                                case MazewarPacket.REGISTER:
-//                                    broadcastPacket.type = MazewarPacket.REGISTER;
-                                    break;
-                                case MazewarPacket.QUIT:
-                                    break;
-                                case MazewarPacket.MOVE_BACKWARD:
-                                    break;
-                                case MazewarPacket.MOVE_FORWARD:
-                                    break;
-                                case MazewarPacket.TURN_LEFT:
-                                    break;
-                                case MazewarPacket.TURN_RIGHT:
-                                    break;
-                                case MazewarPacket.FIRE:
-                                    break;
-                                case MazewarPacket.KILLED:
-                                    break;
-                                default:
-                            }
-                            logger.info("broadcasting to " + entry.getKey() + " " + broadcastPacket.type);
-                            entry.getValue().writeObject(broadcastPacket);
+                        switch (broadcastPacket.type) {
+                            case MazewarPacket.REGISTER:
+                            case MazewarPacket.QUIT:
+                                if (broadcastPacket.owner.equals(entry.getKey()))
+                                    continue;
+                                break;
+                            case MazewarPacket.FIRE:
+                                break;
+                            case MazewarPacket.KILLED:
+                                break;
+                            default:
                         }
+                        logger.info("broadcasting to " + entry.getKey() + " " + broadcastPacket.type);
+                        entry.getValue().writeObject(broadcastPacket);
                     }
                 }
             }

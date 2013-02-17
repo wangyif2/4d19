@@ -52,6 +52,12 @@ public class Point implements Serializable {
         this.y = point.y;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        Point point = (Point) obj;
+        return (this.getX() == point.getX() && this.getY() == point.getY());
+    }
+
     /**
      * Obtain the X-coordinate of this {@link Point}.
      *
