@@ -376,22 +376,24 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
      * {@link Direction}.
      *
      * @param client   The {@link Client} to be move.
-     * @param newPoint The {@link Direction} to move.
+     * @param dp The {@link Direction} to move.
      * @return If the {@link Client} cannot move in that {@link Direction}
      *         for some reason, return <code>false</code>, otherwise return
      *         <code>true</code> indicating success.
      */
-    private synchronized boolean moveClient(Client client, DirectedPoint newPoint) {
+    private synchronized boolean moveClient(Client client, DirectedPoint dp) {
         Point oldPoint = getClientPoint(client);
         CellImpl oldCell = getCellImpl(oldPoint);
-        CellImpl newCell = getCellImpl(newPoint);
+        CellImpl newCell = getCellImpl(dp);
 
-        logger.info("Client " + client.getName() + " moving to direction " + newPoint.getDirection()
+        DirectedPoint newPoint = new DirectedPoint(dp,dp.getDirection());
+
+        logger.info("Client " + client.getName() + " moving to direction " + dp.getDirection()
                 + "with client orientation" + client.getOrientation());
 
-        clientMap.put(client, newPoint);
+        clientMap.put(client., newPoint);
 
-        logger.info("Client " + client.getName() + " after client map update " + newPoint.getDirection()
+        logger.info("Client " + client.getName() + " after client map update " + dp.getDirection()
                 + "with client orientation" + client.getOrientation());
 
         newCell.setContents(client);
@@ -399,7 +401,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
         update();
 
-        logger.info("Client " + client.getName() + " after update " + newPoint.getDirection()
+        logger.info("Client " + client.getName() + " after update " + dp.getDirection()
                 + "with client orientation" + client.getOrientation());
 
         return true;
