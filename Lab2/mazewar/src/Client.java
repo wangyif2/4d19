@@ -191,9 +191,25 @@ public abstract class Client {
     private void notifyServerMoveForward() {
         MazewarPacket toServer = new MazewarPacket();
 
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint.move(d), d);
+
+        logger.info("moveClient old: " + getName() +
+                "\n\tto old X: " + oldPoint.getX() +
+                "\n\tto old Y: " + oldPoint.getY() +
+                "\n\told orientation : " + d
+        );
+
+        logger.info("moveClient: " + getName() +
+                "\n\tto X: " + newDp.getX() +
+                "\n\tto Y: " + newDp.getY() +
+                "\n\torientation : " + newDp.getDirection()
+        );
+
         toServer.owner = getName();
         toServer.type = MazewarPacket.MOVE_FORWARD;
-        toServer.mazeMap.put(getName(), new DirectedPoint(getPoint(), getOrientation()));
+        toServer.mazeMap.put(getName(), newDp);
 
         try {
             Mazewar.out.writeObject(toServer);
@@ -205,9 +221,25 @@ public abstract class Client {
     private void notifyServerMoveBackward() {
         MazewarPacket toServer = new MazewarPacket();
 
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint.move(d.invert()), d);
+
+        logger.info("moveClient old: " + getName() +
+                "\n\tto old X: " + oldPoint.getX() +
+                "\n\tto old Y: " + oldPoint.getY() +
+                "\n\told orientation : " + d
+        );
+
+        logger.info("moveClient: " + getName() +
+                "\n\tto X: " + newDp.getX() +
+                "\n\tto Y: " + newDp.getY() +
+                "\n\torientation : " + newDp.getDirection()
+        );
+
         toServer.owner = getName();
         toServer.type = MazewarPacket.MOVE_BACKWARD;
-        toServer.mazeMap.put(getName(), new DirectedPoint(getPoint(), getOrientation()));
+        toServer.mazeMap.put(getName(), newDp);
 
         try {
             Mazewar.out.writeObject(toServer);

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -70,12 +71,23 @@ public class MazewarServerHandler extends Thread {
 
     private void moveClient(MazewarPacket fromClient) {
         String clientName = fromClient.owner;
+        DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
         logger.info("moveClient: " + clientName +
-                "\n\tto X: " + fromClient.mazeMap.get(clientName).getX() +
-                "\n\tto Y: " + fromClient.mazeMap.get(clientName).getY() +
-                "\n\torientation : " + fromClient.mazeMap.get(clientName).getDirection()
+                "\n\tto X: " + clientDp.getX() +
+                "\n\tto Y: " + clientDp.getY() +
+                "\n\torientation : " + clientDp.getDirection()
         );
 
+        for (Map.Entry<String, DirectedPoint> savedClient : MazewarServer.mazeMap.entrySet()) {
+            DirectedPoint savedClientDp = savedClient.getValue();
+            int savedClientX = savedClientDp.getX();
+            int savedClientY = savedClientDp.getY();
+
+            if (clientDp.getX() == savedClientX && clientDp.getY() == savedClientY)
+                return;
+        }
+
+        MazewarServer.mazeMap.put(clientName, clientDp);
         MazewarServer.actionQueue.add(fromClient);
     }
 
