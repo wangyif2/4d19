@@ -414,18 +414,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return true;
     }
 
-    private void handleMove(MazewarPacket fromServer) {
-        String clientName = fromServer.owner;
-
-        logger.info("moveClient: " + clientName +
-                "\n\tto X: " + fromServer.mazeMap.get(clientName).getX() +
-                "\n\tto Y: " + fromServer.mazeMap.get(clientName).getY() +
-                "\n\torientation : " + fromServer.mazeMap.get(clientName).getDirection()
-        );
-
-
-    }
-
     /**
      * Control loop for {@link Projectile}s.
      */
