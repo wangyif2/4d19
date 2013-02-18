@@ -327,6 +327,29 @@ public abstract class Client {
     }
 
     /**
+     * Quit the client from the game.
+     */
+    protected void quit() {
+        assert (maze != null);
+
+        logger.info("Notify server quiting");
+        notifyServerQuit();
+    }
+
+    private void notifyServerQuit() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.QUIT;
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Notify listeners that the client moved forward.
      */
     public void notifyMoveForward() {

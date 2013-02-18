@@ -475,6 +475,11 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                             c = getClientByName(fromServer.owner);
                             c.notifyTurnRight();
                             break;
+                        case MazewarPacket.QUIT:
+                            c = getClientByName(fromServer.owner);
+                            logger.info(fromServer.owner);
+                            removeClient(c);
+                            break;
                         default:
                             break;
                     }
