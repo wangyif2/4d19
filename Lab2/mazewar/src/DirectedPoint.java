@@ -25,13 +25,12 @@ USA.
  * @version $Id: DirectedPoint.java 339 2004-01-23 20:06:22Z geoffw $
  */
 
-//test
 public class DirectedPoint extends Point {
 
     /**
      * The {@link Direction}
      */
-    private final Direction direction;
+    private Direction direction;
 
     /**
      * Create a {@link DirectedPoint} from coordinates and a {@link Direction}.
@@ -76,6 +75,15 @@ public class DirectedPoint extends Point {
      * @return This {@link DirectedPoint}'s Cardinal {@link Direction}.
      */
     public Direction getDirection() {
-        return direction;
+        if (direction.equals(Direction.North)) {
+            return Direction.North;
+        } else if (direction.equals(Direction.South)) {
+            return Direction.South;
+        } else if (direction.equals(Direction.East)) {
+            return Direction.East;
+        } else if (direction.equals(Direction.West)) {
+            return Direction.West;
+        }
+        return null;
     }
 }

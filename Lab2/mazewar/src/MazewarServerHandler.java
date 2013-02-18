@@ -40,35 +40,33 @@ public class MazewarServerHandler extends Thread {
 
             MazewarPacket fromClient;
 
-            polling:
             while ((fromClient = (MazewarPacket) in.readObject()) != null) {
                 // Print the packet message on screen for now
                 switch (fromClient.type) {
-                    case MazewarPacket.ADD:
-                        boardcastAddClient(fromClient);
                     case MazewarPacket.REGISTER:
-                        //TODO: Handle client registration with same name
-                        out.writeObject(registerClient(fromClient));
+                        registerClient(fromClient);
                         break;
-                    case MazewarPacket.MOVE:
-                        if (isValidClientLocation(fromClient))
-                            updateClientLocation(fromClient);
+                    case MazewarPacket.ADD:
+                        addClient(fromClient);
+                        break;
+                    case MazewarPacket.MOVE_FORWARD:
+                    case MazewarPacket.MOVE_BACKWARD:
+                        moveClient(fromClient);
                         break;
                     case MazewarPacket.TURN_LEFT:
                     case MazewarPacket.TURN_RIGHT:
-                        updateClientLocation(fromClient);
-                        break;
-                    case MazewarPacket.FIRE:
-                        MazewarServer.actionQueue.add(fromClient);
-                        logger.info("ACTION: Firing!");
+                        rotateClient(fromClient);
                         break;
                     case MazewarPacket.QUIT:
                         quitClient(fromClient);
-                        break polling;
+                        break;
                     default:
                         logger.info("ERROR: Unrecognized packet!");
                 }
+                logger.info("Finished handling request type " + fromClient.type);
+                logger.info("Current number of connedtedClients: " + MazewarServer.connectedClients.size());
             }
+
 
             /* cleanup when client exits */
             in.close();
@@ -81,84 +79,89 @@ public class MazewarServerHandler extends Thread {
         }
     }
 
-    private void boardcastAddClient(MazewarPacket fromClient) throws IOException {
-        out.writeObject(addClient(fromClient));
-        MazewarServer.actionQueue.add(fromClient);
-    }
-
-    private MazewarPacket addClient(MazewarPacket fromClient) {
-        MazewarPacket toClient = new MazewarPacket();
-        String clientName = fromClient.owner;
-        DirectedPoint clientLocation = fromClient.mazeMap.get(fromClient.owner);
-
-        synchronized (this) {
-            if (MazewarServer.mazeMap.containsValue(clientLocation)) {
-                toClient.type = MazewarPacket.ERROR_DUPLICATED_LOCATION;
-            }
-            //all good, go ahead and add
-            else {
-                logger.info("ADDED: " + clientName + " at location " + clientLocation);
-                MazewarServer.mazeMap.put(clientName, clientLocation);
-
-                toClient.type = MazewarPacket.ADD_SUCCESS;
-            }
-
-            return toClient;
-        }
-    }
-
-    private MazewarPacket registerClient(MazewarPacket fromClient) {
-        MazewarPacket toClient = new MazewarPacket();
-        String clientName = fromClient.owner;
-
-        synchronized (this) {
-            //if client trying to register duplicated name
-            if (MazewarServer.connectedClients.containsKey(clientName)) {
-                toClient.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
-            }
-            //all good, go ahead and register
-            else {
-                logger.info("REGISTER: " + clientName);
-                MazewarServer.connectedClients.put(clientName, out);
-
-                toClient.type = MazewarPacket.REGISTER_SUCCESS;
-                toClient.mazeMap = MazewarServer.mazeMap;
-            }
-
-            return toClient;
-        }
-    }
-
-    private boolean isValidClientLocation(MazewarPacket fromClient) {
-        DirectedPoint clientLocation = fromClient.mazeMap.get(fromClient.owner);
-
-        logger.info("Client " + fromClient.owner + " facing " + clientLocation.getDirection());
-
-        for (Map.Entry<String, DirectedPoint> savedClient : MazewarServer.mazeMap.entrySet()) {
-            Point location = savedClient.getValue();
-            if (location.equals(clientLocation))
-                return false;
-        }
-        return true;
-    }
-
-    private void updateClientLocation(MazewarPacket fromClient) {
-        String clientName = fromClient.owner;
-        DirectedPoint clientLocation = fromClient.mazeMap.get(fromClient.owner);
-
-        MazewarServer.mazeMap.put(clientName, clientLocation);
-        MazewarServer.actionQueue.add(fromClient);
-    }
-
     private void quitClient(MazewarPacket fromClient) {
         synchronized (this) {
-            if (MazewarServer.connectedClients.containsKey(fromClient.owner))
-                MazewarServer.connectedClients.remove(fromClient.owner);
-            else
-                logger.info("Client " + fromClient.owner + " doesn't exists!");
+            String clientName = fromClient.owner;
+
+            MazewarServer.mazeMap.remove(clientName);
+            MazewarServer.connectedClients.remove(clientName);
+            MazewarServer.actionQueue.add(fromClient);
+
         }
-        MazewarServer.actionQueue.add(fromClient);
-        logger.info("ACTION: Quiting!");
-        logger.info(fromClient.owner + "Disconnected!");
+    }
+
+    private void rotateClient(MazewarPacket fromClient) {
+        synchronized (this) {
+            String clientName = fromClient.owner;
+            DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
+            logger.info("rotateClient: " + clientName +
+                    "\n\tto X: " + clientDp.getX() +
+                    "\n\tto Y: " + clientDp.getY() +
+                    "\n\torientation : " + clientDp.getDirection()
+            );
+
+            MazewarServer.mazeMap.put(clientName, clientDp);
+            MazewarServer.actionQueue.add(fromClient);
+        }
+    }
+
+    private void addClient(MazewarPacket fromClient) {
+        synchronized (this) {
+            String clientName = fromClient.owner;
+            DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
+            logger.info("addClient: " + clientName +
+                    "\n\tto X: " + clientDp.getX() +
+                    "\n\tto Y: " + clientDp.getY() +
+                    "\n\torientation : " + clientDp.getDirection()
+            );
+
+            MazewarServer.mazeMap.put(clientName, clientDp);
+            MazewarServer.actionQueue.add(fromClient);
+        }
+    }
+
+    private void moveClient(MazewarPacket fromClient) {
+        synchronized (this) {
+            String clientName = fromClient.owner;
+            DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
+            logger.info("moveClient: " + clientName +
+                    "\n\tto X: " + clientDp.getX() +
+                    "\n\tto Y: " + clientDp.getY() +
+                    "\n\torientation : " + clientDp.getDirection()
+            );
+
+            for (Map.Entry<String, DirectedPoint> savedClient : MazewarServer.mazeMap.entrySet()) {
+                DirectedPoint savedClientDp = savedClient.getValue();
+                int savedClientX = savedClientDp.getX();
+                int savedClientY = savedClientDp.getY();
+
+                if (clientDp.getX() == savedClientX && clientDp.getY() == savedClientY)
+                    return;
+            }
+
+            MazewarServer.mazeMap.put(clientName, clientDp);
+            MazewarServer.actionQueue.add(fromClient);
+        }
+    }
+
+    private void registerClient(MazewarPacket fromClient) {
+        synchronized (this) {
+            String clientName = fromClient.owner;
+
+            logger.info("registerClient: " + clientName);
+            MazewarServer.connectedClients.put(clientName, out);
+
+            MazewarPacket toClient = new MazewarPacket();
+            toClient.type = MazewarPacket.REGISTER_SUCCESS;
+            toClient.mazeMap = MazewarServer.mazeMap;
+            toClient.owner = fromClient.owner;
+
+            try {
+                out.writeObject(toClient
+                );
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

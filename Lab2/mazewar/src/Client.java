@@ -17,6 +17,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,6 +32,7 @@ import java.util.Iterator;
  * @version $Id: Client.java 343 2004-01-24 03:43:45Z geoffw $
  */
 public abstract class Client {
+    private static final Logger logger = LoggerFactory.getLogger(MazeImpl.class);
 
     /**
      * Register this {@link Client} as being contained by the specified
@@ -102,8 +107,8 @@ public abstract class Client {
     public void removeClientListener(ClientListener cl) {
         listenerSet.remove(cl);
     }
-
-    /* Internals ******************************************************/
+        
+        /* Internals ******************************************************/
 
     /**
      * The maze where the client is located.  <code>null</code> if not
@@ -137,10 +142,12 @@ public abstract class Client {
     protected boolean forward() {
         assert (maze != null);
 
-        if (maze.moveClientForward(this)) {
-            notifyMoveForward();
+        if (maze.isClientForwardValid(this)) {
+            logger.info("isClientForwardValid is true");
+            notifyServerMoveForward();
             return true;
         } else {
+            logger.info("isClientForwardValid is false");
             return false;
         }
     }
@@ -153,11 +160,73 @@ public abstract class Client {
     protected boolean backup() {
         assert (maze != null);
 
-        if (maze.moveClientBackward(this)) {
-            notifyMoveBackward();
+        if (maze.isClientBackwardValid(this)) {
+            logger.info("isClientBackwardValid is true");
+            notifyServerMoveBackward();
             return true;
         } else {
+            logger.info("isClientBackwardValid is false");
             return false;
+        }
+    }
+
+    private void notifyServerMoveForward() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint.move(d), d);
+
+        logger.info("moveClient old: " + getName() +
+                "\n\tto old X: " + oldPoint.getX() +
+                "\n\tto old Y: " + oldPoint.getY() +
+                "\n\told orientation : " + d
+        );
+
+        logger.info("moveClient: " + getName() +
+                "\n\tto X: " + newDp.getX() +
+                "\n\tto Y: " + newDp.getY() +
+                "\n\torientation : " + newDp.getDirection()
+        );
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.MOVE_FORWARD;
+        toServer.mazeMap.put(getName(), newDp);
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void notifyServerMoveBackward() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint.move(d.invert()), d);
+
+        logger.info("moveClient old: " + getName() +
+                "\n\tto old X: " + oldPoint.getX() +
+                "\n\tto old Y: " + oldPoint.getY() +
+                "\n\told orientation : " + d
+        );
+
+        logger.info("moveClient: " + getName() +
+                "\n\tto X: " + newDp.getX() +
+                "\n\tto Y: " + newDp.getY() +
+                "\n\torientation : " + newDp.getDirection()
+        );
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.MOVE_BACKWARD;
+        toServer.mazeMap.put(getName(), newDp);
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -165,14 +234,80 @@ public abstract class Client {
      * Turn the client ninety degrees counter-clockwise.
      */
     protected void turnLeft() {
-        notifyTurnLeft();
+        assert (maze != null);
+
+        logger.info("Notify server turning left");
+        notifyServerTurnLeft();
     }
 
     /**
      * Turn the client ninety degrees clockwise.
      */
     protected void turnRight() {
-        notifyTurnRight();
+        assert (maze != null);
+
+        logger.info("Notify server turning right");
+        notifyServerTurnRight();
+    }
+
+    private void notifyServerTurnLeft() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
+
+        logger.info("moveClient old: " + getName() +
+                "\n\tto old X: " + oldPoint.getX() +
+                "\n\tto old Y: " + oldPoint.getY() +
+                "\n\told orientation : " + d
+        );
+
+        logger.info("moveClient: " + getName() +
+                "\n\tto X: " + newDp.getX() +
+                "\n\tto Y: " + newDp.getY() +
+                "\n\torientation : " + newDp.getDirection()
+        );
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.TURN_LEFT;
+        toServer.mazeMap.put(getName(), newDp);
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void notifyServerTurnRight() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnRight());
+
+        logger.info("moveClient old: " + getName() +
+                "\n\tto old X: " + oldPoint.getX() +
+                "\n\tto old Y: " + oldPoint.getY() +
+                "\n\told orientation : " + d
+        );
+
+        logger.info("moveClient: " + getName() +
+                "\n\tto X: " + newDp.getX() +
+                "\n\tto Y: " + newDp.getY() +
+                "\n\torientation : " + newDp.getDirection()
+        );
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.TURN_RIGHT;
+        toServer.mazeMap.put(getName(), newDp);
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -191,32 +326,54 @@ public abstract class Client {
         }
     }
 
+    /**
+     * Quit the client from the game.
+     */
+    protected void quit() {
+        assert (maze != null);
+
+        logger.info("Notify server quiting");
+        notifyServerQuit();
+    }
+
+    private void notifyServerQuit() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.QUIT;
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Notify listeners that the client moved forward.
      */
-    private void notifyMoveForward() {
+    public void notifyMoveForward() {
         notifyListeners(ClientEvent.moveForward);
     }
 
     /**
      * Notify listeners that the client moved backward.
      */
-    private void notifyMoveBackward() {
+    public void notifyMoveBackward() {
         notifyListeners(ClientEvent.moveBackward);
     }
 
     /**
      * Notify listeners that the client turned right.
      */
-    private void notifyTurnRight() {
+    public void notifyTurnRight() {
         notifyListeners(ClientEvent.turnRight);
     }
 
     /**
      * Notify listeners that the client turned left.
      */
-    private void notifyTurnLeft() {
+    public void notifyTurnLeft() {
         notifyListeners(ClientEvent.turnLeft);
     }
 
