@@ -109,35 +109,35 @@ public class MazewarServerHandler extends Thread {
         synchronized (this) {
             String clientName = fromClient.owner;
             DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
-            logger.info("addClient: " + clientName);
-//                    "\n\tto X: " + clientDp.getX() +
-//                    "\n\tto Y: " + clientDp.getY() +
-//                    "\n\torientation : " + clientDp.getDirection()
-//            );
+            logger.info("addClient: " + clientName +
+                    "\n\tto X: " + clientDp.getX() +
+                    "\n\tto Y: " + clientDp.getY() +
+                    "\n\torientation : " + clientDp.getDirection()
+            );
 
             if (MazewarServer.mazeMap.containsKey(clientName)) {
                 logger.info("Duplicated Client: " + clientName);
 
                 DirectedPoint savedDp = MazewarServer.mazeMap.get(clientName);
 
-                MazewarPacket toServer = new MazewarPacket();
-                toServer.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
-                toServer.owner = clientName;
-                toServer.mazeMap.put(clientName, savedDp);
+                MazewarPacket replyPacket = new MazewarPacket();
+                replyPacket.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
+                replyPacket.owner = clientName;
+                replyPacket.mazeMap.put(clientName, savedDp);
 
                 try {
-                    out.writeObject(toServer);
+                    out.writeObject(replyPacket);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else {
                 logger.info("Add Success Client: " + clientName);
-                MazewarPacket toServer = new MazewarPacket();
-                toServer.type = MazewarPacket.ADD_SUCCESS;
-                toServer.owner = clientName;
+                MazewarPacket replyPacket = new MazewarPacket();
+                replyPacket.type = MazewarPacket.ADD_SUCCESS;
+                replyPacket.owner = clientName;
 
                 try {
-                    out.writeObject(toServer);
+                    out.writeObject(replyPacket);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -179,14 +179,13 @@ public class MazewarServerHandler extends Thread {
             logger.info("registerClient: " + clientName);
             MazewarServer.connectedClients.put(clientName, out);
 
-            MazewarPacket toClient = new MazewarPacket();
-            toClient.type = MazewarPacket.REGISTER_SUCCESS;
-            toClient.mazeMap = MazewarServer.mazeMap;
-            toClient.owner = fromClient.owner;
+            MazewarPacket replyPacket = new MazewarPacket();
+            replyPacket.type = MazewarPacket.REGISTER_SUCCESS;
+            replyPacket.mazeMap = MazewarServer.mazeMap;
+            replyPacket.owner = fromClient.owner;
 
             try {
-                out.writeObject(toClient
-                );
+                out.writeObject(replyPacket);
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -22,7 +22,7 @@ public class MazewarServerBroadcast extends Thread {
                     for (Map.Entry<String, ObjectOutputStream> entry : MazewarServer.connectedClients.entrySet()) {
                         switch (broadcastPacket.type) {
                             case MazewarPacket.ADD:
-                                if (broadcastPacket.owner.equals(entry.getKey()))
+                                if (broadcastPacket.sender.equals(entry.getKey()))
                                     continue;
                                 break;
                             default:

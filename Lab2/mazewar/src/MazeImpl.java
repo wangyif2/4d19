@@ -218,17 +218,20 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     private MazewarPacket addClientToServer(Client client, DirectedPoint directedPoint) {
         MazewarPacket toServer = new MazewarPacket();
 
+        toServer.sender = Mazewar.myName;
         toServer.owner = client.getName();
         toServer.type = MazewarPacket.ADD;
         toServer.mazeMap.put(client.getName(), directedPoint);
 
-        try {
-            Mazewar.out.writeObject(toServer);
-            return (MazewarPacket) Mazewar.in.readObject();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        synchronized (this) {
+            try {
+                Mazewar.out.writeObject(toServer);
+                return (MazewarPacket) Mazewar.in.readObject();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -292,14 +295,14 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         Point point = getClientPoint(client);
         Direction d = getClientOrientation(client);
         CellImpl cell = getCellImpl(point);
-                
-                /* Check that you can fire in that direction */
+
+        /* Check that you can fire in that direction */
         if (cell.isWall(d)) {
             return false;
         }
 
         DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
-                /* Is the point withint the bounds of maze? */
+        /* Is the point withint the bounds of maze? */
         assert (checkBounds(newPoint));
 
         CellImpl newCell = getCellImpl(newPoint);
@@ -319,8 +322,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
         clientFired.add(client);
         Projectile prj = new Projectile(client);
-                
-                /* Write the new cell */
+
+        /* Write the new cell */
         projectileMap.put(prj, newPoint);
         newCell.setContents(prj);
         notifyClientFired(client);
@@ -338,19 +341,19 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         Point oldPoint = getClientPoint(client);
         CellImpl oldCell = getCellImpl(oldPoint);
 
-                /* Check that you can move in the given direction */
+        /* Check that you can move in the given direction */
         if (oldCell.isWall(d)) {
-                        /* Move failed */
+            /* Move failed */
             return false;
         }
 
         DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
 
-                /* Is the point withint the bounds of maze? */
+        /* Is the point withint the bounds of maze? */
         assert (checkBounds(newPoint));
         CellImpl newCell = getCellImpl(newPoint);
         if (newCell.getContents() != null) {
-                        /* Move failed */
+            /* Move failed */
             return false;
         }
         return true;
@@ -366,19 +369,19 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         Point oldPoint = getClientPoint(client);
         CellImpl oldCell = getCellImpl(oldPoint);
 
-                /* Check that you can move in the given direction */
+        /* Check that you can move in the given direction */
         if (oldCell.isWall(d)) {
-                        /* Move failed */
+            /* Move failed */
             return false;
         }
 
         DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
 
-                /* Is the point withint the bounds of maze? */
+        /* Is the point withint the bounds of maze? */
         assert (checkBounds(newPoint));
         CellImpl newCell = getCellImpl(newPoint);
         if (newCell.getContents() != null) {
-                        /* Move failed */
+            /* Move failed */
             return false;
         }
         return true;
@@ -416,28 +419,28 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         Point oldPoint = getClientPoint(client);
         CellImpl oldCell = getCellImpl(oldPoint);
 
-                /* Check that you can move in the given direction */
+        /* Check that you can move in the given direction */
         if (oldCell.isWall(d)) {
-                        /* Move failed */
+            /* Move failed */
             clientMap.put(client, oldPoint);
             return false;
         }
 
         DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
 
-                /* Is the point withint the bounds of maze? */
+        /* Is the point withint the bounds of maze? */
         assert (checkBounds(newPoint));
         CellImpl newCell = getCellImpl(newPoint);
         if (newCell.getContents() != null) {
-                        /* Move failed */
+            /* Move failed */
             clientMap.put(client, oldPoint);
             return false;
         }
 
-                /* Write the new cell */
+        /* Write the new cell */
         clientMap.put(client, newPoint);
         newCell.setContents(client);
-                /* Clear the old cell */
+        /* Clear the old cell */
         oldCell.setContents(null);
 
         update();
@@ -574,7 +577,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         }
     }
 
-        /* Internals */
+    /* Internals */
 
     private synchronized Collection moveProjectile(Projectile prj) {
         Collection deadPrj = new LinkedList();
@@ -585,8 +588,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         DirectedPoint dp = (DirectedPoint) o;
         Direction d = dp.getDirection();
         CellImpl cell = getCellImpl(dp);
-                
-                /* Check for a wall */
+
+        /* Check for a wall */
         if (cell.isWall(d)) {
             // If there is a wall, the projectile goes away.
             cell.setContents(null);
@@ -596,7 +599,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         }
 
         DirectedPoint newPoint = new DirectedPoint(dp.move(d), d);
-                /* Is the point within the bounds of maze? */
+        /* Is the point within the bounds of maze? */
         assert (checkBounds(newPoint));
 
         CellImpl newCell = getCellImpl(newPoint);
@@ -621,9 +624,9 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             }
         }
 
-                /* Clear the old cell */
+        /* Clear the old cell */
         cell.setContents(null);
-                /* Write the new cell */
+        /* Write the new cell */
         projectileMap.put(prj, newPoint);
         newCell.setContents(prj);
         update();
@@ -865,11 +868,11 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             } else if (d.equals(Direction.West)) {
                 return 3;
             }
-                        /* Impossible */
+            /* Impossible */
             return -1;
         }
-                
-                /* Required for the abstract implementation */
+
+        /* Required for the abstract implementation */
 
         public boolean isWall(Direction d) {
             assert (d != null);
@@ -879,8 +882,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         public synchronized Object getContents() {
             return this.contents;
         }
-                
-                /* Internals used by MazeImpl */
+
+        /* Internals used by MazeImpl */
 
         /**
          * Indicate that this {@link Cell} has been
