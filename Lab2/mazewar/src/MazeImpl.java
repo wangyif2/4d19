@@ -366,6 +366,93 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return true;
     }
 
+    /**
+     * Internal helper for handling the death of a {@link Client}.
+     *
+     * @param source The {@link Client} that fired the projectile.
+     * @param target The {@link Client} that was killed.
+     */
+    private synchronized void killClient(Client source, Client target) {
+        assert (source != null);
+        assert (target != null);
+
+        // if remote client kills someone, process it on the server
+        if (source instanceof RemoteClient)
+            return;
+
+        Mazewar.consolePrintLn(source.getName() + " just vaporized " +
+                target.getName());
+        Object o = clientMap.remove(target);
+        assert (o instanceof Point);
+        Point point = (Point) o;
+        CellImpl cell = getCellImpl(point);
+        cell.setContents(null);
+        // Pick a random starting point, and check to see if it is already occupied
+        point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
+        cell = getCellImpl(point);
+        // Repeat until we find an empty cell
+        while (cell.getContents() != null) {
+            point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
+            cell = getCellImpl(point);
+        }
+        Direction d = Direction.random();
+        while (cell.isWall(d)) {
+            d = Direction.random();
+        }
+        cell.setContents(target);
+
+        clientMap.put(target, new DirectedPoint(point, d));
+
+        notifyServerKillClient(source, target);
+
+        update();
+        notifyClientKilled(source, target);
+    }
+
+    private synchronized void killClient(Client source, Client target, DirectedPoint newLocation) {
+        assert (source != null);
+        assert (target != null);
+
+        Mazewar.consolePrintLn(source.getName() + " just vaporized " +
+                target.getName());
+        Object o = clientMap.remove(target);
+        assert (o instanceof Point);
+        Point point = (Point) o;
+        CellImpl cell = getCellImpl(point);
+        cell.setContents(null);
+
+        // set the reSpawning location to what the server passed in
+        point = newLocation;
+        Direction d = newLocation.getDirection();
+        cell = getCellImpl(point);
+        cell.setContents(target);
+
+        clientMap.put(target, new DirectedPoint(point, d));
+        update();
+        notifyClientKilled(source, target);
+    }
+
+    private void notifyServerKillClient(Client source, Client target) {
+        MazewarPacket toServer = new MazewarPacket();
+
+        toServer.sender = Mazewar.myName;
+        toServer.owner = source.getName();
+        toServer.killed = target.getName();
+        toServer.type = MazewarPacket.KILLED;
+
+        toServer.mazeMap.put(target.getName(), new DirectedPoint(target.getPoint(), getClientOrientation(target)));
+
+        logger.info("Notifying Server Target " + target.getName() + " is killed" +
+                "\n\t reSpawning at location " + target.getPoint().getX() + " " +
+                target.getPoint().getY() + " " + getClientOrientation(target));
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public synchronized boolean isClientForwardValid(Client client) {
         assert (client != null);
         Object o = clientMap.get(client);
@@ -532,6 +619,10 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                             if (c != null && clientFire(c))
                                 c.notifyFire();
                             break;
+                        case MazewarPacket.KILLED:
+                            logger.info(fromServer.killed + " is killed by " + fromServer.owner + " on " + fromServer.sender);
+                            killClient(getClientByName(fromServer.owner), getClientByName(fromServer.killed), fromServer.mazeMap.get(fromServer.killed));
+                            break;
                         case MazewarPacket.QUIT:
                             c = getClientByName(fromServer.owner);
                             logger.info(fromServer.owner + " quitting");
@@ -684,40 +775,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         newCell.setContents(prj);
         update();
         return deadPrj;
-    }
-
-    /**
-     * Internal helper for handling the death of a {@link Client}.
-     *
-     * @param source The {@link Client} that fired the projectile.
-     * @param target The {@link Client} that was killed.
-     */
-    private synchronized void killClient(Client source, Client target) {
-        assert (source != null);
-        assert (target != null);
-        Mazewar.consolePrintLn(source.getName() + " just vaporized " +
-                target.getName());
-        Object o = clientMap.remove(target);
-        assert (o instanceof Point);
-        Point point = (Point) o;
-        CellImpl cell = getCellImpl(point);
-        cell.setContents(null);
-        // Pick a random starting point, and check to see if it is already occupied
-        point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
-        cell = getCellImpl(point);
-        // Repeat until we find an empty cell
-        while (cell.getContents() != null) {
-            point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
-            cell = getCellImpl(point);
-        }
-        Direction d = Direction.random();
-        while (cell.isWall(d)) {
-            d = Direction.random();
-        }
-        cell.setContents(target);
-        clientMap.put(target, new DirectedPoint(point, d));
-        update();
-        notifyClientKilled(source, target);
     }
 
     /**

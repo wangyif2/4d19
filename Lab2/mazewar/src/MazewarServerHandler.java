@@ -60,6 +60,9 @@ public class MazewarServerHandler extends Thread {
                     case MazewarPacket.FIRE:
                         firedClient(fromClient);
                         break;
+                    case MazewarPacket.KILLED:
+                        killClient(fromClient);
+                        break;
                     case MazewarPacket.QUIT:
                         quitClient(fromClient);
                         break;
@@ -82,8 +85,21 @@ public class MazewarServerHandler extends Thread {
         }
     }
 
+    private void killClient(MazewarPacket fromClient) {
+        synchronized (this) {
+            String srcClientName = fromClient.owner;
+            String tgtClientName = fromClient.killed;
+            DirectedPoint tgtClientLoc = fromClient.mazeMap.get(tgtClientName);
+
+            logger.info("Client " + srcClientName + " killed " + tgtClientName + " on sender " + fromClient.sender
+                    + "reSpawn location " + tgtClientLoc.getX() + " " + tgtClientLoc.getY() + " " + tgtClientLoc.getDirection());
+            MazewarServer.mazeMap.put(tgtClientName, tgtClientLoc);
+            MazewarServer.actionQueue.add(fromClient);
+        }
+    }
+
     private void firedClient(MazewarPacket fromClient) {
-        synchronized (this){
+        synchronized (this) {
             String clientName = fromClient.owner;
 
             logger.info("Client " + clientName + " fired on sender " + fromClient.sender);
