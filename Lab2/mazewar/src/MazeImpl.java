@@ -466,35 +466,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                             logger.info("add remote client: "
                                     + "\n\t" + p.getX() + " " + p.getY()
                                     + "\n\t" + d);
-                            Direction dd = null;
 
-                            if (d.equals(Direction.North)) {
-                                logger.info("North");
-                                dd = Direction.North;
-                            } else if (d.equals(Direction.South)) {
-                                logger.info("South");
-                                dd = Direction.South;
-                            } else if (d.equals(Direction.East)) {
-                                logger.info("East");
-                                dd = Direction.East;
-                            } else if (d.equals(Direction.West)) {
-                                logger.info("West");
-                                dd = Direction.West;
-                            }
-
-                            assert (dd != null);
-                            addClient(new RemoteClient(fromServer.owner), new DirectedPoint(p, dd));
-
-//                            assert (dd != null);
-//                            logger.info(dd.toString());
-//
-//                            RemoteClient testClient = new RemoteClient("test");
-//                            testCell.setContents(testClient);
-//                            clientMap.put(testClient, new DirectedPoint(p.move(Direction.North), dd));
-//                            testClient.registerMaze(this);
-//                            testClient.addClientListener(this);
-//                            update();
-//                            notifyClientAdd(testClient);
+                            addClient(new RemoteClient(fromServer.owner), new DirectedPoint(p, d));
                             break;
                         case MazewarPacket.MOVE_FORWARD:
                             c = getClientByName(fromServer.owner);

@@ -46,7 +46,7 @@ public class Direction implements Serializable {
         /**
          * The internal representation
          */
-        private final int direction;
+        private int direction;
    
         /** 
          * Create a new direction from an internal representation
