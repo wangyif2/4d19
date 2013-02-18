@@ -17,10 +17,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Map;
 
 /**
@@ -32,7 +38,7 @@ import java.util.Map;
  */
 
 public class Mazewar extends JFrame {
-
+    private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
     public static Socket playerSocket = null;
     public static ObjectOutputStream out;
     public static ObjectInputStream in;
@@ -122,7 +128,6 @@ public class Mazewar extends JFrame {
      * The place where all the pieces are put together.
      */
     public Mazewar(String hostname, int port) {
-
         super("ECE419 Mazewar");
         consolePrintLn("ECE419 Mazewar started!");
 
@@ -144,7 +149,7 @@ public class Mazewar extends JFrame {
 
         // You may want to put your network initialization code somewhere in
         // here.
-        /* Connect to server */
+
         try {
             playerSocket = new Socket(hostname, port);
 
@@ -152,9 +157,6 @@ public class Mazewar extends JFrame {
             out = new ObjectOutputStream(playerSocket.getOutputStream());
             /* stream to read from server */
             in = new ObjectInputStream(playerSocket.getInputStream());
-
-            // Start the maze thread to poll for updates
-            //maze.startThread();
 
             // Send register packet to server
             MazewarPacket toServer = new MazewarPacket();
@@ -164,8 +166,8 @@ public class Mazewar extends JFrame {
 
             out.writeObject(toServer);
             fromServer = (MazewarPacket) in.readObject();
-            // TODO: add existing clients to clientMap using mazemap from packet
-            syncClientsFromServer(fromServer);
+
+            syncClientFromServer(fromServer);
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -187,15 +189,15 @@ public class Mazewar extends JFrame {
 
         // Use braces to force constructors not to be called at the beginning of the
         // constructor.
-//        {
-//            // TODO: Register before adding
-//            maze.addClient(new RobotClient("Norby"));
-//            maze.addClient(new RobotClient("Robbie"));
-//            maze.addClient(new RobotClient("Clango"));
-//            maze.addClient(new RobotClient("Marvin"));
-//        }
+//                {
+//                        maze.addClient(new RobotClient("Norby"));
+//                        maze.addClient(new RobotClient("Robbie"));
+//                        maze.addClient(new RobotClient("Clango"));
+//                        maze.addClient(new RobotClient("Marvin"));
+//                }
 
-        maze.startThread();
+        maze.threadStart();
+
 
         // Create the panel that will display the maze.
         overheadPanel = new OverheadMazePanel(maze, guiClient);
@@ -256,17 +258,15 @@ public class Mazewar extends JFrame {
         this.requestFocusInWindow();
     }
 
-    private void syncClientsFromServer(MazewarPacket fromServer) {
-        DirectedPoint savedClientDp;
-        String savedClientName;
-        for (Map.Entry<String,DirectedPoint> savedClient: fromServer.mazeMap.entrySet()) {
-            savedClientName = savedClient.getKey();
-            savedClientDp = savedClient.getValue();
+    private void syncClientFromServer(MazewarPacket fromServer) {
+        for (Map.Entry<String, DirectedPoint> savedCLient : fromServer.mazeMap.entrySet()) {
+            Point p = savedCLient.getValue();
+            Direction d = savedCLient.getValue().getDirection();
 
-            maze.addClient(new RemoteClient(savedClientName), savedClientDp);
+            logger.info("syncClientFromServer: " + savedCLient.getKey() + " " + savedCLient.getValue().getDirection());
+            maze.addClient(new RemoteClient(savedCLient.getKey()), new DirectedPoint(p, d));
         }
     }
-
 
     /**
      * Entry point for the game.
