@@ -20,6 +20,14 @@ public class MazewarServerBroadcast extends Thread {
             while (true) {
                 while ((broadcastPacket = MazewarServer.actionQueue.poll()) != null) {
                     for (Map.Entry<String, ObjectOutputStream> entry : MazewarServer.connectedClients.entrySet()) {
+                        switch (broadcastPacket.type) {
+                            case MazewarPacket.ADD:
+                                if (broadcastPacket.owner.equals(entry.getKey()))
+                                    continue;
+                                break;
+                            default:
+                                break;
+                        }
                         logger.info("broadcasting to " + entry.getKey() + " " + broadcastPacket.type);
                         entry.getValue().writeObject(broadcastPacket);
                     }

@@ -65,6 +65,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
         // Build the maze starting at the corner
         buildMaze(new Point(0, 0));
+
+        randomGen = new Random();
     }
 
     public void threadStart() {
@@ -197,7 +199,27 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
             cell = getCellImpl(point);
         }
-        addClient(client, point);
+        Direction d = Direction.random();
+        while (cell.isWall(d)) {
+            d = Direction.random();
+        }
+
+        addClientToServer(client, new DirectedPoint(point, d));
+        addClient(client, new DirectedPoint(point, d));
+    }
+
+    private void addClientToServer(Client client, DirectedPoint directedPoint) {
+        MazewarPacket toServer = new MazewarPacket();
+
+        toServer.owner = client.getName();
+        toServer.type = MazewarPacket.ADD;
+        toServer.mazeMap.put(client.getName(), directedPoint);
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -206,16 +228,13 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
      * @param client The {@link Client} to be added.
      * @param point  The location the {@link Client} should be added.
      */
-    private synchronized void addClient(Client client, Point point) {
+    public synchronized void addClient(Client client, DirectedPoint point) {
         assert (client != null);
         assert (checkBounds(point));
         CellImpl cell = getCellImpl(point);
-        Direction d = Direction.random();
-        while (cell.isWall(d)) {
-            d = Direction.random();
-        }
+
         cell.setContents(client);
-        clientMap.put(client, new DirectedPoint(point, d));
+        clientMap.put(client, point);
         client.registerMaze(this);
         client.addClientListener(this);
         update();
@@ -440,14 +459,51 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             try {
                 while ((fromServer = (MazewarPacket) Mazewar.in.readObject()) != null) {
                     switch (fromServer.type) {
+                        case MazewarPacket.ADD:
+                            Point p = fromServer.mazeMap.get(fromServer.owner);
+                            Direction d = fromServer.mazeMap.get(fromServer.owner).getDirection();
+
+                            logger.info("add remote client: "
+                                    + "\n\t" + p.getX() + " " + p.getY()
+                                    + "\n\t" + d);
+                            Direction dd = null;
+
+                            if (d.equals(Direction.North)) {
+                                logger.info("North");
+                                dd = Direction.North;
+                            } else if (d.equals(Direction.South)) {
+                                logger.info("South");
+                                dd = Direction.South;
+                            } else if (d.equals(Direction.East)) {
+                                logger.info("East");
+                                dd = Direction.East;
+                            } else if (d.equals(Direction.West)) {
+                                logger.info("West");
+                                dd = Direction.West;
+                            }
+
+                            assert (dd != null);
+                            addClient(new RemoteClient(fromServer.owner), new DirectedPoint(p, dd));
+
+//                            assert (dd != null);
+//                            logger.info(dd.toString());
+//
+//                            RemoteClient testClient = new RemoteClient("test");
+//                            testCell.setContents(testClient);
+//                            clientMap.put(testClient, new DirectedPoint(p.move(Direction.North), dd));
+//                            testClient.registerMaze(this);
+//                            testClient.addClientListener(this);
+//                            update();
+//                            notifyClientAdd(testClient);
+                            break;
                         case MazewarPacket.MOVE_FORWARD:
                             c = getClientByName(fromServer.owner);
-                            if (moveClientForward(c))
+                            if (c != null && moveClientForward(c))
                                 c.notifyMoveForward();
                             break;
                         case MazewarPacket.MOVE_BACKWARD:
                             c = getClientByName(fromServer.owner);
-                            if (moveClientBackward(c))
+                            if (c != null && moveClientBackward(c))
                                 c.notifyMoveBackward();
                             break;
                         default:
@@ -503,9 +559,10 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         while (it.hasNext()) {
             nextClient = (Client) it.next();
             if (nextClient.getName().equals(name))
-                break;
+                return nextClient;
+
         }
-        return nextClient;
+        return null;
     }
 
     public void addMazeListener(MazeListener ml) {
@@ -653,7 +710,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     /**
      * The random number generator used by the {@link Maze}.
      */
-    private final Random randomGen;
+    private Random randomGen;
 
     /**
      * The maximum X coordinate of the {@link Maze}.

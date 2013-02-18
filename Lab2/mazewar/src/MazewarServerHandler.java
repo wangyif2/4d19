@@ -46,6 +46,9 @@ public class MazewarServerHandler extends Thread {
                     case MazewarPacket.REGISTER:
                         registerClient(fromClient);
                         break;
+                    case MazewarPacket.ADD:
+                        addClient(fromClient);
+                        break;
                     case MazewarPacket.MOVE_FORWARD:
                     case MazewarPacket.MOVE_BACKWARD:
                         moveClient(fromClient);
@@ -67,6 +70,19 @@ public class MazewarServerHandler extends Thread {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private void addClient(MazewarPacket fromClient) {
+        String clientName = fromClient.owner;
+        DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
+        logger.info("addClient: " + clientName +
+                "\n\tto X: " + clientDp.getX() +
+                "\n\tto Y: " + clientDp.getY() +
+                "\n\torientation : " + clientDp.getDirection()
+        );
+
+        MazewarServer.mazeMap.put(clientName, clientDp);
+        MazewarServer.actionQueue.add(fromClient);
     }
 
     private void moveClient(MazewarPacket fromClient) {
@@ -97,6 +113,18 @@ public class MazewarServerHandler extends Thread {
 
             logger.info("registerClient: " + clientName);
             MazewarServer.connectedClients.put(clientName, out);
+
+            MazewarPacket toClient = new MazewarPacket();
+            toClient.type = MazewarPacket.REGISTER_SUCCESS;
+            toClient.mazeMap = MazewarServer.mazeMap;
+            toClient.owner = fromClient.owner;
+
+            try {
+                out.writeObject(toClient
+                );
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

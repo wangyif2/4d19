@@ -17,6 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -24,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Map;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -34,6 +38,7 @@ import java.net.UnknownHostException;
  */
 
 public class Mazewar extends JFrame {
+    private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
     public static Socket playerSocket = null;
     public static ObjectOutputStream out;
     public static ObjectInputStream in;
@@ -245,6 +250,13 @@ public class Mazewar extends JFrame {
         setVisible(true);
         overheadPanel.repaint();
         this.requestFocusInWindow();
+    }
+
+    private void syncClientFromServer(MazewarPacket fromServer) {
+        for (Map.Entry<String, DirectedPoint> savedCLient : fromServer.mazeMap.entrySet()) {
+            logger.info("syncClientFromServer: " + savedCLient.getKey() + " " + savedCLient.getValue().getDirection());
+            maze.addClient(new RemoteClient(savedCLient.getKey()), savedCLient.getValue());
+        }
     }
 
 
