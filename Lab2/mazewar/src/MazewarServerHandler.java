@@ -59,6 +59,7 @@ public class MazewarServerHandler extends Thread {
                         break;
                     case MazewarPacket.FIRE:
                         firedClient(fromClient);
+                        break;
                     case MazewarPacket.QUIT:
                         quitClient(fromClient);
                         break;
@@ -84,7 +85,9 @@ public class MazewarServerHandler extends Thread {
     private void firedClient(MazewarPacket fromClient) {
         synchronized (this){
             String clientName = fromClient.owner;
-            logger.info("Client ");
+
+            logger.info("Client " + clientName + " fired on sender " + fromClient.sender);
+            MazewarServer.actionQueue.add(fromClient);
         }
     }
 

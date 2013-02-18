@@ -284,6 +284,41 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         notifyClientRemove(client);
     }
 
+    public synchronized boolean isClientFireValid(Client client) {
+        assert (client != null);
+        // If the client already has a projectile in play
+        // fail.
+        if (clientFired.contains(client)) {
+            return false;
+        }
+
+        Point point = getClientPoint(client);
+        Direction d = getClientOrientation(client);
+        CellImpl cell = getCellImpl(point);
+
+        /* Check that you can fire in that direction */
+        if (cell.isWall(d)) {
+            return false;
+        }
+
+        DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
+        /* Is the point withint the bounds of maze? */
+        assert (checkBounds(newPoint));
+
+        CellImpl newCell = getCellImpl(newPoint);
+        Object contents = newCell.getContents();
+        if (contents != null) {
+            // If it is a Client, kill it outright
+            if (contents instanceof Client) {
+                return true;
+            } else {
+                // Otherwise fail (bullets will destroy each other)
+                return false;
+            }
+        }
+        return true;
+    }
+
     public synchronized boolean clientFire(Client client) {
         assert (client != null);
         // If the client already has a projectile in play
@@ -491,9 +526,15 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                             c = getClientByName(fromServer.owner);
                             c.notifyTurnRight();
                             break;
+                        case MazewarPacket.FIRE:
+                            logger.info(fromServer.owner + " fired");
+                            c = getClientByName(fromServer.owner);
+                            if (c != null && clientFire(c))
+                                c.notifyFire();
+                            break;
                         case MazewarPacket.QUIT:
                             c = getClientByName(fromServer.owner);
-                            logger.info(fromServer.owner);
+                            logger.info(fromServer.owner + " quitting");
                             removeClient(c);
                             break;
                         default:

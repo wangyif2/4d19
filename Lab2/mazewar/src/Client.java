@@ -322,11 +322,35 @@ public abstract class Client {
     protected boolean fire() {
         assert (maze != null);
 
-        if (maze.clientFire(this)) {
-            notifyFire();
+        if (maze.isClientFireValid(this)) {
+            notifyServerFire();
+            logger.info("Client fired: " + getName() +
+                    "\n\tSender: " + Mazewar.myName);
             return true;
         } else {
+            logger.info("Cant fire");
             return false;
+        }
+
+//        if (maze.clientFire(this)) {
+//            notifyFire();
+//            return true;
+//        } else {
+//            return false;
+//        }
+    }
+
+    private void notifyServerFire() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        toServer.sender = Mazewar.myName;
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.FIRE;
+
+        try {
+            Mazewar.out.writeObject(toServer);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -385,7 +409,7 @@ public abstract class Client {
     /**
      * Notify listeners that the client fired.
      */
-    private void notifyFire() {
+    public void notifyFire() {
         notifyListeners(ClientEvent.fire);
     }
 
