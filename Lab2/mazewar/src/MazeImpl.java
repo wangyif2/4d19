@@ -223,7 +223,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         toServer.type = MazewarPacket.ADD;
         toServer.mazeMap.put(client.getName(), directedPoint);
 
-        synchronized (this) {
+        synchronized (Mazewar.out) {
             try {
                 Mazewar.out.writeObject(toServer);
                 return (MazewarPacket) Mazewar.in.readObject();
