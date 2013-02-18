@@ -453,6 +453,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
         MazewarPacket fromServer;
         Client c;
+        new Thread(new ProjectileThread()).start();
+
         while (true) {
             assert (Mazewar.in != null);
             try {
@@ -500,6 +502,16 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private class ProjectileThread implements Runnable {
+
+        @Override
+        public void run() {
+            while (true) {
+                handleProjectile();
             }
         }
     }

@@ -57,6 +57,8 @@ public class MazewarServerHandler extends Thread {
                     case MazewarPacket.TURN_RIGHT:
                         rotateClient(fromClient);
                         break;
+                    case MazewarPacket.FIRE:
+                        firedClient(fromClient);
                     case MazewarPacket.QUIT:
                         quitClient(fromClient);
                         break;
@@ -76,6 +78,13 @@ public class MazewarServerHandler extends Thread {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void firedClient(MazewarPacket fromClient) {
+        synchronized (this){
+            String clientName = fromClient.owner;
+            logger.info("Client ");
         }
     }
 
