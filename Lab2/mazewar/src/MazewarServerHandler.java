@@ -109,14 +109,42 @@ public class MazewarServerHandler extends Thread {
         synchronized (this) {
             String clientName = fromClient.owner;
             DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
-            logger.info("addClient: " + clientName +
-                    "\n\tto X: " + clientDp.getX() +
-                    "\n\tto Y: " + clientDp.getY() +
-                    "\n\torientation : " + clientDp.getDirection()
-            );
+            logger.info("addClient: " + clientName);
+//                    "\n\tto X: " + clientDp.getX() +
+//                    "\n\tto Y: " + clientDp.getY() +
+//                    "\n\torientation : " + clientDp.getDirection()
+//            );
 
-            MazewarServer.mazeMap.put(clientName, clientDp);
-            MazewarServer.actionQueue.add(fromClient);
+            if (MazewarServer.mazeMap.containsKey(clientName)) {
+                logger.info("Duplicated Client: " + clientName);
+
+                DirectedPoint savedDp = MazewarServer.mazeMap.get(clientName);
+
+                MazewarPacket toServer = new MazewarPacket();
+                toServer.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
+                toServer.owner = clientName;
+                toServer.mazeMap.put(clientName, savedDp);
+
+                try {
+                    out.writeObject(toServer);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                logger.info("Add Success Client: " + clientName);
+                MazewarPacket toServer = new MazewarPacket();
+                toServer.type = MazewarPacket.ADD_SUCCESS;
+                toServer.owner = clientName;
+
+                try {
+                    out.writeObject(toServer);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                MazewarServer.mazeMap.put(clientName, clientDp);
+                MazewarServer.actionQueue.add(fromClient);
+            }
         }
     }
 

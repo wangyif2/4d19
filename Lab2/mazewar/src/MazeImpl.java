@@ -204,11 +204,18 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             d = Direction.random();
         }
 
-        addClientToServer(client, new DirectedPoint(point, d));
-        addClient(client, new DirectedPoint(point, d));
+        MazewarPacket fromServer = addClientToServer(client, new DirectedPoint(point, d));
+        if (fromServer.type == MazewarPacket.ADD_SUCCESS) {
+            addClient(client, new DirectedPoint(point, d));
+        } else if (fromServer.type == MazewarPacket.ERROR_DUPLICATED_CLIENT) {
+            Point p = fromServer.mazeMap.get(client.getName());
+            Direction dd = fromServer.mazeMap.get(client.getName()).getDirection();
+
+            addClient(new RemoteClient(client.getName()), new DirectedPoint(p, dd));
+        }
     }
 
-    private void addClientToServer(Client client, DirectedPoint directedPoint) {
+    private MazewarPacket addClientToServer(Client client, DirectedPoint directedPoint) {
         MazewarPacket toServer = new MazewarPacket();
 
         toServer.owner = client.getName();
@@ -217,9 +224,13 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
         try {
             Mazewar.out.writeObject(toServer);
+            return (MazewarPacket) Mazewar.in.readObject();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     /**
