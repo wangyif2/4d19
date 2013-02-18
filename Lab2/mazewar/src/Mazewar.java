@@ -39,6 +39,7 @@ import java.util.Map;
 
 public class Mazewar extends JFrame {
     private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
+    public static String myName;
     public static Socket playerSocket = null;
     public static ObjectOutputStream out;
     public static ObjectInputStream in;
@@ -142,8 +143,8 @@ public class Mazewar extends JFrame {
         maze.addMazeListener(scoreModel);
 
         // Throw up a dialog to get the GUIClient name.
-        String name = JOptionPane.showInputDialog("Enter your name");
-        if ((name == null) || (name.length() == 0)) {
+        myName = JOptionPane.showInputDialog("Enter your name");
+        if ((myName == null) || (myName.length() == 0)) {
             Mazewar.quit();
         }
 
@@ -162,13 +163,13 @@ public class Mazewar extends JFrame {
             MazewarPacket toServer = new MazewarPacket();
             MazewarPacket fromServer;
             toServer.type = MazewarPacket.REGISTER;
-            toServer.owner = name;
+            toServer.sender = myName;
+            toServer.owner = myName;
 
             out.writeObject(toServer);
             fromServer = (MazewarPacket) in.readObject();
 
             syncClientFromServer(fromServer);
-
         } catch (UnknownHostException e) {
             e.printStackTrace();
             System.err.println("ERROR: Don't know where to connect!!");
@@ -183,7 +184,7 @@ public class Mazewar extends JFrame {
 
 
         // Create the GUIClient and connect it to the KeyListener queue
-        guiClient = new GUIClient(name);
+        guiClient = new GUIClient(myName);
         maze.addClient(guiClient);
         this.addKeyListener(guiClient);
 

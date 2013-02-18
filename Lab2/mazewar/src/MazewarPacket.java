@@ -27,6 +27,7 @@ public class MazewarPacket implements Serializable {
 
     public static final int QUIT = 400;
     //packet definitions
+    public String sender;
     public String owner;
 
     public int type = MazewarPacket.NULL;

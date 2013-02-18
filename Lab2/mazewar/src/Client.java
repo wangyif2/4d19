@@ -170,7 +170,7 @@ public abstract class Client {
         }
     }
 
-    private void notifyServerMoveForward() {
+    private synchronized void notifyServerMoveForward() {
         MazewarPacket toServer = new MazewarPacket();
 
         Point oldPoint = getPoint();
@@ -189,6 +189,7 @@ public abstract class Client {
                 "\n\torientation : " + newDp.getDirection()
         );
 
+        toServer.sender = Mazewar.myName;
         toServer.owner = getName();
         toServer.type = MazewarPacket.MOVE_FORWARD;
         toServer.mazeMap.put(getName(), newDp);
@@ -200,7 +201,7 @@ public abstract class Client {
         }
     }
 
-    private void notifyServerMoveBackward() {
+    private synchronized void notifyServerMoveBackward() {
         MazewarPacket toServer = new MazewarPacket();
 
         Point oldPoint = getPoint();
@@ -219,6 +220,7 @@ public abstract class Client {
                 "\n\torientation : " + newDp.getDirection()
         );
 
+        toServer.sender = Mazewar.myName;
         toServer.owner = getName();
         toServer.type = MazewarPacket.MOVE_BACKWARD;
         toServer.mazeMap.put(getName(), newDp);
@@ -250,7 +252,7 @@ public abstract class Client {
         notifyServerTurnRight();
     }
 
-    private void notifyServerTurnLeft() {
+    private synchronized void notifyServerTurnLeft() {
         MazewarPacket toServer = new MazewarPacket();
 
         Point oldPoint = getPoint();
@@ -269,6 +271,7 @@ public abstract class Client {
                 "\n\torientation : " + newDp.getDirection()
         );
 
+        toServer.sender = Mazewar.myName;
         toServer.owner = getName();
         toServer.type = MazewarPacket.TURN_LEFT;
         toServer.mazeMap.put(getName(), newDp);
@@ -280,7 +283,7 @@ public abstract class Client {
         }
     }
 
-    private void notifyServerTurnRight() {
+    private synchronized void notifyServerTurnRight() {
         MazewarPacket toServer = new MazewarPacket();
 
         Point oldPoint = getPoint();
@@ -299,6 +302,7 @@ public abstract class Client {
                 "\n\torientation : " + newDp.getDirection()
         );
 
+        toServer.sender = Mazewar.myName;
         toServer.owner = getName();
         toServer.type = MazewarPacket.TURN_RIGHT;
         toServer.mazeMap.put(getName(), newDp);
@@ -336,9 +340,10 @@ public abstract class Client {
         notifyServerQuit();
     }
 
-    private void notifyServerQuit() {
+    private synchronized void notifyServerQuit() {
         MazewarPacket toServer = new MazewarPacket();
 
+        toServer.sender = Mazewar.myName;
         toServer.owner = getName();
         toServer.type = MazewarPacket.QUIT;
 
