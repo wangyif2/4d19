@@ -107,8 +107,8 @@ public abstract class Client {
     public void removeClientListener(ClientListener cl) {
         listenerSet.remove(cl);
     }
-        
-        /* Internals ******************************************************/
+
+    /* Internals ******************************************************/
 
     /**
      * The maze where the client is located.  <code>null</code> if not

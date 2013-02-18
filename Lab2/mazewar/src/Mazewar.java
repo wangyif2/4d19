@@ -160,10 +160,14 @@ public class Mazewar extends JFrame {
 
             // Send register packet to server
             MazewarPacket toServer = new MazewarPacket();
+            MazewarPacket fromServer;
             toServer.type = MazewarPacket.REGISTER;
             toServer.owner = name;
 
             out.writeObject(toServer);
+            fromServer = (MazewarPacket) in.readObject();
+
+            syncClientFromServer(fromServer);
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -173,6 +177,8 @@ public class Mazewar extends JFrame {
             e.printStackTrace();
             System.err.println("ERROR: Couldn't get I/O for the connection.");
             System.exit(1);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
 
@@ -254,11 +260,13 @@ public class Mazewar extends JFrame {
 
     private void syncClientFromServer(MazewarPacket fromServer) {
         for (Map.Entry<String, DirectedPoint> savedCLient : fromServer.mazeMap.entrySet()) {
+            Point p = savedCLient.getValue();
+            Direction d = savedCLient.getValue().getDirection();
+
             logger.info("syncClientFromServer: " + savedCLient.getKey() + " " + savedCLient.getValue().getDirection());
-            maze.addClient(new RemoteClient(savedCLient.getKey()), savedCLient.getValue());
+            maze.addClient(new RemoteClient(savedCLient.getKey()), new DirectedPoint(p, d));
         }
     }
-
 
     /**
      * Entry point for the game.
