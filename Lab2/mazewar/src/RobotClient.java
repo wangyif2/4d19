@@ -99,16 +99,16 @@ public class RobotClient extends LocalClient implements Runnable {
         // Loop while we are active
         while (active) {
             // Try to move forward
-//            if (!forward()) {
-//                // If we fail...
-//                if (randomGen.nextInt(3) == 1) {
-//                    // turn left!
-//                    turnLeft();
-//                } else {
-//                    // or perhaps turn right!
-//                    turnRight();
-//                }
-//            }
+            if (!forward()) {
+                // If we fail...
+                if (randomGen.nextInt(3) == 1) {
+                    // turn left!
+                    turnLeft();
+                } else {
+                    // or perhaps turn right!
+                    turnRight();
+                }
+            }
 
             // Shoot at things once and a while.
 //            if (randomGen.nextInt(10) == 1) {

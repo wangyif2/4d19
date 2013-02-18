@@ -170,7 +170,7 @@ public abstract class Client {
         }
     }
 
-    private synchronized void notifyServerMoveForward() {
+    private void notifyServerMoveForward() {
         MazewarPacket toServer = new MazewarPacket();
 
         Point oldPoint = getPoint();
@@ -194,14 +194,16 @@ public abstract class Client {
         toServer.type = MazewarPacket.MOVE_FORWARD;
         toServer.mazeMap.put(getName(), newDp);
 
-        try {
-            Mazewar.out.writeObject(toServer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (Mazewar.out) {
+            try {
+                Mazewar.out.writeObject(toServer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private synchronized void notifyServerMoveBackward() {
+    private void notifyServerMoveBackward() {
         MazewarPacket toServer = new MazewarPacket();
 
         Point oldPoint = getPoint();
@@ -225,10 +227,12 @@ public abstract class Client {
         toServer.type = MazewarPacket.MOVE_BACKWARD;
         toServer.mazeMap.put(getName(), newDp);
 
-        try {
-            Mazewar.out.writeObject(toServer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (Mazewar.out) {
+            try {
+                Mazewar.out.writeObject(toServer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -252,20 +256,20 @@ public abstract class Client {
         notifyServerTurnRight();
     }
 
-    private synchronized void notifyServerTurnLeft() {
+    private void notifyServerTurnLeft() {
         MazewarPacket toServer = new MazewarPacket();
 
         Point oldPoint = getPoint();
         Direction d = getOrientation();
         DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
 
-        logger.info("moveClient old: " + getName() +
+        logger.info("rotateClient old: " + getName() +
                 "\n\tto old X: " + oldPoint.getX() +
                 "\n\tto old Y: " + oldPoint.getY() +
                 "\n\told orientation : " + d
         );
 
-        logger.info("moveClient: " + getName() +
+        logger.info("rotateClient: " + getName() +
                 "\n\tto X: " + newDp.getX() +
                 "\n\tto Y: " + newDp.getY() +
                 "\n\torientation : " + newDp.getDirection()
@@ -276,27 +280,29 @@ public abstract class Client {
         toServer.type = MazewarPacket.TURN_LEFT;
         toServer.mazeMap.put(getName(), newDp);
 
-        try {
-            Mazewar.out.writeObject(toServer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (Mazewar.out) {
+            try {
+                Mazewar.out.writeObject(toServer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private synchronized void notifyServerTurnRight() {
+    private void notifyServerTurnRight() {
         MazewarPacket toServer = new MazewarPacket();
 
         Point oldPoint = getPoint();
         Direction d = getOrientation();
         DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnRight());
 
-        logger.info("moveClient old: " + getName() +
+        logger.info("rotateClient old: " + getName() +
                 "\n\tto old X: " + oldPoint.getX() +
                 "\n\tto old Y: " + oldPoint.getY() +
                 "\n\told orientation : " + d
         );
 
-        logger.info("moveClient: " + getName() +
+        logger.info("rotateClient: " + getName() +
                 "\n\tto X: " + newDp.getX() +
                 "\n\tto Y: " + newDp.getY() +
                 "\n\torientation : " + newDp.getDirection()
@@ -307,10 +313,12 @@ public abstract class Client {
         toServer.type = MazewarPacket.TURN_RIGHT;
         toServer.mazeMap.put(getName(), newDp);
 
-        try {
-            Mazewar.out.writeObject(toServer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (Mazewar.out) {
+            try {
+                Mazewar.out.writeObject(toServer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -364,17 +372,19 @@ public abstract class Client {
         notifyServerQuit();
     }
 
-    private synchronized void notifyServerQuit() {
+    private void notifyServerQuit() {
         MazewarPacket toServer = new MazewarPacket();
 
         toServer.sender = Mazewar.myName;
         toServer.owner = getName();
         toServer.type = MazewarPacket.QUIT;
 
-        try {
-            Mazewar.out.writeObject(toServer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (Mazewar.out) {
+            try {
+                Mazewar.out.writeObject(toServer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
