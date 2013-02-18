@@ -111,9 +111,9 @@ public class RobotClient extends LocalClient implements Runnable {
             }
 
             // Shoot at things once and a while.
-//            if (randomGen.nextInt(10) == 1) {
-//                fire();
-//            }
+            if (randomGen.nextInt(10) == 1) {
+                fire();
+            }
 
             // Sleep so the humans can possibly compete.
             try {

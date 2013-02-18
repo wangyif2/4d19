@@ -446,10 +446,12 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 "\n\t reSpawning at location " + target.getPoint().getX() + " " +
                 target.getPoint().getY() + " " + getClientOrientation(target));
 
-        try {
-            Mazewar.out.writeObject(toServer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (Mazewar.out) {
+            try {
+                Mazewar.out.writeObject(toServer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

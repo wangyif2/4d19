@@ -355,10 +355,12 @@ public abstract class Client {
         toServer.owner = getName();
         toServer.type = MazewarPacket.FIRE;
 
-        try {
-            Mazewar.out.writeObject(toServer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (Mazewar.out) {
+            try {
+                Mazewar.out.writeObject(toServer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
