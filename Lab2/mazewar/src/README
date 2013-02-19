@@ -1,0 +1,24 @@
+Student 1: Yifan Wang (997036666)
+Student 2: Chenzhi Shao (996608489)
+
+***********************
+Mazewar
+***********************
+-How to run
+    -<IVAN fill it in>
+
+-Description
+    -The game consist of three major component
+        -Client
+            -On every key press, a notification is sent to the server containing information identifying the action
+            -On every server broadcast, a thread handles the action and calls the appropriate MazeImp methods
+        -ServerHandler
+            -this is a thread that is generated to handle packets from client
+            -We maintain three maps on the server that deals with Client outputstream, Position, Score
+            -Once the correct reply packet is constructed based on the client request it is pushed on to a queue to be boardcasted
+        -ServerBoardcast
+            -Boardcasts packets to all Clients registered on the server
+
+-Features
+    -Supports RobotClient
+    -Supports Dynamic leave and join of either Robot and GUI client
