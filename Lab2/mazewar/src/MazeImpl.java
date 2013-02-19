@@ -189,7 +189,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return getCellImpl(point);
     }
 
-    public synchronized void addClient(Client client) {
+    public void addClient(Client client) {
         assert (client != null);
         // Pick a random starting point, and check to see if it is already occupied
         Point point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
@@ -208,6 +208,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         if (fromServer.type == MazewarPacket.ADD_SUCCESS) {
             addClient(client, new DirectedPoint(point, d));
         } else if (fromServer.type == MazewarPacket.ERROR_DUPLICATED_CLIENT) {
+            if (getClientByName(client.getName()) != null) return;
             Point p = fromServer.mazeMap.get(client.getName());
             Direction dd = fromServer.mazeMap.get(client.getName()).getDirection();
 
@@ -224,13 +225,15 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         toServer.mazeMap.put(client.getName(), directedPoint);
 
         synchronized (Mazewar.out) {
-            try {
-                Mazewar.out.writeObject(toServer);
-                return (MazewarPacket) Mazewar.in.readObject();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+            synchronized (Mazewar.in) {
+                try {
+                    Mazewar.out.writeObject(toServer);
+                    return (MazewarPacket) Mazewar.in.readObject();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return null;
@@ -242,7 +245,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
      * @param client The {@link Client} to be added.
      * @param point  The location the {@link Client} should be added.
      */
-    public synchronized void addClient(Client client, DirectedPoint point) {
+    public void addClient(Client client, DirectedPoint point) {
         assert (client != null);
         assert (checkBounds(point));
         CellImpl cell = getCellImpl(point);

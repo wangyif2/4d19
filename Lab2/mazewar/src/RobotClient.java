@@ -93,6 +93,11 @@ public class RobotClient extends LocalClient implements Runnable {
      * This method is the control loop for an active {@link RobotClient}.
      */
     public void run() {
+        try {
+            thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         // Put a spiffy message in the console
         Mazewar.consolePrintLn("Robot client \"" + this.getName() + "\" activated.");
 
