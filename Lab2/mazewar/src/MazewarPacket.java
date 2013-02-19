@@ -34,4 +34,5 @@ public class MazewarPacket implements Serializable {
 
     public int type = MazewarPacket.NULL;
     public HashMap<String, DirectedPoint> mazeMap = new HashMap<String, DirectedPoint>();
+    public HashMap<String, Integer> mazeScore = new HashMap<String, Integer>();
 }
