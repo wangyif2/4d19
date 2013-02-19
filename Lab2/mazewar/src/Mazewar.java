@@ -169,7 +169,7 @@ public class Mazewar extends JFrame {
             out.writeObject(toServer);
             fromServer = (MazewarPacket) in.readObject();
 
-            syncClientFromServer(fromServer);
+            syncClientFromServer(fromServer, scoreModel);
         } catch (UnknownHostException e) {
             e.printStackTrace();
             System.err.println("ERROR: Don't know where to connect!!");
@@ -190,12 +190,12 @@ public class Mazewar extends JFrame {
 
         // Use braces to force constructors not to be called at the beginning of the
         // constructor.
-        {
-            maze.addClient(new RobotClient("Norby"));
-            maze.addClient(new RobotClient("Robbie"));
-            maze.addClient(new RobotClient("Clango"));
-            maze.addClient(new RobotClient("Marvin"));
-        }
+//        {
+//            maze.addClient(new RobotClient("Norby"));
+//            maze.addClient(new RobotClient("Robbie"));
+//            maze.addClient(new RobotClient("Clango"));
+//            maze.addClient(new RobotClient("Marvin"));
+//        }
 
         maze.threadStart();
 
@@ -259,13 +259,17 @@ public class Mazewar extends JFrame {
         this.requestFocusInWindow();
     }
 
-    private void syncClientFromServer(MazewarPacket fromServer) {
+    private void syncClientFromServer(MazewarPacket fromServer, ScoreTableModel scoreModel) {
         for (Map.Entry<String, DirectedPoint> savedCLient : fromServer.mazeMap.entrySet()) {
+            String savedClientName = savedCLient.getKey();
             Point p = savedCLient.getValue();
             Direction d = savedCLient.getValue().getDirection();
+            Integer s = fromServer.mazeScore.get(savedClientName);
 
-            logger.info("syncClientFromServer: " + savedCLient.getKey() + " " + savedCLient.getValue().getDirection());
-            maze.addClient(new RemoteClient(savedCLient.getKey()), new DirectedPoint(p, d));
+            logger.info("syncClientFromServer: " + savedClientName + " " + savedCLient.getValue().getDirection() + " score " + s);
+            RemoteClient c = new RemoteClient(savedClientName);
+            maze.addClient(c, new DirectedPoint(p, d));
+            scoreModel.clientAdded(c, s);
         }
     }
 
