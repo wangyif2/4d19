@@ -109,14 +109,14 @@ public class MazewarServerHandler extends Thread {
     private void firedClient(MazewarPacket fromClient) {
         String clientName = fromClient.owner;
 
-            MazewarServer.mazeScore.put(clientName, MazewarServer.mazeScore.get(clientName) + MazewarServer.scoreAdjFire);
+        MazewarServer.mazeScore.put(clientName, MazewarServer.mazeScore.get(clientName) + MazewarServer.scoreAdjFire);
 
-            MazewarServer.actionQueue.add(fromClient);
+        MazewarServer.actionQueue.add(fromClient);
 
-            logger.info("Client " + clientName + " fired on sender " + fromClient.sender +
-                    " current score" + MazewarServer.mazeScore.get(clientName));
-        }
-    
+        logger.info("Client " + clientName + " fired on sender " + fromClient.sender +
+                " current score" + MazewarServer.mazeScore.get(clientName));
+    }
+
 
     private void quitClient(MazewarPacket fromClient) {
         synchronized (MazewarServer.mazeMap) {
@@ -150,52 +150,50 @@ public class MazewarServerHandler extends Thread {
         synchronized (MazewarServer.mazeMap) {
             String clientName = fromClient.owner;
             DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
+
+            MazewarPacket replyPacket;
+
             logger.info("addClient: " + clientName +
                     "\n\tto X: " + clientDp.getX() +
                     "\n\tto Y: " + clientDp.getY() +
                     "\n\torientation : " + clientDp.getDirection()
             );
 
-            if (MazewarServer.mazeMap.containsKey(clientName)) {
+            for (Map.Entry<String, DirectedPoint> entry : MazewarServer.mazeMap.entrySet()) {
+                Point savedPoint = entry.getValue();
+                if (savedPoint.equals((Point) clientDp)) {
+                    replyPacket = new MazewarPacket();
+                    replyPacket.type = MazewarPacket.ERROR_DUPLICATED_LOCATION;
 
-                DirectedPoint savedDp = MazewarServer.mazeMap.get(clientName);
-                Integer savedScore = MazewarServer.mazeScore.get(clientName);
-
-                MazewarPacket replyPacket = new MazewarPacket();
-                replyPacket.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
-                replyPacket.owner = clientName;
-                replyPacket.mazeMap.put(clientName, savedDp);
-                replyPacket.mazeScore.put(clientName, savedScore);
-
-                logger.info("Duplicated Client: " + clientName +
-                        "current score" + MazewarServer.mazeScore.get(clientName));
-                
-                synchronized (this.out) {
-                    try {
-                        out.writeObject(replyPacket);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    synchronized (this.out) {
+                        try {
+                            out.writeObject(replyPacket);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
+                    logger.info("Client " + clientName + " requested location is filled by " + entry.getKey());
+                    return;
                 }
-            } else {
-                MazewarPacket replyPacket = new MazewarPacket();
-                replyPacket.type = MazewarPacket.ADD_SUCCESS;
-                replyPacket.owner = clientName;
-
-                synchronized (this.out) {
-                    try {
-                        out.writeObject(replyPacket);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                MazewarServer.mazeMap.put(clientName, clientDp);
-                MazewarServer.mazeScore.put(clientName, 0);
-                MazewarServer.actionQueue.add(fromClient);
-                logger.info("Add Success Client: " + clientName +
-                        "current score " + MazewarServer.mazeScore.get(clientName));
             }
+
+            replyPacket = new MazewarPacket();
+            replyPacket.type = MazewarPacket.ADD_SUCCESS;
+            replyPacket.owner = clientName;
+
+            synchronized (this.out) {
+                try {
+                    out.writeObject(replyPacket);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            MazewarServer.mazeMap.put(clientName, clientDp);
+            MazewarServer.mazeScore.put(clientName, 0);
+            MazewarServer.actionQueue.add(fromClient);
+            logger.info("Add Success Client: " + clientName +
+                    "current score " + MazewarServer.mazeScore.get(clientName));
         }
     }
 
@@ -237,8 +235,7 @@ public class MazewarServerHandler extends Thread {
                 replyPacket.mazeMap = MazewarServer.mazeMap;
                 replyPacket.mazeScore = MazewarServer.mazeScore;
                 replyPacket.owner = fromClient.owner;
-            }
-            else {
+            } else {
                 logger.info("Received register request with dup name: " + clientName);
                 replyPacket.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
             }

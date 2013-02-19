@@ -191,29 +191,28 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
     public void addClient(Client client) {
         assert (client != null);
-        // Pick a random starting point, and check to see if it is already occupied
-        Point point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
-        CellImpl cell = getCellImpl(point);
-        // Repeat until we find an empty cell
-        while (cell.getContents() != null) {
+
+        Point point;
+        Direction direction;
+        MazewarPacket fromServer;
+
+        do {
+            // Pick a random starting point, and check to see if it is already occupied
             point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
-            cell = getCellImpl(point);
-        }
-        Direction d = Direction.random();
-        while (cell.isWall(d)) {
-            d = Direction.random();
-        }
+            CellImpl cell = getCellImpl(point);
+            // Repeat until we find an empty cell
+            while (cell.getContents() != null) {
+                point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
+                cell = getCellImpl(point);
+            }
+            direction = Direction.random();
+            while (cell.isWall(direction)) {
+                direction = Direction.random();
+            }
+            fromServer = addClientToServer(client, new DirectedPoint(point, direction));
+        } while (fromServer.type != MazewarPacket.ADD_SUCCESS);
 
-        MazewarPacket fromServer = addClientToServer(client, new DirectedPoint(point, d));
-        if (fromServer.type == MazewarPacket.ADD_SUCCESS) {
-            addClient(client, new DirectedPoint(point, d));
-        } else if (fromServer.type == MazewarPacket.ERROR_DUPLICATED_CLIENT) {
-            if (getClientByName(client.getName()) != null) return;
-            Point p = fromServer.mazeMap.get(client.getName());
-            Direction dd = fromServer.mazeMap.get(client.getName()).getDirection();
-
-            addClient(new RemoteClient(client.getName()), new DirectedPoint(p, dd));
-        }
+        addClient(client, new DirectedPoint(point, direction));
     }
 
     private MazewarPacket addClientToServer(Client client, DirectedPoint directedPoint) {

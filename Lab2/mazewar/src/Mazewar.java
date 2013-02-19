@@ -69,7 +69,7 @@ public class Mazewar extends JFrame {
     /**
      * The {@link GUIClient} for the game.
      */
-    private GUIClient guiClient = null;
+    private Client myClient = null;
 
     /**
      * The panel that displays the {@link Maze}.
@@ -128,7 +128,7 @@ public class Mazewar extends JFrame {
     /**
      * The place where all the pieces are put together.
      */
-    public Mazewar(String hostname, int port) {
+    public Mazewar(String hostname, int port, boolean isRobot) {
         super("ECE419 Mazewar");
         consolePrintLn("ECE419 Mazewar started!");
 
@@ -186,26 +186,19 @@ public class Mazewar extends JFrame {
             e.printStackTrace();
         }
 
+        if (isRobot) {
+            myClient = new RobotClient(myName);
+        } else {
+            // Create the GUIClient and connect it to the KeyListener queue
+            myClient = new GUIClient(myName);
+            this.addKeyListener((GUIClient) myClient);
+        }
 
-        // Create the GUIClient and connect it to the KeyListener queue
-        guiClient = new GUIClient(myName);
-        maze.addClient(guiClient);
-        this.addKeyListener(guiClient);
-
-        // Use braces to force constructors not to be called at the beginning of the
-        // constructor.
-//        {
-//            maze.addClient(new RobotClient("Norby"));
-//            maze.addClient(new RobotClient("Robbie"));
-//            maze.addClient(new RobotClient("Clango"));
-//            maze.addClient(new RobotClient("Marvin"));
-//        }
-
+        maze.addClient(myClient);
         maze.threadStart();
 
-
         // Create the panel that will display the maze.
-        overheadPanel = new OverheadMazePanel(maze, guiClient);
+        overheadPanel = new OverheadMazePanel(maze, myClient);
         assert (overheadPanel != null);
         maze.addMazeListener(overheadPanel);
 
@@ -285,19 +278,30 @@ public class Mazewar extends JFrame {
     public static void main(String args[]) {
 
         // variables for hostname/port
-        String hostname = "localhost";
-        int port = 1111;
+        String hostname;
+        int port;
+        boolean isRobot = false;
+
 
         // Check argument correctness
-        if (args.length == 2) {
-            hostname = args[0];
-            port = Integer.parseInt(args[1]);
-        } else {
+        if (args.length != 2 && args.length != 3) {
             System.err.println("ERROR: Invalid arguments!");
             System.exit(-1);
         }
 
+        hostname = args[0];
+        port = Integer.parseInt(args[1]);
+
+        if (args.length == 3) {
+            if (args[2].toLowerCase().equals("robot")) {
+                isRobot = true;
+            } else if (!args[2].toLowerCase().equals("player")) {
+                System.err.println("ERROR: Invalid arguments!");
+                System.exit(-1);
+            }
+        }
+
         /* Create the GUI */
-        new Mazewar(hostname, port);
+        new Mazewar(hostname, port, isRobot);
     }
 }
