@@ -225,16 +225,23 @@ public class MazewarServerHandler extends Thread {
 
     private void registerClient(MazewarPacket fromClient) {
         synchronized (MazewarServer.connectedClients) {
+            MazewarPacket replyPacket = new MazewarPacket();
             String clientName = fromClient.owner;
 
-            logger.info("registerClient: " + clientName);
-            MazewarServer.connectedClients.put(clientName, out);
+            if (!MazewarServer.connectedClients.containsKey(clientName)) {
 
-            MazewarPacket replyPacket = new MazewarPacket();
-            replyPacket.type = MazewarPacket.REGISTER_SUCCESS;
-            replyPacket.mazeMap = MazewarServer.mazeMap;
-            replyPacket.mazeScore = MazewarServer.mazeScore;
-            replyPacket.owner = fromClient.owner;
+                logger.info("registerClient: " + clientName);
+                MazewarServer.connectedClients.put(clientName, out);
+
+                replyPacket.type = MazewarPacket.REGISTER_SUCCESS;
+                replyPacket.mazeMap = MazewarServer.mazeMap;
+                replyPacket.mazeScore = MazewarServer.mazeScore;
+                replyPacket.owner = fromClient.owner;
+            }
+            else {
+                logger.info("Received register request with dup name: " + clientName);
+                replyPacket.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
+            }
 
             synchronized (this.out) {
                 try {

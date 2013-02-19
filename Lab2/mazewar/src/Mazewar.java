@@ -142,15 +142,8 @@ public class Mazewar extends JFrame {
         assert (scoreModel != null);
         maze.addMazeListener(scoreModel);
 
-        // Throw up a dialog to get the GUIClient name.
-        myName = JOptionPane.showInputDialog("Enter your name");
-        if ((myName == null) || (myName.length() == 0)) {
-            Mazewar.quit();
-        }
-
         // You may want to put your network initialization code somewhere in
         // here.
-
         try {
             playerSocket = new Socket(hostname, port);
 
@@ -159,15 +152,26 @@ public class Mazewar extends JFrame {
             /* stream to read from server */
             in = new ObjectInputStream(playerSocket.getInputStream());
 
-            // Send register packet to server
-            MazewarPacket toServer = new MazewarPacket();
+            MazewarPacket toServer;
             MazewarPacket fromServer;
-            toServer.type = MazewarPacket.REGISTER;
-            toServer.sender = myName;
-            toServer.owner = myName;
 
-            out.writeObject(toServer);
-            fromServer = (MazewarPacket) in.readObject();
+            do {
+                // Throw up a dialog to get the GUIClient name.
+                myName = JOptionPane.showInputDialog("Enter your name");
+                if ((myName == null) || (myName.length() == 0)) {
+                    Mazewar.quit();
+                }
+
+                // Send register packet to server
+                toServer = new MazewarPacket();
+                toServer.type = MazewarPacket.REGISTER;
+                toServer.sender = myName;
+                toServer.owner = myName;
+
+                out.writeObject(toServer);
+                fromServer = (MazewarPacket) in.readObject();
+            } while (fromServer.type != MazewarPacket.REGISTER_SUCCESS);
+            logger.info("Registering with name: " + myName + " is successful!");
 
             syncClientFromServer(fromServer, scoreModel);
         } catch (UnknownHostException e) {
