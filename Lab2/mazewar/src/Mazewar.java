@@ -165,7 +165,6 @@ public class Mazewar extends JFrame {
                 // Send register packet to server
                 toServer = new MazewarPacket();
                 toServer.type = MazewarPacket.REGISTER;
-                toServer.sender = myName;
                 toServer.owner = myName;
 
                 out.writeObject(toServer);

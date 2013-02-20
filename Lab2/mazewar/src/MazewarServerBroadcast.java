@@ -23,7 +23,7 @@ public class MazewarServerBroadcast extends Thread {
                         switch (broadcastPacket.type) {
                             case MazewarPacket.ADD:
                             case MazewarPacket.KILLED:
-                                if (broadcastPacket.sender.equals(entry.getKey()))
+                                if (broadcastPacket.owner.equals(entry.getKey()))
                                     continue;
                                 break;
                             default:

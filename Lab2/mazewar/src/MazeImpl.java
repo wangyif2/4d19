@@ -218,7 +218,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     private MazewarPacket addClientToServer(Client client, DirectedPoint directedPoint) {
         MazewarPacket toServer = new MazewarPacket();
 
-        toServer.sender = Mazewar.myName;
         toServer.owner = client.getName();
         toServer.type = MazewarPacket.ADD;
         toServer.mazeMap.put(client.getName(), directedPoint);
@@ -287,85 +286,82 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     }
 
     public synchronized boolean isClientFireValid(Client client) {
-        assert (client != null);
-        // If the client already has a projectile in play
-        // fail.
-        if (clientFired.contains(client)) {
-            return false;
-        }
-
-        Point point = getClientPoint(client);
-        Direction d = getClientOrientation(client);
-        CellImpl cell = getCellImpl(point);
-
-        /* Check that you can fire in that direction */
-        if (cell.isWall(d)) {
-            return false;
-        }
-
-        DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
-        /* Is the point withint the bounds of maze? */
-        assert (checkBounds(newPoint));
-
-        CellImpl newCell = getCellImpl(newPoint);
-        Object contents = newCell.getContents();
-        if (contents != null) {
-            // If it is a Client, kill it outright
-            if (contents instanceof Client) {
-                return true;
-            } else {
-                // Otherwise fail (bullets will destroy each other)
+        synchronized (clientFired) {
+            assert (client != null);
+            // If the client already has a projectile in play
+            // fail.
+            if (clientFired.contains(client)) {
                 return false;
             }
+
+            Point point = getClientPoint(client);
+            Direction d = getClientOrientation(client);
+            CellImpl cell = getCellImpl(point);
+
+            /* Check that you can fire in that direction */
+            if (cell.isWall(d)) {
+                return false;
+            }
+
+            DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
+            /* Is the point withint the bounds of maze? */
+            assert (checkBounds(newPoint));
+
+            CellImpl newCell = getCellImpl(newPoint);
+            Object contents = newCell.getContents();
+            if (contents != null) {
+                // If it is a Client, kill it outright
+                if (contents instanceof Client) {
+                    return true;
+                } else {
+                    // Otherwise fail (bullets will destroy each other)
+                    return false;
+                }
+            }
+            return true;
         }
-        return true;
     }
 
     public synchronized boolean clientFire(Client client) {
-        assert (client != null);
-        // If the client already has a projectile in play
-        // fail.
-        if (clientFired.contains(client)) {
-            return false;
-        }
+        synchronized (projectileMap) {
+            synchronized (clientFired) {
+                Point point = getClientPoint(client);
+                Direction d = getClientOrientation(client);
+                CellImpl cell = getCellImpl(point);
 
-        Point point = getClientPoint(client);
-        Direction d = getClientOrientation(client);
-        CellImpl cell = getCellImpl(point);
+                /* Check that you can fire in that direction */
+                if (cell.isWall(d)) {
+                    logger.info("i hit wall");
+                    return false;
+                }
 
-        /* Check that you can fire in that direction */
-        if (cell.isWall(d)) {
-            return false;
-        }
+                DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
+                /* Is the point withint the bounds of maze? */
+                assert (checkBounds(newPoint));
 
-        DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
-        /* Is the point withint the bounds of maze? */
-        assert (checkBounds(newPoint));
+                CellImpl newCell = getCellImpl(newPoint);
+                Object contents = newCell.getContents();
+                if (contents != null) {
+                    // If it is a Client, kill it outright
+                    if (contents instanceof Client) {
+                        notifyClientFired(client);
+                        killClient(client, (Client) contents);
+                        update();
+                        return true;
+                    }
+                }
 
-        CellImpl newCell = getCellImpl(newPoint);
-        Object contents = newCell.getContents();
-        if (contents != null) {
-            // If it is a Client, kill it outright
-            if (contents instanceof Client) {
+                clientFired.add(client);
+                Projectile prj = new Projectile(client);
+
+                /* Write the new cell */
+                projectileMap.put(prj, newPoint);
+                newCell.setContents(prj);
                 notifyClientFired(client);
-                killClient(client, (Client) contents);
                 update();
                 return true;
-            } else {
-                // Otherwise fail (bullets will destroy each other)
-                return false;
             }
         }
-
-        clientFired.add(client);
-        Projectile prj = new Projectile(client);
-
-        /* Write the new cell */
-        projectileMap.put(prj, newPoint);
-        newCell.setContents(prj);
-        notifyClientFired(client);
-        update();
-        return true;
     }
 
     /**
@@ -437,7 +433,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     private void notifyServerKillClient(Client source, Client target) {
         MazewarPacket toServer = new MazewarPacket();
 
-        toServer.sender = Mazewar.myName;
         toServer.owner = source.getName();
         toServer.killed = target.getName();
         toServer.type = MazewarPacket.KILLED;
@@ -620,11 +615,14 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                         case MazewarPacket.FIRE:
                             logger.info(fromServer.owner + " fired");
                             c = getClientByName(fromServer.owner);
-                            if (c != null && clientFire(c))
+                            if (c == null) logger.info("i " + fromServer.owner + " am null client");
+                            if (c != null && clientFire(c)) {
+                                logger.info(fromServer.owner + " firing successful");
                                 c.notifyFire();
+                            }
                             break;
                         case MazewarPacket.KILLED:
-                            logger.info(fromServer.killed + " is killed by " + fromServer.owner + " on " + fromServer.sender);
+                            logger.info(fromServer.killed + " is killed by " + fromServer.owner + " on " + fromServer.owner);
                             killClient(getClientByName(fromServer.owner), getClientByName(fromServer.killed), fromServer.mazeMap.get(fromServer.killed));
                             break;
                         case MazewarPacket.QUIT:
@@ -657,23 +655,25 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
     private void handleProjectile() {
         Collection deadPrj = new HashSet();
-        if (!projectileMap.isEmpty()) {
-            Iterator it = projectileMap.keySet().iterator();
-            synchronized (projectileMap) {
-                while (it.hasNext()) {
-                    Object o = it.next();
-                    assert (o instanceof Projectile);
-                    deadPrj.addAll(moveProjectile((Projectile) o));
+        synchronized (projectileMap) {
+            synchronized (clientFired) {
+                if (!projectileMap.isEmpty()) {
+                    Iterator it = projectileMap.keySet().iterator();
+                    while (it.hasNext()) {
+                        Object o = it.next();
+                        assert (o instanceof Projectile);
+                        deadPrj.addAll(moveProjectile((Projectile) o));
+                    }
+                    it = deadPrj.iterator();
+                    while (it.hasNext()) {
+                        Object o = it.next();
+                        assert (o instanceof Projectile);
+                        Projectile prj = (Projectile) o;
+                        projectileMap.remove(prj);
+                        clientFired.remove(prj.getOwner());
+                    }
+                    deadPrj.clear();
                 }
-                it = deadPrj.iterator();
-                while (it.hasNext()) {
-                    Object o = it.next();
-                    assert (o instanceof Projectile);
-                    Projectile prj = (Projectile) o;
-                    projectileMap.remove(prj);
-                    clientFired.remove(prj.getOwner());
-                }
-                deadPrj.clear();
             }
         }
 
@@ -728,57 +728,59 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     /* Internals */
 
     private synchronized Collection moveProjectile(Projectile prj) {
-        Collection deadPrj = new LinkedList();
-        assert (prj != null);
+        synchronized (projectileMap) {
+            Collection deadPrj = new LinkedList();
+            assert (prj != null);
 
-        Object o = projectileMap.get(prj);
-        assert (o instanceof DirectedPoint);
-        DirectedPoint dp = (DirectedPoint) o;
-        Direction d = dp.getDirection();
-        CellImpl cell = getCellImpl(dp);
+            Object o = projectileMap.get(prj);
+            assert (o instanceof DirectedPoint);
+            DirectedPoint dp = (DirectedPoint) o;
+            Direction d = dp.getDirection();
+            CellImpl cell = getCellImpl(dp);
 
-        /* Check for a wall */
-        if (cell.isWall(d)) {
-            // If there is a wall, the projectile goes away.
-            cell.setContents(null);
-            deadPrj.add(prj);
-            update();
-            return deadPrj;
-        }
-
-        DirectedPoint newPoint = new DirectedPoint(dp.move(d), d);
-        /* Is the point within the bounds of maze? */
-        assert (checkBounds(newPoint));
-
-        CellImpl newCell = getCellImpl(newPoint);
-        Object contents = newCell.getContents();
-        if (contents != null) {
-            // If it is a Client, kill it outright
-            if (contents instanceof Client) {
-                killClient(prj.getOwner(), (Client) contents);
+            /* Check for a wall */
+            if (cell.isWall(d)) {
+                // If there is a wall, the projectile goes away.
                 cell.setContents(null);
                 deadPrj.add(prj);
-                update();
-                return deadPrj;
-            } else {
-                // Bullets destroy each other
-                assert (contents instanceof Projectile);
-                newCell.setContents(null);
-                cell.setContents(null);
-                deadPrj.add(prj);
-                deadPrj.add(contents);
                 update();
                 return deadPrj;
             }
-        }
 
-        /* Clear the old cell */
-        cell.setContents(null);
-        /* Write the new cell */
-        projectileMap.put(prj, newPoint);
-        newCell.setContents(prj);
-        update();
-        return deadPrj;
+            DirectedPoint newPoint = new DirectedPoint(dp.move(d), d);
+            /* Is the point within the bounds of maze? */
+            assert (checkBounds(newPoint));
+
+            CellImpl newCell = getCellImpl(newPoint);
+            Object contents = newCell.getContents();
+            if (contents != null) {
+                // If it is a Client, kill it outright
+                if (contents instanceof Client) {
+                    killClient(prj.getOwner(), (Client) contents);
+                    cell.setContents(null);
+                    deadPrj.add(prj);
+                    update();
+                    return deadPrj;
+                } else {
+                    // Bullets destroy each other
+                    assert (contents instanceof Projectile);
+                    newCell.setContents(null);
+                    cell.setContents(null);
+                    deadPrj.add(prj);
+                    deadPrj.add(contents);
+                    update();
+                    return deadPrj;
+                }
+            }
+
+            /* Clear the old cell */
+            cell.setContents(null);
+            /* Write the new cell */
+            projectileMap.put(prj, newPoint);
+            newCell.setContents(prj);
+            update();
+            return deadPrj;
+        }
     }
 
     /**

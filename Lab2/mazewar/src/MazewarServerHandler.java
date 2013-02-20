@@ -93,40 +93,47 @@ public class MazewarServerHandler extends Thread {
 
             MazewarServer.mazeMap.put(tgtClientName, tgtClientLoc);
 
-            //adjust the score for killing
-            MazewarServer.mazeScore.put(tgtClientName, MazewarServer.mazeScore.get(tgtClientName) + MazewarServer.scoreAdjKilled);
-            MazewarServer.mazeScore.put(srcClientName, MazewarServer.mazeScore.get(srcClientName) + MazewarServer.scoreAdjKill);
+            synchronized (MazewarServer.mazeScore) {
+                //adjust the score for killing
+                MazewarServer.mazeScore.put(tgtClientName, MazewarServer.mazeScore.get(tgtClientName) + MazewarServer.scoreAdjKilled);
+                MazewarServer.mazeScore.put(srcClientName, MazewarServer.mazeScore.get(srcClientName) + MazewarServer.scoreAdjKill);
+                logger.info("Client " + srcClientName + " killed " + tgtClientName + " on sender " + fromClient.owner
+                        + " reSpawn location " + tgtClientLoc.getX() + " " + tgtClientLoc.getY() + " " + tgtClientLoc.getDirection()
+                        + " current score of killed " + MazewarServer.mazeScore.get(tgtClientName)
+                        + " current score of killer " + MazewarServer.mazeScore.get(srcClientName));
+            }
 
             MazewarServer.actionQueue.add(fromClient);
-
-            logger.info("Client " + srcClientName + " killed " + tgtClientName + " on sender " + fromClient.sender
-                    + " reSpawn location " + tgtClientLoc.getX() + " " + tgtClientLoc.getY() + " " + tgtClientLoc.getDirection()
-                    + " current score of killed " + MazewarServer.mazeScore.get(tgtClientName)
-                    + " current score of killer " + MazewarServer.mazeScore.get(srcClientName));
         }
     }
 
     private void firedClient(MazewarPacket fromClient) {
-        String clientName = fromClient.owner;
+        synchronized (MazewarServer.mazeScore) {
+            String clientName = fromClient.owner;
 
-        MazewarServer.mazeScore.put(clientName, MazewarServer.mazeScore.get(clientName) + MazewarServer.scoreAdjFire);
+            logger.warn(clientName + " has score " + (MazewarServer.mazeScore.get(clientName)) + " before fire");
+            MazewarServer.mazeScore.put(clientName, MazewarServer.mazeScore.get(clientName) + MazewarServer.scoreAdjFire);
+            logger.info("Client " + clientName + " fired on sender " + fromClient.owner +
+                    " current score" + MazewarServer.mazeScore.get(clientName));
 
-        MazewarServer.actionQueue.add(fromClient);
-
-        logger.info("Client " + clientName + " fired on sender " + fromClient.sender +
-                " current score" + MazewarServer.mazeScore.get(clientName));
+            MazewarServer.actionQueue.add(fromClient);
+        }
     }
 
 
     private void quitClient(MazewarPacket fromClient) {
-        synchronized (MazewarServer.mazeMap) {
+        synchronized (MazewarServer.connectedClients) {
             String clientName = fromClient.owner;
+            MazewarServer.connectedClients.remove(clientName);
 
-            synchronized (MazewarServer.connectedClients) {
-                MazewarServer.connectedClients.remove(clientName);
+            synchronized (MazewarServer.mazeMap) {
+                MazewarServer.mazeMap.remove(clientName);
+
+                synchronized (MazewarServer.mazeScore) {
+                    MazewarServer.mazeScore.remove(clientName);
+                }
             }
-            MazewarServer.mazeMap.remove(clientName);
-            MazewarServer.mazeScore.remove(clientName);
+
             MazewarServer.actionQueue.add(fromClient);
         }
     }
@@ -135,6 +142,7 @@ public class MazewarServerHandler extends Thread {
         synchronized (MazewarServer.mazeMap) {
             String clientName = fromClient.owner;
             DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
+
             logger.info("rotateClient: " + clientName +
                     "\n\tto X: " + clientDp.getX() +
                     "\n\tto Y: " + clientDp.getY() +
@@ -147,11 +155,10 @@ public class MazewarServerHandler extends Thread {
     }
 
     private void addClient(MazewarPacket fromClient) {
+
         synchronized (MazewarServer.mazeMap) {
             String clientName = fromClient.owner;
             DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
-
-            MazewarPacket replyPacket;
 
             logger.info("addClient: " + clientName +
                     "\n\tto X: " + clientDp.getX() +
@@ -159,6 +166,7 @@ public class MazewarServerHandler extends Thread {
                     "\n\torientation : " + clientDp.getDirection()
             );
 
+            MazewarPacket replyPacket;
             for (Map.Entry<String, DirectedPoint> entry : MazewarServer.mazeMap.entrySet()) {
                 Point savedPoint = entry.getValue();
                 if (savedPoint.equals((Point) clientDp)) {
@@ -190,10 +198,14 @@ public class MazewarServerHandler extends Thread {
             }
 
             MazewarServer.mazeMap.put(clientName, clientDp);
-            MazewarServer.mazeScore.put(clientName, 0);
+
+            synchronized (MazewarServer.mazeScore) {
+                MazewarServer.mazeScore.put(clientName, 0);
+                logger.info("Add Success Client: " + clientName +
+                        "current score " + MazewarServer.mazeScore.get(clientName));
+            }
+
             MazewarServer.actionQueue.add(fromClient);
-            logger.info("Add Success Client: " + clientName +
-                    "current score " + MazewarServer.mazeScore.get(clientName));
         }
     }
 
@@ -223,18 +235,21 @@ public class MazewarServerHandler extends Thread {
 
     private void registerClient(MazewarPacket fromClient) {
         synchronized (MazewarServer.connectedClients) {
-            MazewarPacket replyPacket = new MazewarPacket();
             String clientName = fromClient.owner;
+            MazewarPacket replyPacket = new MazewarPacket();
+            replyPacket.owner = clientName;
 
             if (!MazewarServer.connectedClients.containsKey(clientName)) {
-
                 logger.info("registerClient: " + clientName);
                 MazewarServer.connectedClients.put(clientName, out);
 
                 replyPacket.type = MazewarPacket.REGISTER_SUCCESS;
-                replyPacket.mazeMap = MazewarServer.mazeMap;
-                replyPacket.mazeScore = MazewarServer.mazeScore;
-                replyPacket.owner = fromClient.owner;
+                synchronized (MazewarServer.mazeMap) {
+                    replyPacket.mazeMap = MazewarServer.mazeMap;
+                    synchronized (MazewarServer.mazeScore) {
+                        replyPacket.mazeScore = MazewarServer.mazeScore;
+                    }
+                }
             } else {
                 logger.info("Received register request with dup name: " + clientName);
                 replyPacket.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
