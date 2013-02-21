@@ -572,9 +572,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
      * Control loop for {@link Projectile}s.
      */
     public void run() {
-//        ProjectileHandler ph = new ProjectileHandler();
-//        new Thread(ph).start();
-
         MazewarPacket fromServer;
         Client c;
         new Thread(new ProjectileThread()).start();
@@ -613,11 +610,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                             c.notifyTurnRight();
                             break;
                         case MazewarPacket.FIRE:
-                            logger.info(fromServer.owner + " fired");
                             c = getClientByName(fromServer.owner);
-                            if (c == null) logger.info("i " + fromServer.owner + " am null client");
                             if (c != null && clientFire(c)) {
-                                logger.info(fromServer.owner + " firing successful");
                                 c.notifyFire();
                             }
                             break;

@@ -330,18 +330,14 @@ public abstract class Client {
             notifyServerFire();
             logger.info("Client fired: " + getName() +
                     "\n\tSender: " + Mazewar.myName);
+
+            if (maze.clientFire(this))
+                notifyFire();
             return true;
         } else {
             logger.info("Cant fire");
             return false;
         }
-
-//        if (maze.clientFire(this)) {
-//            notifyFire();
-//            return true;
-//        } else {
-//            return false;
-//        }
     }
 
     private void notifyServerFire() {
