@@ -270,17 +270,14 @@ public abstract class Client {
 
         if (maze.isClientFireValid(this)) {
             notifyServerFire();
+
+            if (maze.clientFire(this))
+                notifyFire();
+
             return true;
         } else {
             return false;
         }
-
-//        if (maze.clientFire(this)) {
-//            notifyFire();
-//            return true;
-//        } else {
-//            return false;
-//        }
     }
 
     private void notifyServerFire() {

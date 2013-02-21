@@ -563,9 +563,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
      * Control loop for {@link Projectile}s.
      */
     public void run() {
-//        ProjectileHandler ph = new ProjectileHandler();
-//        new Thread(ph).start();
-
         MazewarPacket fromServer;
         Client c;
         new Thread(new ProjectileThread()).start();
