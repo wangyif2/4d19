@@ -5,7 +5,10 @@ Student 2: Chenzhi Shao (996608489)
 Mazewar
 ***********************
 -How to run
-    -<IVAN fill it in>
+    - To set up the server:
+            ./run_server.sh <port number>
+    - To run Mazewar:
+            ./run_mazewar.sh <server hostname> <server port>
 
 -Description
     -The game consist of three major component
@@ -20,5 +23,4 @@ Mazewar
             -Boardcasts packets to all Clients registered on the server
 
 -Features
-    -Supports RobotClient
     -Supports Dynamic leave and join of either Robot and GUI client
