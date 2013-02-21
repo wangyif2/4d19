@@ -1,6 +1,3 @@
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Map;
@@ -10,7 +7,6 @@ import java.util.Map;
  * Date: 01/02/13
  */
 public class MazewarServerBroadcast extends Thread {
-    private static final Logger logger = LoggerFactory.getLogger(MazewarServerBroadcast.class);
 
     @Override
     public void run() {
@@ -29,7 +25,6 @@ public class MazewarServerBroadcast extends Thread {
                             default:
                                 break;
                         }
-                        logger.info("broadcasting to " + entry.getKey() + " " + broadcastPacket.type);
                         entry.getValue().writeObject(broadcastPacket);
                     }
                 }

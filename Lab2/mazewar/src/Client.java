@@ -17,9 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Set;
 import java.util.HashSet;
@@ -32,7 +29,6 @@ import java.util.Iterator;
  * @version $Id: Client.java 343 2004-01-24 03:43:45Z geoffw $
  */
 public abstract class Client {
-    private static final Logger logger = LoggerFactory.getLogger(MazeImpl.class);
 
     /**
      * Register this {@link Client} as being contained by the specified
@@ -143,11 +139,9 @@ public abstract class Client {
         assert (maze != null);
 
         if (maze.isClientForwardValid(this)) {
-            logger.info("isClientForwardValid is true");
             notifyServerMoveForward();
             return true;
         } else {
-            logger.info("isClientForwardValid is false");
             return false;
         }
     }
@@ -161,11 +155,9 @@ public abstract class Client {
         assert (maze != null);
 
         if (maze.isClientBackwardValid(this)) {
-            logger.info("isClientBackwardValid is true");
             notifyServerMoveBackward();
             return true;
         } else {
-            logger.info("isClientBackwardValid is false");
             return false;
         }
     }
@@ -176,18 +168,6 @@ public abstract class Client {
         Point oldPoint = getPoint();
         Direction d = getOrientation();
         DirectedPoint newDp = new DirectedPoint(oldPoint.move(d), d);
-
-        logger.info("moveClient old: " + getName() +
-                "\n\tto old X: " + oldPoint.getX() +
-                "\n\tto old Y: " + oldPoint.getY() +
-                "\n\told orientation : " + d
-        );
-
-        logger.info("moveClient: " + getName() +
-                "\n\tto X: " + newDp.getX() +
-                "\n\tto Y: " + newDp.getY() +
-                "\n\torientation : " + newDp.getDirection()
-        );
 
         toServer.owner = getName();
         toServer.type = MazewarPacket.MOVE_FORWARD;
@@ -209,18 +189,6 @@ public abstract class Client {
         Direction d = getOrientation();
         DirectedPoint newDp = new DirectedPoint(oldPoint.move(d.invert()), d);
 
-        logger.info("moveClient old: " + getName() +
-                "\n\tto old X: " + oldPoint.getX() +
-                "\n\tto old Y: " + oldPoint.getY() +
-                "\n\told orientation : " + d
-        );
-
-        logger.info("moveClient: " + getName() +
-                "\n\tto X: " + newDp.getX() +
-                "\n\tto Y: " + newDp.getY() +
-                "\n\torientation : " + newDp.getDirection()
-        );
-
         toServer.owner = getName();
         toServer.type = MazewarPacket.MOVE_BACKWARD;
         toServer.mazeMap.put(getName(), newDp);
@@ -240,7 +208,6 @@ public abstract class Client {
     protected void turnLeft() {
         assert (maze != null);
 
-        logger.info("Notify server turning left");
         notifyServerTurnLeft();
     }
 
@@ -250,7 +217,6 @@ public abstract class Client {
     protected void turnRight() {
         assert (maze != null);
 
-        logger.info("Notify server turning right");
         notifyServerTurnRight();
     }
 
@@ -260,18 +226,6 @@ public abstract class Client {
         Point oldPoint = getPoint();
         Direction d = getOrientation();
         DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
-
-        logger.info("rotateClient old: " + getName() +
-                "\n\tto old X: " + oldPoint.getX() +
-                "\n\tto old Y: " + oldPoint.getY() +
-                "\n\told orientation : " + d
-        );
-
-        logger.info("rotateClient: " + getName() +
-                "\n\tto X: " + newDp.getX() +
-                "\n\tto Y: " + newDp.getY() +
-                "\n\torientation : " + newDp.getDirection()
-        );
 
         toServer.owner = getName();
         toServer.type = MazewarPacket.TURN_LEFT;
@@ -292,18 +246,6 @@ public abstract class Client {
         Point oldPoint = getPoint();
         Direction d = getOrientation();
         DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnRight());
-
-        logger.info("rotateClient old: " + getName() +
-                "\n\tto old X: " + oldPoint.getX() +
-                "\n\tto old Y: " + oldPoint.getY() +
-                "\n\told orientation : " + d
-        );
-
-        logger.info("rotateClient: " + getName() +
-                "\n\tto X: " + newDp.getX() +
-                "\n\tto Y: " + newDp.getY() +
-                "\n\torientation : " + newDp.getDirection()
-        );
 
         toServer.owner = getName();
         toServer.type = MazewarPacket.TURN_RIGHT;
@@ -328,11 +270,8 @@ public abstract class Client {
 
         if (maze.isClientFireValid(this)) {
             notifyServerFire();
-            logger.info("Client fired: " + getName() +
-                    "\n\tSender: " + Mazewar.myName);
             return true;
         } else {
-            logger.info("Cant fire");
             return false;
         }
 
@@ -365,7 +304,6 @@ public abstract class Client {
     protected void quit() {
         assert (maze != null);
 
-        logger.info("Notify server quiting");
         notifyServerQuit();
     }
 

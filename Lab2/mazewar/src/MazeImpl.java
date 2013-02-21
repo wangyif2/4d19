@@ -17,9 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.*;
 import java.util.*;
 
@@ -31,7 +28,6 @@ import java.util.*;
  */
 
 public class MazeImpl extends Maze implements Serializable, ClientListener, Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(MazeImpl.class);
 
     /**
      * Create a {@link Maze}.
@@ -331,7 +327,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
                 /* Check that you can fire in that direction */
                 if (cell.isWall(d)) {
-                    logger.info("i hit wall");
                     return false;
                 }
 
@@ -438,10 +433,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         toServer.type = MazewarPacket.KILLED;
 
         toServer.mazeMap.put(target.getName(), new DirectedPoint(target.getPoint(), getClientOrientation(target)));
-
-        logger.info("Notifying Server Target " + target.getName() + " is killed" +
-                "\n\t reSpawning at location " + target.getPoint().getX() + " " +
-                target.getPoint().getY() + " " + getClientOrientation(target));
 
         synchronized (Mazewar.out) {
             try {
@@ -588,10 +579,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                             Point p = fromServer.mazeMap.get(fromServer.owner);
                             Direction d = fromServer.mazeMap.get(fromServer.owner).getDirection();
 
-                            logger.info("add remote client: "
-                                    + "\n\t" + p.getX() + " " + p.getY()
-                                    + "\n\t" + d);
-
                             addClient(new RemoteClient(fromServer.owner), new DirectedPoint(p, d));
                             break;
                         case MazewarPacket.MOVE_FORWARD:
@@ -613,21 +600,16 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                             c.notifyTurnRight();
                             break;
                         case MazewarPacket.FIRE:
-                            logger.info(fromServer.owner + " fired");
                             c = getClientByName(fromServer.owner);
-                            if (c == null) logger.info("i " + fromServer.owner + " am null client");
                             if (c != null && clientFire(c)) {
-                                logger.info(fromServer.owner + " firing successful");
                                 c.notifyFire();
                             }
                             break;
                         case MazewarPacket.KILLED:
-                            logger.info(fromServer.killed + " is killed by " + fromServer.owner + " on " + fromServer.owner);
                             killClient(getClientByName(fromServer.owner), getClientByName(fromServer.killed), fromServer.mazeMap.get(fromServer.killed));
                             break;
                         case MazewarPacket.QUIT:
                             c = getClientByName(fromServer.owner);
-                            logger.info(fromServer.owner + " quitting");
                             removeClient(c);
                             break;
                         default:
@@ -636,9 +618,9 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }

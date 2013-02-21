@@ -22,7 +22,7 @@ import java.awt.event.KeyEvent;
 
 /**
  * An implementation of {@link LocalClient} that is controlled by the keyboard
- * of the computer on which the game is being run.  
+ * of the computer on which the game is being run.
  * @author Geoffrey Washburn &lt;<a href="mailto:geoffw@cis.upenn.edu">geoffw@cis.upenn.edu</a>&gt;
  * @version $Id: GUIClient.java 343 2004-01-24 03:43:45Z geoffw $
  */
@@ -30,18 +30,18 @@ import java.awt.event.KeyEvent;
 public class GUIClient extends LocalClient implements KeyListener {
 
         /**
-         * Create a GUI controlled {@link LocalClient}.  
+         * Create a GUI controlled {@link LocalClient}.
          */
         public GUIClient(String name) {
                 super(name);
         }
-        
+
         /**
          * Handle a key press.
          * @param e The {@link KeyEvent} that occurred.
          */
         public void keyPressed(KeyEvent e) {
-                // If the user pressed Q, invoke the cleanup code and quit. 
+                // If the user pressed Q, invoke the cleanup code and quit.
                 if((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
                         quit();
                         Mazewar.quit();
@@ -62,14 +62,14 @@ public class GUIClient extends LocalClient implements KeyListener {
                         fire();
                 }
         }
-        
+
         /**
          * Handle a key release. Not needed by {@link GUIClient}.
          * @param e The {@link KeyEvent} that occurred.
          */
         public void keyReleased(KeyEvent e) {
         }
-        
+
         /**
          * Handle a key being typed. Not needed by {@link GUIClient}.
          * @param e The {@link KeyEvent} that occurred.

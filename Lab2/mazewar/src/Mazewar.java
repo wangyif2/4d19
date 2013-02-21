@@ -17,9 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -38,7 +35,6 @@ import java.util.Map;
  */
 
 public class Mazewar extends JFrame {
-    private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
     public static String myName;
     public static Socket playerSocket = null;
     public static ObjectOutputStream out;
@@ -120,7 +116,13 @@ public class Mazewar extends JFrame {
         // Put any network clean-up code you might have here.
         // (inform other implementations on the network that you have
         //  left, etc.)
-
+        try {
+            in.close();
+            out.close();
+            playerSocket.close();
+        } catch (IOException e) {
+            //e.printStackTrace();
+        }
 
         System.exit(0);
     }
@@ -170,7 +172,6 @@ public class Mazewar extends JFrame {
                 out.writeObject(toServer);
                 fromServer = (MazewarPacket) in.readObject();
             } while (fromServer.type != MazewarPacket.REGISTER_SUCCESS);
-            logger.info("Registering with name: " + myName + " is successful!");
 
             syncClientFromServer(fromServer, scoreModel);
         } catch (UnknownHostException e) {
@@ -262,7 +263,6 @@ public class Mazewar extends JFrame {
             Direction d = savedCLient.getValue().getDirection();
             Integer s = fromServer.mazeScore.get(savedClientName);
 
-            logger.info("syncClientFromServer: " + savedClientName + " " + savedCLient.getValue().getDirection() + " score " + s);
             RemoteClient c = new RemoteClient(savedClientName);
             maze.addClient(c, new DirectedPoint(p, d));
             scoreModel.clientAdded(c, s);
