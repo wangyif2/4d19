@@ -345,3 +345,10 @@ ScoreTableModel.class : Direction.class
 ScoreTableModel.class : ClientEvent.java
 ScoreTableModel.class : ClientEvent.class
 SortedMultiSet.class : SortedMultiSet.java
+MazewarServer.class : MazewarServer.java
+MazewarServer.class : MazewarServerHandler.java
+MazewarServer.class : MazewarServerHandler.class
+MazewarServer.class : MazewarServerBroadcast.java
+MazewarServer.class : MazewarServerBroadcast.class
+MazewarServerHandler.class : MazewarServerHandler.java
+MazewarServerBroadcast.class : MazewarServerBroadcast.java
