@@ -1,0 +1,39 @@
+\begin{titlepage}
+\begin{center}
+
+\textsc{\LARGE University of Toronto}
+\\[1.5cm]
+\textsc{\large Faculty of Applied Science \& Engineering}
+\\[0.5cm]
+\textsc{\large ECE419 Distributed System}
+\\[1.5cm]
+\textsc{\Large Design Document}
+\\[1.5cm]
+\HRule
+\\[0.5cm]
+{ \huge \bfseries Implementing Mazewar in Decentralized fashion}
+\\[0.3cm]
+\HRule
+\\[1.0cm]
+
+\includegraphics[width=1.0in]{./Logos/nscilogo}
+\hspace{2cm}
+\includegraphics[width=1.5in]{./Logos/utorontologo}
+\\[1.0cm]
+
+\textsc{\large Yifan Wang}
+\\[0.25cm]
+\textsc{\normalsize 997036666}
+\\[0.25cm]
+\textsc{\large Chenzhi Shao}
+\\[0.25cm]
+\textsc{\normalsize }
+\\[1.0cm]
+\textsc{Supervised by}
+\\[0.25cm]
+\textsc{\large Professor Cristiana Amza}
+\vfill
+{\large \today}
+
+\end{center}
+\end{titlepage} 
