@@ -232,7 +232,7 @@ public class OverheadMazePanel extends JPanel implements MazeListener {
         this.repaint();
     }
 
-    public void clientAdded(Client c) {
+    public void clientAdded(Client c, Integer score) {
         // Doesn't need to do anything
     }
 

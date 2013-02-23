@@ -94,4 +94,10 @@ public class Point implements Serializable {
         /* Impossible */
         return null;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        Point point = (Point) obj;
+        return (this.getX() == point.getX() && this.getY() == point.getY());
+    }
 }

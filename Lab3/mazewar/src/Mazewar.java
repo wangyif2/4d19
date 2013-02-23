@@ -22,6 +22,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -33,6 +38,11 @@ import java.awt.*;
 
 public class Mazewar extends JFrame {
     private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
+
+    public static String myName;
+    public static Socket playerSocket = null;
+    public static ObjectOutputStream out;
+    public static ObjectInputStream in;
 
     /**
      * The default width of the {@link Maze}.
@@ -57,9 +67,9 @@ public class Mazewar extends JFrame {
     private Maze maze = null;
 
     /**
-     * The {@link GUIClient} for the game.
+     * The {@link Client} for the game.
      */
-    private GUIClient guiClient = null;
+    private LocalClient myClient = null;
 
     /**
      * The panel that displays the {@link Maze}.
@@ -107,18 +117,26 @@ public class Mazewar extends JFrame {
      * Static method for performing cleanup before exiting the game.
      */
     public static void quit() {
-        // Put any network clean-up code you might have here.
-        // (inform other implementations on the network that you have
-        //  left, etc.)
-
+        // Network clean-up
+        try {
+            out.close();
+            in.close();
+            playerSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         System.exit(0);
     }
 
     /**
      * The place where all the pieces are put together.
+     *
+     * @param hostname
+     * @param port
+     * @param isRobot
      */
-    public Mazewar() {
+    public Mazewar(String hostname, int port, boolean isRobot) {
         super("ECE419 Mazewar");
         consolePrintLn("ECE419 Mazewar started!");
 
@@ -132,32 +150,60 @@ public class Mazewar extends JFrame {
         assert (scoreModel != null);
         maze.addMazeListener(scoreModel);
 
-        // Throw up a dialog to get the GUIClient name.
-        String name = JOptionPane.showInputDialog("Enter your name");
-        if ((name == null) || (name.length() == 0)) {
-            Mazewar.quit();
+        // Network initialization
+        try {
+            playerSocket = new Socket(hostname, port);
+
+            /* stream to write back to server */
+            out = new ObjectOutputStream(playerSocket.getOutputStream());
+            /* stream to read from server */
+            in = new ObjectInputStream(playerSocket.getInputStream());
+
+            MazewarPacket toServer;
+            MazewarPacket fromServer;
+
+            // Register client name in server
+            do {
+                // Throw up a dialog to get the GUIClient name.
+                myName = JOptionPane.showInputDialog("Enter your name");
+                if ((myName == null) || (myName.length() == 0)) {
+                    Mazewar.quit();
+                }
+
+                // Send register packet to server
+                toServer = new MazewarPacket();
+                toServer.type = MazewarPacket.REGISTER;
+                toServer.owner = myName;
+
+                out.writeObject(toServer);
+                fromServer = (MazewarPacket) in.readObject();
+            } while (fromServer.type != MazewarPacket.REGISTER_SUCCESS);
+            logger.info("Registered with name: " + myName + " is successful!\n");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            System.err.println("ERROR: Don't know where to connect.");
+            System.exit(1);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("ERROR: Couldn't get I/O for the connection.");
+            System.exit(1);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            System.err.println("ERROR: Class not found.");
+            System.exit(1);
         }
 
-        // You may want to put your network initialization code somewhere in
-        // here.
-
-        // Create the GUIClient and connect it to the KeyListener queue
-        guiClient = new GUIClient(name);
-        maze.addClient(guiClient);
-        this.addKeyListener(guiClient);
-
-        // Use braces to force constructors not to be called at the beginning of the
-        // constructor.
-        {
-            maze.addClient(new RobotClient("Norby"));
-            maze.addClient(new RobotClient("Robbie"));
-            maze.addClient(new RobotClient("Clango"));
-            maze.addClient(new RobotClient("Marvin"));
-        }
-
+        // Create the RobotClient/GUIClient connect it to the KeyListener queue
+        myClient = isRobot ? new RobotClient(myName) : new GUIClient(myName);
+        maze.addClient(myClient);
+        if (isRobot)
+            this.addKeyListener((RobotClient) myClient);
+        else
+            this.addKeyListener((GUIClient) myClient);
+        myClient.start();
 
         // Create the panel that will display the maze.
-        overheadPanel = new OverheadMazePanel(maze, guiClient);
+        overheadPanel = new OverheadMazePanel(maze, myClient);
         assert (overheadPanel != null);
         maze.addMazeListener(overheadPanel);
 
@@ -222,8 +268,32 @@ public class Mazewar extends JFrame {
      * @param args Command-line arguments.
      */
     public static void main(String args[]) {
+        // variables for hostname/port
+        String hostname;
+        int port;
+        boolean isRobot = false;
+
+
+        // Check argument correctness
+        if (args.length != 2 && args.length != 3) {
+            System.err.println("ERROR: Invalid arguments!");
+            System.exit(-1);
+        }
+
+        hostname = args[0];
+        port = Integer.parseInt(args[1]);
+
+        // Distinguish between robot client and gui client
+        if (args.length == 3) {
+            if (args[2].toLowerCase().equals("robot")) {
+                isRobot = true;
+            } else if (!args[2].toLowerCase().equals("player")) {
+                System.err.println("ERROR: Invalid arguments!");
+                System.exit(-1);
+            }
+        }
 
         /* Create the GUI */
-        new Mazewar();
+        new Mazewar(hostname, port, isRobot);
     }
 }

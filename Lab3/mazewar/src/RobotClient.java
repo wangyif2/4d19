@@ -20,6 +20,7 @@ USA.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.event.KeyEvent;
 import java.util.Random;
 
 /**
@@ -42,7 +43,7 @@ public class RobotClient extends LocalClient implements Runnable {
     /**
      * The {@link Thread} object we use to run the robot control code.
      */
-    private final Thread thread;
+    private final Thread randomThread;
 
     /**
      * Flag to say whether the control thread should be
@@ -59,7 +60,7 @@ public class RobotClient extends LocalClient implements Runnable {
         super(name);
         assert (name != null);
         // Create our thread
-        thread = new Thread(this);
+        randomThread = new Thread(this);
     }
 
     /**
@@ -74,7 +75,7 @@ public class RobotClient extends LocalClient implements Runnable {
 
         // Get the control thread going.
         active = true;
-        thread.start();
+        randomThread.start();
     }
 
     /**
@@ -86,7 +87,7 @@ public class RobotClient extends LocalClient implements Runnable {
         active = false;
         // Wait half a second for the thread to complete.
         try {
-            thread.join(500);
+            randomThread.join(500);
         } catch (Exception e) {
             // Shouldn't happen
         }
@@ -121,10 +122,27 @@ public class RobotClient extends LocalClient implements Runnable {
 
             // Sleep so the humans can possibly compete.
             try {
-                thread.sleep(200);
+                randomThread.sleep(200);
             } catch (Exception e) {
                 // Shouldn't happen.
             }
         }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        // If the user pressed Q, invoke the cleanup code and quit.
+        if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
+            quit();
+            Mazewar.quit();
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
     }
 }

@@ -63,6 +63,8 @@ public abstract class Maze {
      */
     public abstract void addClient(Client client);
 
+    public abstract void addRemoteClient(Client client, DirectedPoint dirPoint);
+
     /**
      * Create a new {@link Projectile} from the specified {@link Client}
      *
@@ -94,6 +96,8 @@ public abstract class Maze {
      * @return The orientation of the specific {@link Client} as a {@link Direction}.
      */
     public abstract Direction getClientOrientation(Client client);
+
+    public abstract Client getClientByName(String name);
 
     /**
      * Attempt to move a {@link Client} in the {@link Maze} forward.
@@ -133,5 +137,4 @@ public abstract class Maze {
      * @param ml An object implementing the {@link MazeListener} interface.
      */
     public abstract void removeMazeListener(MazeListener ml);
-
 }

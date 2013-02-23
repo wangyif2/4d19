@@ -20,7 +20,6 @@ USA.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 
 /**
@@ -31,7 +30,7 @@ import java.awt.event.KeyEvent;
  * @version $Id: GUIClient.java 343 2004-01-24 03:43:45Z geoffw $
  */
 
-public class GUIClient extends LocalClient implements KeyListener {
+public class GUIClient extends LocalClient {
     private static final Logger logger = LoggerFactory.getLogger(GUIClient.class);
 
     /**
@@ -49,6 +48,7 @@ public class GUIClient extends LocalClient implements KeyListener {
     public void keyPressed(KeyEvent e) {
         // If the user pressed Q, invoke the cleanup code and quit.
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
+            quit();
             Mazewar.quit();
             // Up-arrow moves forward.
         } else if (e.getKeyCode() == KeyEvent.VK_UP) {

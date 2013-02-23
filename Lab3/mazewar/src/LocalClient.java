@@ -20,6 +20,9 @@ USA.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.event.KeyListener;
+import java.io.IOException;
+
 /**
  * An abstract class for {@link Client}s in a {@link Maze} that local to the
  * computer the game is running upon. You may choose to implement some of
@@ -32,8 +35,10 @@ import org.slf4j.LoggerFactory;
  */
 
 
-public abstract class LocalClient extends Client {
+public abstract class LocalClient extends Client implements KeyListener {
     private static final Logger logger = LoggerFactory.getLogger(LocalClient.class);
+
+    private LocalUpdateHandler localUpdate;
 
     /**
      * Create a {@link Client} local to this machine.
@@ -43,9 +48,37 @@ public abstract class LocalClient extends Client {
     public LocalClient(String name) {
         super(name);
         assert (name != null);
+        localUpdate = new LocalUpdateHandler();
     }
 
-    /**
-     * Fill in here??
-     */
+    public void start() {
+        localUpdate.start();
+    }
+
+    public void registerMaze(Maze maze) {
+        super.registerMaze(maze);
+        localUpdate.registerMaze(maze);
+    }
+
+    protected void quit() {
+        assert (maze != null);
+
+        logger.info("Notify server quiting\n");
+        notifyServerQuit();
+    }
+
+    private void notifyServerQuit() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.QUIT;
+
+        synchronized (Mazewar.out) {
+            try {
+                Mazewar.out.writeObject(toServer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

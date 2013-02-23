@@ -17,29 +17,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * A skeleton for those {@link Client}s that correspond to clients on other computers.
- *
  * @author Geoffrey Washburn &lt;<a href="mailto:geoffw@cis.upenn.edu">geoffw@cis.upenn.edu</a>&gt;
  * @version $Id: RemoteClient.java 342 2004-01-23 21:35:52Z geoffw $
  */
 
 public class RemoteClient extends Client {
-    private static final Logger logger = LoggerFactory.getLogger(RemoteClient.class);
 
-    /**
-     * Create a remotely controlled {@link Client}.
-     *
-     * @param name Name of this {@link RemoteClient}.
-     */
-    public RemoteClient(String name) {
-        super(name);
-    }
+        /**
+         * Create a remotely controlled {@link Client}.
+         * @param name Name of this {@link RemoteClient}.
+         */
+        public RemoteClient(String name) {
+                super(name);
+        }
 
-    /**
-     * May want to fill in code here.
-     */
+        /**
+         * May want to fill in code here.
+         */
 }

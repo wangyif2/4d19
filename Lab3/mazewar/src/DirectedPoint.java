@@ -75,6 +75,16 @@ public class DirectedPoint extends Point {
      * @return This {@link DirectedPoint}'s Cardinal {@link Direction}.
      */
     public Direction getDirection() {
-        return direction;
+        if (direction.equals(Direction.North)) {
+            return Direction.North;
+        } else if (direction.equals(Direction.South)) {
+            return Direction.South;
+        } else if (direction.equals(Direction.East)) {
+            return Direction.East;
+        } else if (direction.equals(Direction.West)) {
+            return Direction.West;
+        }
+        // Should never happen
+        return null;
     }
 }
