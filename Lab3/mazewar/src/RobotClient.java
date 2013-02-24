@@ -104,20 +104,20 @@ public class RobotClient extends LocalClient implements Runnable {
         // Loop while we are active
         while (active) {
             // Try to move forward
-            if (!forward()) {
+            if (!notifyServerForward()) {
                 // If we fail...
                 if (randomGen.nextInt(3) == 1) {
                     // turn left!
-                    turnLeft();
+                    notifyServerTurnLeft();
                 } else {
                     // or perhaps turn right!
-                    turnRight();
+                    notifyServerTurnRight();
                 }
             }
 
             // Shoot at things once and a while.
             if (randomGen.nextInt(10) == 1) {
-                fire();
+                //fire();
             }
 
             // Sleep so the humans can possibly compete.
@@ -133,7 +133,7 @@ public class RobotClient extends LocalClient implements Runnable {
     public void keyPressed(KeyEvent e) {
         // If the user pressed Q, invoke the cleanup code and quit.
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
-            quit();
+            notifyServerQuit();
             Mazewar.quit();
         }
     }

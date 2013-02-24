@@ -105,6 +105,7 @@ public abstract class Maze {
      * @param client {@link Client} to move.
      * @return <code>true</code> if successful, <code>false</code> if failure.
      */
+    public abstract boolean canMoveForward(Client client);
     public abstract boolean moveClientForward(Client client);
 
     /**
@@ -113,6 +114,7 @@ public abstract class Maze {
      * @param client {@link Client} to move.
      * @return <code>true</code> if successful, false if failure.
      */
+    public abstract boolean canMoveBackward(Client client);
     public abstract boolean moveClientBackward(Client client);
 
     /**

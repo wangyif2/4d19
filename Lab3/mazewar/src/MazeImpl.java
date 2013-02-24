@@ -315,6 +315,16 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return true;
     }
 
+    public synchronized boolean canMoveForward(Client client) {
+        Direction d = client.getOrientation();
+        return canMove(client, d);
+    }
+
+    public synchronized boolean canMoveBackward(Client client) {
+        Direction d = client.getOrientation().invert();
+        return canMove(client, d);
+    }
+
     public synchronized boolean moveClientForward(Client client) {
         assert (client != null);
         Object o = clientMap.get(client);
@@ -468,7 +478,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return null;
     }
 
-    private synchronized void syncRemoteClients (HashMap<String, DirectedPoint> mazeMap, HashMap<String, Integer> mazeScore) {
+    private synchronized void syncRemoteClients(HashMap<String, DirectedPoint> mazeMap, HashMap<String, Integer> mazeScore) {
         for (Map.Entry<String, DirectedPoint> cient : mazeMap.entrySet()) {
             String clientName = cient.getKey();
             Point p = cient.getValue();
@@ -563,6 +573,30 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         update();
     }
 
+    private synchronized boolean canMove(Client client, Direction d) {
+        assert (client != null);
+        assert (d != null);
+        Point oldPoint = getClientPoint(client);
+        CellImpl oldCell = getCellImpl(oldPoint);
+
+        /* Check that you can move in the given direction */
+        if (oldCell.isWall(d)) {
+            /* Move failed */
+            return false;
+        }
+
+        DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
+
+        /* Is the point withint the bounds of maze? */
+        assert (checkBounds(newPoint));
+        CellImpl newCell = getCellImpl(newPoint);
+        if (newCell.getContents() != null) {
+            /* Move failed */
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Internal helper called to move a {@link Client} in the specified
      * {@link Direction}.
@@ -579,23 +613,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         Point oldPoint = getClientPoint(client);
         CellImpl oldCell = getCellImpl(oldPoint);
 
-        /* Check that you can move in the given direction */
-        if (oldCell.isWall(d)) {
-            /* Move failed */
-            clientMap.put(client, oldPoint);
-            return false;
-        }
-
         DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
-
-        /* Is the point withint the bounds of maze? */
-        assert (checkBounds(newPoint));
         CellImpl newCell = getCellImpl(newPoint);
-        if (newCell.getContents() != null) {
-            /* Move failed */
-            clientMap.put(client, oldPoint);
-            return false;
-        }
 
         /* Write the new cell */
         clientMap.put(client, newPoint);

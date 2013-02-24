@@ -60,19 +60,132 @@ public abstract class LocalClient extends Client implements KeyListener {
         localUpdate.registerMaze(maze);
     }
 
-    protected void quit() {
+    /**
+     * Notify server moving the client forward.
+     *
+     * @return <code>true</code> if move was successful, otherwise <code>false</code>.
+     */
+    protected boolean notifyServerForward() {
         assert (maze != null);
 
-        logger.info("Notify server quiting\n");
-        notifyServerQuit();
+        if (maze.canMoveForward(this)) {
+            Point oldPoint = getPoint();
+            Direction d = getOrientation();
+            DirectedPoint newDp = new DirectedPoint(oldPoint.move(d), d);
+
+            MazewarPacket toServer = new MazewarPacket();
+            toServer.owner = getName();
+            toServer.type = MazewarPacket.MOVE_FORWARD;
+            toServer.mazeMap.put(getName(), newDp);
+            notifyServer(toServer);
+            logger.info("Notify moveClient: " + getName() +
+                    "\n\tfrom X: " + oldPoint.getX() +
+                    "\n\t     Y: " + oldPoint.getY() +
+                    "\n\tto   X: " + newDp.getX() +
+                    "\n\t     Y: " + newDp.getY() +
+                    "\n\t     orientation : " + newDp.getDirection() + "\n");
+            return true;
+        }
+        else {
+            logger.info(getName() + " Cannot move forward!\n");
+            return false;
+        }
     }
 
-    private void notifyServerQuit() {
+    /**
+     * Notify server moving the client backward.
+     *
+     * @return <code>true</code> if move was successful, otherwise <code>false</code>.
+     */
+    protected boolean notifyServerBackup() {
+        assert (maze != null);
+
+        if (maze.canMoveBackward(this)) {
+            Point oldPoint = getPoint();
+            Direction d = getOrientation();
+            DirectedPoint newDp = new DirectedPoint(oldPoint.move(d.invert()), d);
+
+            MazewarPacket toServer = new MazewarPacket();
+            toServer.owner = getName();
+            toServer.type = MazewarPacket.MOVE_BACKWARD;
+            toServer.mazeMap.put(getName(), newDp);
+            notifyServer(toServer);
+            logger.info("Notify moveClient: " + getName() +
+                    "\n\tfrom X: " + oldPoint.getX() +
+                    "\n\t     Y: " + oldPoint.getY() +
+                    "\n\tto   X: " + newDp.getX() +
+                    "\n\t     Y: " + newDp.getY() +
+                    "\n\t     orientation : " + newDp.getDirection() + "\n");
+            return true;
+        }
+        else {
+            logger.info(getName() + " Cannot move backward!\n");
+            return false;
+        }
+    }
+
+    /**
+     * Notify server turning the client left.
+     *
+     * @return <code>true</code> if move was successful, otherwise <code>false</code>.
+     */
+    protected void notifyServerTurnLeft() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.TURN_LEFT;
+        toServer.mazeMap.put(getName(), newDp);
+        notifyServer(toServer);
+        logger.info("Nofity rotateClient: " + getName() +
+                "\n\tfrom X: " + oldPoint.getX() +
+                "\n\t     Y: " + oldPoint.getY() +
+                "\n\t     orientation: " + d +
+                "\n\tto   X: " + newDp.getX() +
+                "\n\tto   Y: " + newDp.getY() +
+                "\n\t     orientation : " + newDp.getDirection() + "\n");
+    }
+
+    /**
+     * Notify server turning the client right.
+     *
+     * @return <code>true</code> if move was successful, otherwise <code>false</code>.
+     */
+    protected void notifyServerTurnRight() {
+        MazewarPacket toServer = new MazewarPacket();
+
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
+
+        toServer.owner = getName();
+        toServer.type = MazewarPacket.TURN_RIGHT;
+        toServer.mazeMap.put(getName(), newDp);
+        notifyServer(toServer);
+        logger.info("Nofity rotateClient: " + getName() +
+                "\n\tfrom X: " + oldPoint.getX() +
+                "\n\t     Y: " + oldPoint.getY() +
+                "\n\t     orientation: " + d +
+                "\n\tto   X: " + newDp.getX() +
+                "\n\tto   Y: " + newDp.getY() +
+                "\n\t     orientation : " + newDp.getDirection() + "\n");
+    }
+
+    protected void notifyServerQuit() {
+        assert (maze != null);
         MazewarPacket toServer = new MazewarPacket();
 
         toServer.owner = getName();
         toServer.type = MazewarPacket.QUIT;
 
+        notifyServer(toServer);
+        logger.info("Notify server quiting\n");
+    }
+
+    private void notifyServer(MazewarPacket toServer) {
         synchronized (Mazewar.out) {
             try {
                 Mazewar.out.writeObject(toServer);

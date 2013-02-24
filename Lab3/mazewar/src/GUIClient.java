@@ -48,20 +48,20 @@ public class GUIClient extends LocalClient {
     public void keyPressed(KeyEvent e) {
         // If the user pressed Q, invoke the cleanup code and quit.
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
-            quit();
+            notifyServerQuit();
             Mazewar.quit();
             // Up-arrow moves forward.
         } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-            forward();
+            notifyServerForward();
             // Down-arrow moves backward.
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            backup();
+            notifyServerBackup();
             // Left-arrow turns left.
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            turnLeft();
+            notifyServerTurnLeft();
             // Right-arrow turns right.
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            turnRight();
+            notifyServerTurnRight();
             // Spacebar fires.
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             fire();

@@ -54,9 +54,25 @@ public class LocalUpdateHandler implements Runnable {
                                     + "\n\t" + p.getX() + " " + p.getY()
                                     + "\n\t" + d + "\n");
                             break;
+                        case MazewarPacket.MOVE_FORWARD:
+                            owner.forward();
+                            logger.info("Moved client: " + fromServer.owner + " forward\n");
+                            break;
+                        case MazewarPacket.MOVE_BACKWARD:
+                            owner.backup();
+                            logger.info("Moved client: " + fromServer.owner + " backward\n");
+                            break;
+                        case MazewarPacket.TURN_LEFT:
+                            owner.turnLeft();
+                            logger.info("Rotated client: " + fromServer.owner + " left\n");
+                            break;
+                        case MazewarPacket.TURN_RIGHT:
+                            owner.turnRight();
+                            logger.info("Rotated client: " + fromServer.owner + " right\n");
+                            break;
                         case MazewarPacket.QUIT:
+                            owner.quit();
                             logger.info(fromServer.owner + " quitting");
-                            maze.removeClient(owner);
                             break;
                         default:
                             break;

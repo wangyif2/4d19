@@ -49,6 +49,14 @@ public class MazewarServerHandler extends Thread {
                     case MazewarPacket.QUIT:
                         quitClient(fromClient);
                         break;
+                    case MazewarPacket.MOVE_FORWARD:
+                    case MazewarPacket.MOVE_BACKWARD:
+                        moveClient(fromClient);
+                        break;
+                    case MazewarPacket.TURN_LEFT:
+                    case MazewarPacket.TURN_RIGHT:
+                        rotateClient(fromClient);
+                        break;
                     default:
                         logger.info("ERROR: Unrecognized packet!");
                 }
@@ -166,6 +174,46 @@ public class MazewarServerHandler extends Thread {
         }
     }
 
+    private void moveClient(MazewarPacket fromClient) {
+        synchronized (MazewarServer.mazeMap) {
+            String clientName = fromClient.owner;
+            DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
+
+            for (Map.Entry<String, DirectedPoint> savedClient : MazewarServer.mazeMap.entrySet()) {
+                Point savedClientDp = savedClient.getValue();
+
+                if (savedClientDp.equals(clientDp)) {
+                    logger.info(clientName + " Cannot move to" +
+                            "\n\tX: " + clientDp.getX() +
+                            "\n\tY: " + clientDp.getY() +
+                            "\n\torientation : " + clientDp.getDirection());
+                    return;
+                }
+            }
+
+            MazewarServer.mazeMap.put(clientName, clientDp);
+            MazewarServer.actionQueue.add(fromClient);
+            logger.info("moveClient: " + clientName +
+                    "\n\tto X: " + clientDp.getX() +
+                    "\n\t   Y: " + clientDp.getY() +
+                    "\n\t   orientation: " + clientDp.getDirection());
+        }
+    }
+
+    private void rotateClient(MazewarPacket fromClient) {
+        synchronized (MazewarServer.mazeMap) {
+            String clientName = fromClient.owner;
+            DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
+
+            MazewarServer.mazeMap.put(clientName, clientDp);
+            MazewarServer.actionQueue.add(fromClient);
+            logger.info("rotateClient: " + clientName +
+                    "\n\tto X: " + clientDp.getX() +
+                    "\n\t   Y: " + clientDp.getY() +
+                    "\n\t   orientation: " + clientDp.getDirection());
+        }
+    }
+
     private void killClient(MazewarPacket fromClient) {
         synchronized (MazewarServer.mazeMap) {
             String srcClientName = fromClient.owner;
@@ -197,46 +245,6 @@ public class MazewarServerHandler extends Thread {
             logger.info("Client " + clientName + " fired on sender " + fromClient.owner +
                     " current score" + MazewarServer.mazeScore.get(clientName));
 
-            MazewarServer.actionQueue.add(fromClient);
-        }
-    }
-
-    private void rotateClient(MazewarPacket fromClient) {
-        synchronized (MazewarServer.mazeMap) {
-            String clientName = fromClient.owner;
-            DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
-
-            logger.info("rotateClient: " + clientName +
-                    "\n\tto X: " + clientDp.getX() +
-                    "\n\tto Y: " + clientDp.getY() +
-                    "\n\torientation : " + clientDp.getDirection()
-            );
-
-            MazewarServer.mazeMap.put(clientName, clientDp);
-            MazewarServer.actionQueue.add(fromClient);
-        }
-    }
-
-    private void moveClient(MazewarPacket fromClient) {
-        synchronized (MazewarServer.mazeMap) {
-            String clientName = fromClient.owner;
-            DirectedPoint clientDp = fromClient.mazeMap.get(clientName);
-            logger.info("moveClient: " + clientName +
-                    "\n\tto X: " + clientDp.getX() +
-                    "\n\tto Y: " + clientDp.getY() +
-                    "\n\torientation : " + clientDp.getDirection()
-            );
-
-            for (Map.Entry<String, DirectedPoint> savedClient : MazewarServer.mazeMap.entrySet()) {
-                DirectedPoint savedClientDp = savedClient.getValue();
-                int savedClientX = savedClientDp.getX();
-                int savedClientY = savedClientDp.getY();
-
-                if (clientDp.getX() == savedClientX && clientDp.getY() == savedClientY)
-                    return;
-            }
-
-            MazewarServer.mazeMap.put(clientName, clientDp);
             MazewarServer.actionQueue.add(fromClient);
         }
     }

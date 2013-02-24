@@ -195,6 +195,7 @@ public abstract class Client {
         }
     }
 
+    protected void quit() {}
 
     /**
      * Notify listeners that the client moved forward.
