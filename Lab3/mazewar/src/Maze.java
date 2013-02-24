@@ -71,7 +71,11 @@ public abstract class Maze {
      * @param client {@link Client} that is firing.
      * @return <code>false</code> on failure, <code>true</code> on success.
      */
+    public abstract Cell canFire(Client client);
+    public abstract DirectedPoint canKill(Object contents);
     public abstract boolean clientFire(Client client);
+
+    public abstract void instantKillClient(Client killer, Client victim, DirectedPoint newDp);
 
     /**
      * Remove the specified {@link Client} from the {@link Maze}

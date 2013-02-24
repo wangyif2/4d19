@@ -42,6 +42,11 @@ public class ScoreTableModel implements TableModel, MazeListener {
     private final int scoreAdjKill = 11;
 
     /**
+     * {@link Client} gets eleven points for a instant kill.
+     */
+    private final int scoreAdjInstKill = 10;
+
+    /**
      * {@link Client} loses one point per shot.
      */
     private final int scoreAdjFire = -1;
@@ -207,14 +212,17 @@ public class ScoreTableModel implements TableModel, MazeListener {
         notifyListeners();
     }
 
-    public void clientKilled(Client source, Client target) {
+    public void clientKilled(Client source, Client target, boolean isInstant) {
         assert (source != null);
         assert (target != null);
         Object o = clientMap.get(source);
         assert (o instanceof ScoreWrapper);
         scoreSet.remove(o);
         ScoreWrapper s = (ScoreWrapper) o;
-        s.adjustScore(scoreAdjKill);
+        if (isInstant)
+            s.adjustScore(scoreAdjInstKill);
+        else
+            s.adjustScore(scoreAdjKill);
         scoreSet.add(s);
         o = clientMap.get(target);
         assert (o instanceof ScoreWrapper);

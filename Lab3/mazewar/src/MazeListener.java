@@ -37,7 +37,7 @@ public interface MazeListener {
      * @param source Client that fired the projectile.
      * @param target Client that was killed.
      */
-    void clientKilled(Client source, Client target);
+    void clientKilled(Client source, Client target, boolean isInstant);
 
     /**
      * Notification that new client has been added to the maze.

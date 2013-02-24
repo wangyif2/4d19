@@ -23,13 +23,14 @@ public class MazewarPacket implements Serializable {
     public static final int TURN_RIGHT = 203;
 
     public static final int FIRE = 300;
-    public static final int KILLED = 301;
+    public static final int INSTANT_KiLL = 301;
+    public static final int KILL = 302;
 
     public static final int QUIT = 400;
 
     //packet definitions
     public String owner;
-    public String killed;
+    public String victim;
 
     public int type = MazewarPacket.NULL;
     public HashMap<String, DirectedPoint> mazeMap = new HashMap<String, DirectedPoint>();

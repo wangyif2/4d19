@@ -189,35 +189,20 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     public synchronized void addClient(Client client) {
         assert (client != null);
 
-        Point point;
-        Direction dir;
+        DirectedPoint newDp;
         MazewarPacket fromServer;
 
         do {
-            // Pick a random starting point, and check to see if it is already occupied
-            point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
-            CellImpl cell = getCellImpl(point);
-            // Repeat until we find an empty cell
-            while (cell.getContents() != null) {
-                point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
-                cell = getCellImpl(point);
-            }
-
-            // Pick a random direction to face, check to see if it is a wall
-            dir = Direction.random();
-            // Repeat until we find a free direction
-            while (cell.isWall(dir))
-                dir = Direction.random();
-
-            fromServer = addClientToServer(client, new DirectedPoint(point, dir));
+            newDp = pickRandomLocation();
+            fromServer = addClientToServer(client, newDp);
         } while (fromServer.type != MazewarPacket.ADD_SUCCESS);
         logger.info("Added " + client.getName() +
-                " @ X: " + point.getX() + " Y: " + point.getY() +
-                " facing " + dir + "\n");
+                " @ X: " + newDp.getX() + " Y: " + newDp.getY() +
+                " facing " + newDp.getDirection() + "\n");
         // Sync all remote clients to maze
         syncRemoteClients(fromServer.mazeMap, fromServer.mazeScore);
         // Add LocalClient to maze
-        addClient(client, new DirectedPoint(point, dir), 0);
+        addClient(client, newDp, 0);
         // Start LocalClient thread
         thread.start();
     }
@@ -268,41 +253,52 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         notifyClientRemove(client);
     }
 
+    public synchronized Cell canFire(Client client) {
+        synchronized (clientFired) {
+            assert (client != null);
+            // If the client already has a projectile in play
+            // fail.
+            if (clientFired.contains(client)) {
+                return null;
+            }
+
+            Point point = getClientPoint(client);
+            Direction d = getClientOrientation(client);
+            CellImpl cell = getCellImpl(point);
+
+            /* Check that you can fire in that direction */
+            if (cell.isWall(d)) {
+                return null;
+            }
+
+            DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
+            /* Is the point withint the bounds of maze? */
+            assert (checkBounds(newPoint));
+
+            CellImpl newCell = getCellImpl(newPoint);
+            return newCell;
+        }
+    }
+
+    public synchronized DirectedPoint canKill(Object contents) {
+        synchronized (clientFired) {
+            // If it is a Client, kill it outright
+            if (contents instanceof Client) {
+                return pickRandomLocation();
+            } else {
+                // Otherwise fail (bullets will destroy each other)
+                return null;
+            }
+        }
+    }
+
     public synchronized boolean clientFire(Client client) {
         assert (client != null);
-        // If the client already has a projectile in play
-        // fail.
-        if (clientFired.contains(client)) {
-            return false;
-        }
 
         Point point = getClientPoint(client);
         Direction d = getClientOrientation(client);
-        CellImpl cell = getCellImpl(point);
-
-        /* Check that you can fire in that direction */
-        if (cell.isWall(d)) {
-            return false;
-        }
-
         DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
-        /* Is the point withint the bounds of maze? */
-        assert (checkBounds(newPoint));
-
         CellImpl newCell = getCellImpl(newPoint);
-        Object contents = newCell.getContents();
-        if (contents != null) {
-            // If it is a Client, kill it outright
-            if (contents instanceof Client) {
-                notifyClientFired(client);
-                killClient(client, (Client) contents);
-                update();
-                return true;
-            } else {
-                // Otherwise fail (bullets will destroy each other)
-                return false;
-            }
-        }
 
         clientFired.add(client);
         Projectile prj = new Projectile(client);
@@ -341,6 +337,9 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return moveClient(client, dp.getDirection().invert());
     }
 
+    public synchronized void instantKillClient(Client killer, Client victim, DirectedPoint newDp) {
+        killClient(killer, victim, newDp, true);
+    }
 
     public synchronized Iterator getClients() {
         return clientMap.keySet().iterator();
@@ -406,6 +405,23 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
     /* Internals */
 
+    private synchronized DirectedPoint pickRandomLocation() {
+        // Pick a random starting point, and check to see if it is already occupied
+        Point point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
+        CellImpl cell = getCellImpl(point);
+        // Repeat until we find an empty cell
+        while (cell.getContents() != null) {
+            point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
+            cell = getCellImpl(point);
+        }
+        Direction d = Direction.random();
+        while (cell.isWall(d)) {
+            d = Direction.random();
+        }
+
+        return new DirectedPoint(point, d);
+    }
+
     private synchronized Collection moveProjectile(Projectile prj) {
         Collection deadPrj = new LinkedList();
         assert (prj != null);
@@ -434,7 +450,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         if (contents != null) {
             // If it is a Client, kill it outright
             if (contents instanceof Client) {
-                killClient(prj.getOwner(), (Client) contents);
+                //killClient(prj.getOwner(), (Client) contents);
                 cell.setContents(null);
                 deadPrj.add(prj);
                 update();
@@ -517,32 +533,24 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
      * @param source The {@link Client} that fired the projectile.
      * @param target The {@link Client} that was killed.
      */
-    private synchronized void killClient(Client source, Client target) {
-        assert (source != null);
-        assert (target != null);
-        Mazewar.consolePrintLn(source.getName() + " just vaporized " +
-                target.getName());
-        Object o = clientMap.remove(target);
-        assert (o instanceof Point);
-        Point point = (Point) o;
-        CellImpl cell = getCellImpl(point);
-        cell.setContents(null);
-        // Pick a random starting point, and check to see if it is already occupied
-        point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
-        cell = getCellImpl(point);
-        // Repeat until we find an empty cell
-        while (cell.getContents() != null) {
-            point = new Point(randomGen.nextInt(maxX), randomGen.nextInt(maxY));
-            cell = getCellImpl(point);
+    private synchronized void killClient(Client source, Client target, DirectedPoint newDp, boolean isInstant) {
+        synchronized (clientMap) {
+            assert (source != null);
+            assert (target != null);
+            Mazewar.consolePrintLn(source.getName() + " just vaporized " +
+                    target.getName());
+            Object o = clientMap.remove(target);
+            assert (o instanceof Point);
+            Point point = (Point) o;
+            CellImpl cell = getCellImpl(point);
+            cell.setContents(null);
+
+            cell = getCellImpl(newDp);
+            cell.setContents(target);
+            clientMap.put(target, newDp);
+            update();
+            notifyClientKilled(source, target, isInstant);
         }
-        Direction d = Direction.random();
-        while (cell.isWall(d)) {
-            d = Direction.random();
-        }
-        cell.setContents(target);
-        clientMap.put(target, new DirectedPoint(point, d));
-        update();
-        notifyClientKilled(source, target);
     }
 
     /**
@@ -733,7 +741,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
      * @param source The {@link Client} that fired the projectile.
      * @param target The {@link Client} that was killed.
      */
-    private void notifyClientKilled(Client source, Client target) {
+    private void notifyClientKilled(Client source, Client target, boolean isInstant) {
         assert (source != null);
         assert (target != null);
         Iterator i = listenerSet.iterator();
@@ -741,7 +749,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             Object o = i.next();
             assert (o instanceof MazeListener);
             MazeListener ml = (MazeListener) o;
-            ml.clientKilled(source, target);
+            ml.clientKilled(source, target, isInstant);
         }
     }
 

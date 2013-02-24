@@ -241,7 +241,7 @@ public class OverheadMazePanel extends JPanel implements MazeListener {
 
     }
 
-    public void clientKilled(Client source, Client target) {
+    public void clientKilled(Client source, Client target, boolean isInstant) {
         // Doesn't need to do anything
     }
 

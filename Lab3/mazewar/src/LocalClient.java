@@ -85,8 +85,7 @@ public abstract class LocalClient extends Client implements KeyListener {
                     "\n\t     Y: " + newDp.getY() +
                     "\n\t     orientation : " + newDp.getDirection() + "\n");
             return true;
-        }
-        else {
+        } else {
             logger.info(getName() + " Cannot move forward!\n");
             return false;
         }
@@ -117,8 +116,7 @@ public abstract class LocalClient extends Client implements KeyListener {
                     "\n\t     Y: " + newDp.getY() +
                     "\n\t     orientation : " + newDp.getDirection() + "\n");
             return true;
-        }
-        else {
+        } else {
             logger.info(getName() + " Cannot move backward!\n");
             return false;
         }
@@ -172,6 +170,45 @@ public abstract class LocalClient extends Client implements KeyListener {
                 "\n\tto   X: " + newDp.getX() +
                 "\n\tto   Y: " + newDp.getY() +
                 "\n\t     orientation : " + newDp.getDirection() + "\n");
+    }
+
+    /**
+     * Notify server the client fired.
+     *
+     * @return <code>true</code> if move was successful, otherwise <code>false</code>.
+     */
+    protected void notifyServerFire() {
+        assert (maze != null);
+
+        MazewarPacket toServer = new MazewarPacket();
+        toServer.owner = getName();
+        Cell newCell = maze.canFire(this);
+        if (newCell == null) {
+            logger.info(getName() + " Cannot fire!\n");
+            return;
+        }
+
+        Object contents = newCell.getContents();
+        if (contents != null) {
+            // Check if instant kill happens
+            DirectedPoint newDp = maze.canKill(contents);
+            if (newDp != null) {
+                String victim = ((Client) contents).getName();
+                toServer.type = MazewarPacket.INSTANT_KiLL;
+                toServer.victim = victim;
+                toServer.mazeMap.put(victim, newDp);
+                notifyServer(toServer);
+                logger.info("Notify client: " + getName() + " instantly killed " + victim +
+                        "\n\t reSpawning at location " + newDp.getX() + " " + newDp.getY() + " " +
+                        newDp.getDirection() + "\n");
+            } else {
+                logger.info(getName() + " Cannot fire!\n");
+            }
+        } else {
+            toServer.type = MazewarPacket.FIRE;
+            notifyServer(toServer);
+            logger.info("Notify client: " + getName() + " fired\n");
+        }
     }
 
     protected void notifyServerQuit() {

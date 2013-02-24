@@ -13,11 +13,11 @@ public class LocalUpdateHandler implements Runnable {
     private Maze maze = null;
     private final Thread updateThread;
 
-    public LocalUpdateHandler () {
+    public LocalUpdateHandler() {
         updateThread = new Thread(this);
     }
 
-    public void start () {
+    public void start() {
         updateThread.start();
     }
 
@@ -46,13 +46,8 @@ public class LocalUpdateHandler implements Runnable {
                 if (fromServer != null) {
                     switch (fromServer.type) {
                         case MazewarPacket.ADD:
-                            Point p = fromServer.mazeMap.get(fromServer.owner);
-                            Direction d = fromServer.mazeMap.get(fromServer.owner).getDirection();
-
-                            maze.addRemoteClient(new RemoteClient(fromServer.owner), new DirectedPoint(p, d));
-                            logger.info("Added remote client: " + fromServer.owner
-                                    + "\n\t" + p.getX() + " " + p.getY()
-                                    + "\n\t" + d + "\n");
+                            maze.addRemoteClient(new RemoteClient(fromServer.owner), getNewDp(fromServer.mazeMap.get(fromServer.owner)));
+                            logger.info("Added remote client: " + fromServer.owner + "\n");
                             break;
                         case MazewarPacket.MOVE_FORWARD:
                             owner.forward();
@@ -70,6 +65,16 @@ public class LocalUpdateHandler implements Runnable {
                             owner.turnRight();
                             logger.info("Rotated client: " + fromServer.owner + " right\n");
                             break;
+                        case MazewarPacket.FIRE:
+                            owner.fire();
+                            logger.info("Client " + fromServer.owner + " fired\n");
+                            break;
+                        case MazewarPacket.INSTANT_KiLL:;
+                            maze.instantKillClient(owner,
+                                    maze.getClientByName(fromServer.victim),
+                                    getNewDp(fromServer.mazeMap.get(fromServer.victim)));
+                            logger.info("Client " + fromServer.owner + " instantly killed " + fromServer.victim + "\n");
+                            break;
                         case MazewarPacket.QUIT:
                             owner.quit();
                             logger.info(fromServer.owner + " quitting");
@@ -84,5 +89,12 @@ public class LocalUpdateHandler implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    /* Internals */
+    private DirectedPoint getNewDp(DirectedPoint dp) {
+        Point p = dp;
+        Direction d = dp.getDirection();
+        return new DirectedPoint(p, d);
     }
 }

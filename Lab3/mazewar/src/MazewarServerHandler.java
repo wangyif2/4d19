@@ -57,6 +57,12 @@ public class MazewarServerHandler extends Thread {
                     case MazewarPacket.TURN_RIGHT:
                         rotateClient(fromClient);
                         break;
+                    case MazewarPacket.FIRE:
+                        clientFire(fromClient);
+                        break;
+                    case MazewarPacket.INSTANT_KiLL:
+                        instantKillClient(fromClient);
+                        break;
                     default:
                         logger.info("ERROR: Unrecognized packet!");
                 }
@@ -214,10 +220,44 @@ public class MazewarServerHandler extends Thread {
         }
     }
 
+    private void clientFire(MazewarPacket fromClient) {
+        synchronized (MazewarServer.mazeScore) {
+            String clientName = fromClient.owner;
+
+            MazewarServer.mazeScore.put(clientName, MazewarServer.mazeScore.get(clientName) + MazewarServer.scoreAdjFire);
+            logger.info("Client " + clientName + " fired" +
+                    "\n\tUpdate score to " + MazewarServer.mazeScore.get(clientName));
+
+            MazewarServer.actionQueue.add(fromClient);
+        }
+    }
+
+    private void instantKillClient(MazewarPacket fromClient) {
+        synchronized (MazewarServer.mazeMap) {
+            String srcClientName = fromClient.owner;
+            String tgtClientName = fromClient.victim;
+            DirectedPoint tgtClientLoc = fromClient.mazeMap.get(tgtClientName);
+
+            MazewarServer.mazeMap.put(tgtClientName, tgtClientLoc);
+
+            synchronized (MazewarServer.mazeScore) {
+                //adjust the score for killing
+                MazewarServer.mazeScore.put(tgtClientName, MazewarServer.mazeScore.get(tgtClientName) + MazewarServer.scoreAdjKilled);
+                MazewarServer.mazeScore.put(srcClientName, MazewarServer.mazeScore.get(srcClientName) + MazewarServer.scoreAdjInstKill);
+            }
+
+            MazewarServer.actionQueue.add(fromClient);
+            logger.info("Client " + srcClientName + " instantly killed " + tgtClientName
+                    + "\n\treSpawn location " + tgtClientLoc.getX() + " " + tgtClientLoc.getY() + " " + tgtClientLoc.getDirection()
+                    + "\n\tcurrent score of victim " + MazewarServer.mazeScore.get(tgtClientName)
+                    + "\n\tcurrent score of killer " + MazewarServer.mazeScore.get(srcClientName));
+        }
+    }
+
     private void killClient(MazewarPacket fromClient) {
         synchronized (MazewarServer.mazeMap) {
             String srcClientName = fromClient.owner;
-            String tgtClientName = fromClient.killed;
+            String tgtClientName = fromClient.victim;
             DirectedPoint tgtClientLoc = fromClient.mazeMap.get(tgtClientName);
 
             MazewarServer.mazeMap.put(tgtClientName, tgtClientLoc);
@@ -231,19 +271,6 @@ public class MazewarServerHandler extends Thread {
                         + " current score of killed " + MazewarServer.mazeScore.get(tgtClientName)
                         + " current score of killer " + MazewarServer.mazeScore.get(srcClientName));
             }
-
-            MazewarServer.actionQueue.add(fromClient);
-        }
-    }
-
-    private void firedClient(MazewarPacket fromClient) {
-        synchronized (MazewarServer.mazeScore) {
-            String clientName = fromClient.owner;
-
-            logger.warn(clientName + " has score " + (MazewarServer.mazeScore.get(clientName)) + " before fire");
-            MazewarServer.mazeScore.put(clientName, MazewarServer.mazeScore.get(clientName) + MazewarServer.scoreAdjFire);
-            logger.info("Client " + clientName + " fired on sender " + fromClient.owner +
-                    " current score" + MazewarServer.mazeScore.get(clientName));
 
             MazewarServer.actionQueue.add(fromClient);
         }

@@ -23,6 +23,11 @@ public class MazewarServer {
     public static final int scoreAdjKill = 11;
 
     /**
+     * {@link Client} gets ten points for a instant kill (11 for kill and -1 for fire).
+     */
+    public static final int scoreAdjInstKill = 10;
+
+    /**
      * {@link Client} loses one point per shot.
      */
     public static final int scoreAdjFire = -1;
