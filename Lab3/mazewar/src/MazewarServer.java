@@ -13,8 +13,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class MazewarServer {
     private static final Logger logger = LoggerFactory.getLogger(MazewarServer.class);
-
-    public static String hostname;
     public static int port;
 
     /**
@@ -54,7 +52,7 @@ public class MazewarServer {
 
         try {
             if (args.length == 1) {
-                int port = Integer.parseInt(args[0]);
+                port = Integer.parseInt(args[0]);
                 serverSocket = new ServerSocket(port);
             } else {
                 logger.error("ERROR: Invalid arguments!");

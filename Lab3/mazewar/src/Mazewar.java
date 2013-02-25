@@ -38,7 +38,6 @@ import java.net.UnknownHostException;
 
 public class Mazewar extends JFrame {
     private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
-
     public static String myName;
     public static Socket playerSocket = null;
     public static ObjectOutputStream out;
@@ -197,9 +196,9 @@ public class Mazewar extends JFrame {
         myClient = isRobot ? new RobotClient(myName) : new GUIClient(myName);
         maze.addClient(myClient);
         if (isRobot)
-            this.addKeyListener((RobotClient) myClient);
+            this.addKeyListener(myClient);
         else
-            this.addKeyListener((GUIClient) myClient);
+            this.addKeyListener(myClient);
         myClient.start();
 
         // Create the panel that will display the maze.

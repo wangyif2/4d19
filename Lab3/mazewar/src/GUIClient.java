@@ -17,9 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.awt.event.KeyEvent;
 
 /**
@@ -31,8 +28,6 @@ import java.awt.event.KeyEvent;
  */
 
 public class GUIClient extends LocalClient {
-    private static final Logger logger = LoggerFactory.getLogger(GUIClient.class);
-
     /**
      * Create a GUI controlled {@link LocalClient}.
      */

@@ -37,7 +37,6 @@ import java.io.IOException;
 
 public abstract class LocalClient extends Client implements KeyListener {
     private static final Logger logger = LoggerFactory.getLogger(LocalClient.class);
-
     private LocalUpdateHandler localUpdate;
 
     /**
@@ -134,8 +133,6 @@ public abstract class LocalClient extends Client implements KeyListener {
 
     /**
      * Notify server turning the client left.
-     *
-     * @return <code>true</code> if move was successful, otherwise <code>false</code>.
      */
     protected void notifyServerTurnLeft() {
         MazewarPacket toServer = new MazewarPacket();
@@ -159,8 +156,6 @@ public abstract class LocalClient extends Client implements KeyListener {
 
     /**
      * Notify server turning the client right.
-     *
-     * @return <code>true</code> if move was successful, otherwise <code>false</code>.
      */
     protected void notifyServerTurnRight() {
         MazewarPacket toServer = new MazewarPacket();
@@ -184,8 +179,6 @@ public abstract class LocalClient extends Client implements KeyListener {
 
     /**
      * Notify server the client fired.
-     *
-     * @return <code>true</code> if move was successful, otherwise <code>false</code>.
      */
     protected void notifyServerFire() {
         assert (maze != null);

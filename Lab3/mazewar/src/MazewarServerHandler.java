@@ -151,18 +151,18 @@ public class MazewarServerHandler extends Thread {
             }
 
             MazewarServer.mazeMap.put(clientName, clientDp);
-            logger.info("AddClient: " + clientName +
-                    "\n\tto X: " + clientDp.getX() +
-                    "\n\tto Y: " + clientDp.getY() +
-                    "\n\torientation : " + clientDp.getDirection());
 
             synchronized (MazewarServer.mazeScore) {
                 MazewarServer.mazeScore.put(clientName, 0);
             }
-            logger.info("Add Client: " + clientName +
-                    " with score " + MazewarServer.mazeScore.get(clientName));
 
             MazewarServer.actionQueue.add(fromClient);
+            logger.info("Add Client: " + clientName +
+                    "\n\tto X: " + clientDp.getX() +
+                    "\n\tto Y: " + clientDp.getY() +
+                    "\n\torientation : " + clientDp.getDirection());
+            logger.info("Add Client: " + clientName +
+                    " with score " + MazewarServer.mazeScore.get(clientName));
         }
     }
 
@@ -180,6 +180,7 @@ public class MazewarServerHandler extends Thread {
             }
 
             MazewarServer.actionQueue.add(fromClient);
+            logger.info("Client: " + clientName + " disconnected!");
         }
     }
 
@@ -228,10 +229,10 @@ public class MazewarServerHandler extends Thread {
             String clientName = fromClient.owner;
 
             MazewarServer.mazeScore.put(clientName, MazewarServer.mazeScore.get(clientName) + MazewarServer.scoreAdjFire);
-            logger.info("Client " + clientName + " fired" +
-                    "\n\tUpdate score to " + MazewarServer.mazeScore.get(clientName));
 
             MazewarServer.actionQueue.add(fromClient);
+            logger.info("Client " + clientName + " fired" +
+                    "\n\tUpdate score to " + MazewarServer.mazeScore.get(clientName));
         }
     }
 

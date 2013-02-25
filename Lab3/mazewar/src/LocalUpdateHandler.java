@@ -9,7 +9,6 @@ import java.io.IOException;
  */
 public class LocalUpdateHandler implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(LocalClient.class);
-
     private Maze maze = null;
     private final Thread updateThread;
 

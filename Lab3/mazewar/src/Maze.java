@@ -71,9 +71,11 @@ public abstract class Maze {
      * @param client {@link Client} that is firing.
      * @return <code>false</code> on failure, <code>true</code> on success.
      */
-    public abstract Cell canFire(Client client);
-    public abstract DirectedPoint canKill(Object contents);
     public abstract boolean clientFire(Client client);
+
+    public abstract Cell canFire(Client client);
+
+    public abstract DirectedPoint canKill(Object contents);
 
     public abstract void killClient(Client killer, Client victim, DirectedPoint newDp, boolean isInstant);
 
@@ -109,8 +111,9 @@ public abstract class Maze {
      * @param client {@link Client} to move.
      * @return <code>true</code> if successful, <code>false</code> if failure.
      */
-    public abstract boolean canMoveForward(Client client);
     public abstract boolean moveClientForward(Client client);
+
+    public abstract boolean canMoveForward(Client client);
 
     /**
      * Attempt to move a {@link Client} in the {@link Maze} backward.
@@ -118,8 +121,9 @@ public abstract class Maze {
      * @param client {@link Client} to move.
      * @return <code>true</code> if successful, false if failure.
      */
-    public abstract boolean canMoveBackward(Client client);
     public abstract boolean moveClientBackward(Client client);
+
+    public abstract boolean canMoveBackward(Client client);
 
     /**
      * Obtain an {@link Iterator} over all {@link Client}s in the {@link Maze}
