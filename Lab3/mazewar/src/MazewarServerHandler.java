@@ -37,6 +37,7 @@ public class MazewarServerHandler extends Thread {
 
             MazewarPacket fromClient;
 
+            polling:
             while ((fromClient = (MazewarPacket) in.readObject()) != null) {
                 // Print the packet message on screen for now
                 switch (fromClient.type) {
@@ -48,7 +49,7 @@ public class MazewarServerHandler extends Thread {
                         break;
                     case MazewarPacket.QUIT:
                         quitClient(fromClient);
-                        break;
+                        break polling;
                     case MazewarPacket.MOVE_FORWARD:
                     case MazewarPacket.MOVE_BACKWARD:
                         moveClient(fromClient);
