@@ -1,1 +1,85 @@
 \section{Implementation}\label{Impl}
+
+This section presents the implementation of design proposed in section \ref{Design}.
+
+\subsection*{Component Implementation}\label{ImplComponent}
+
+\paragraph*{Naming Service}
+
+Similar to the server component implemented in lab 2, the naming service will create a socket that is embedded on the client code. The naming service will be created first and start listening on this socket, and when a new client is created, they will attempt to establish a connection at this socket first.
+
+The naming service will spawn a new thread on client connection. The thread will simply put the new client name, and socket address into its local hashmap, and reply the up-to-date hash map to the client, after which, the socket will be closed, and properly cleaned up.
+
+While the naming service do form a central point of failure, its processing load is orders of magnitude lower than other component of the game, allowing it to scale up when player number becomes large.
+
+\paragraph*{Client Broadcaster}
+
+Opposite to lab 2 server, the broadcast component will be a thread on the client side, constantly broadcasting every local action to every player registered to the hashmap locally kept, which was obtained from naming service when the player first joined.
+
+\paragraph*{Client Listener}
+
+The listener on the client will be a thread that uses a Selector to monitor a list of channels as shown in Code \ref{CodeSelector}. 
+
+{
+\singlespacing
+\begin{lstlisting}[caption = {[ClientListener.java]Sample code of Selector monitoring a list of channel}, label = CodeSelector]
+Selector selector = Selector.open();
+
+channel.configureBlocking(false);
+
+SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+
+
+while(true) {
+
+  int readyChannels = selector.select();
+
+  if(readyChannels == 0) continue;
+
+
+  Set<SelectionKey> selectedKeys = selector.selectedKeys();
+
+  Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+
+  while(keyIterator.hasNext()) {
+
+    SelectionKey key = keyIterator.next();
+
+    if(key.isAcceptable()) {
+        // a connection was accepted by a ServerSocketChannel.
+
+    } else if (key.isConnectable()) {
+        // a connection was established with a remote server.
+
+    } else if (key.isReadable()) {
+        // a channel is ready for reading
+
+    } else if (key.isWritable()) {
+        // a channel is ready for writing
+    }
+
+    keyIterator.remove();
+  }
+\end{lstlisting}
+}
+
+\paragraph*{Client Holdback Queue}
+
+This queue will be a priority queue that will automatically sort the packet inside with priority of sequence number decided with algorithm specified in \ref{ImplConsistency}.
+
+\subsection*{Consistency Implementation}\label{ImplConsistency}
+
+As described in the book /textit{Distributed Systems Concepts and Design}, there are two methods of implmenting total ordering, a sequencer, and the ISIS method. Since sequncer requires a centralized component that needs to broadcast a global sequence number, this is equivelent to lab 2. To decentralize the sequencer, we use the ISIS method described below.
+
+\begin{enumerate}
+\item Client p broadcase  <m,i>  with message m and unique id i to everyone.
+ 
+\item On receiving m for the first time, m is added to the Holdback queue which is a priority queue and tagged as holdback. Reply to sender with a proposed priority, i.e., a sequence number /textit{seq number} = 1 + largest seq number heard so far, suffixed with the recipient’s process ID to break tie. Note that the priority queue is always sorted by priority.
+
+\item Client p collects all responses from the recipients, calculates their maximum, and 
+re-broadcase original message with a final priority for m. 
+
+\item On receiving m (with final priority), the receiver mark the message as OK, reorder the priority queue, and deliver the set of lowest priority messages that are marked as deliverable.
+\end{enumerate}
+
+
