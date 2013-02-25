@@ -2,5 +2,8 @@
 \BOOKMARK [1][-]{section*.4}{List of Codes}{}
 \BOOKMARK [1][-]{section.1}{Introduction}{}
 \BOOKMARK [1][-]{section.2}{Design}{}
+\BOOKMARK [2][-]{subsection.2.1}{Component List and Discription}{section.2}
+\BOOKMARK [2][-]{subsection.2.2}{Communication Protocol}{section.2}
+\BOOKMARK [2][-]{subsection.2.3}{How a player Locate, Leave and Join}{section.2}
+\BOOKMARK [2][-]{subsection.2.4}{Maintaining Consistency}{section.2}
 \BOOKMARK [1][-]{section.3}{Implementation}{}
-\BOOKMARK [1][-]{section*.6}{References}{}

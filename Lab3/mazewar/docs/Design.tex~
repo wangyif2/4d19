@@ -1,164 +1,98 @@
-\section{Literature Review}\label{LitRev}
+\section{Design}\label{Design}
 
-With the emergence of mobile device and mobile computing power, technologies offer us previously unimaginable global access to data, their theft prone property concurrently threatens our sense of control over data ownership. To protect the data stored on a mobile device in the case of loss or theft, today's users rely on traditional encrypted file systems, such as BitLocker and TrueCrypt \cite{MattB1993}. However, traditional encrypted file systems are often insufficient to protect mobile data for two reasons. First, such systems can and do fail in the real world for many reasons: users configure weak passwords or write their passwords on easily accessible sticky notes, decryption keys can be recovered from memory, and most of today's tamper resistant hardware can still be physically compromised \cite{JAlex2008}. Second, when traditional encryption fails, it fails silently. After a device is stolen, users have no way of knowing whether a thief has compromised their protections and accessed any sensitive files.
+\subsection{Component List and Discription}\label{DesignComponent}
 
-Such difficulties have led to the development of auditing file systems such as Keypad \cite{Roxana2011}, which supports fine-grained file access auditing that allows users to obtain explicit evidence of whether any files have been accessed after a device's loss as well as the ability to disable future file accesses after realizing that a device is lost. Keypad achieves these properties by weaving together encryption and remote encryption key management. Now Android smartphones amassed a commanding 68.1 market share of all mobile devices shipped during the second quarter of 2012 and operates under the Apache 2.0 open source license, which makes it an ideal candidate for a test bed of extension of Keypad design \cite{mobile2012}.
+\paragraph*{Naming Service}
 
-The following subsections introduce a number of key Android Operating System and Encryption key management concepts which were studied during the literature review. The current state of the field is then described, putting in context the possible contributions of this project. Finally, the research question driving this thesis is stated and a number of paths are presented for moving research forward.
+In order for players to communicate with each other without a central server processing all of their request, they must know how many players are there, and how to communicate with them. This is where the Naming Service component comes in. This service maintains a hashmap of all currently connected players as well as their input/output stream. This hashmap is updated on player join/leave, and is supplied to newly created player for them to recognize current players. See Section \ref{DesignGameFlow} for details usage of this hashmap.
 
-\subsection{Key Concepts}\label{LitRevConcepts}
+\paragraph*{Client Broadcaster}
 
-Prior to making any significant contributions to the field of auditing file system in mobile operating system security, a number of important and relevant concepts must first be examined and understood. The order of these concepts follows closely with the steps outlined for this project in Section \ref{Intro}. The technique that is used in Android to provide access for Android specific data is first considered. The design used by Keypad for remote key management that will be incorporated in this design is then explained. Finally, the ideas behind the encryption technique for database entries are outlined.
+For other players to acknowledge movement of local player without a centralized broadcast server, the player must have some way of deliver this information. In our design, we decentralize the role of the broadcast server by spliting it onto each current player. On each local player action such as move, turn or fire, a broadcast packet (See Section \ref{DesignProtocol} for packet structure) will be sent to all current player detailing the movement of the local player. The broadcaster will obtain a hashmap containing all current players from the Naming Service, and loop through all the output stream to deliver each packet.
 
-\subsubsection{Content Provider Class and Implementation}\label{LitRevConPro}
+\paragraph*{Client Listener}
 
-Android specific data are personal information of the users handled by system applications. These  system applications include: PackageManager, Calender, Contacts, Downloads, Bookmarks, CallLogs, Gmail, SMS, and User Dictionary. User data are managed and stored as database entries in SQLite database stored locally on the mobile device.
+To receive packets broadcasted from other players, a seperate thread runs continuously to listen on input streams of each different player through a selector. When a packet arrives, it temporarily put on hold until it can be determined that the ordering is correct. After that, the packet is processed, and the action specified in the packet is performed to update the local environment.
 
-SQLite is an opensource, serverless, self-contained database implementation in C \cite{sqlite2000}. Android implemented SQLite in the Native layer as part of its library, and on top of that, a Java wrapper layer in its application framework. Android provided serval ways for an application to interact with this database as outlined in Table \ref{table:LitRevTableDbInteract}.
+\paragraph*{Client Holdback Queue}
 
-\begin{table}[ht]
-\caption{Methods for Android Application to Interact with SQLite Database}
-\centering
-\begin{tabular}{l p{13cm}}
-\hline\hline
-Method & Description \\
-\hline \\
-SQLiteHelper & Create \textit{SQLiteDatabase} -$>$ Create an 
-\textit{ApplicationDatabaseHelper} which extends \textit{SQLiteOpenHelper} -$>$ Call super class constructor with database name -$>$ Interact with the database with \textit{SQLiteDatabase.execSQL()}  \\ [1ex]
-ContentProvider & Designing Content URIs -$>$ Implementing the \texti{ContentProvider} Class -$>$ Query the \textit{ContentProvider} through \textit{ContentResolver} Class  \\ [1ex]
-\hline
-\end{tabular}
-\label{table:LitRevTableDbInteract}
-\end{table}
+Since there is no centralized component that can maintain order of the overall system, client must determin locally what the ordering of arriving packet should be. This however could result in inconsistent game state. As a result, this design implements a queue that holds incoming packet until it can be determined that the next packet played back from the queue is consistant accross the game. See Section \ref{DesignConsistency} for details on how the ordering is determined.
 
-If the database is completely local, application will employ \textit{SQLiteHelper} method. This class does the heavy lifting of creating and interacting with the database for the application, while the application can execute arbitrary queries through the \textit{SQLiteDatabase.execSQL()} method.
+\subsection{Communication Protocol}\label{DesignProtocol}
 
-Applications that needs to store complex database schema and would also like to share its database content with other applications, interact with the SQLite database through an application framework \textit{ContentProvider}. It is a primary building block of Android application, and have been part of the Android system since API level 1. 
+To determin the communication protocol between clients, many options were exploited. First, a one to one socket for each pair of players were considered. In this design each player creates a socket for every existing player, and allow them to connect and send packet. To deal with blocking on listening on the input stream, a thread is created for every input stream. Clearly there is high overhead in this method that the number of thread needed is high, and will easily run into scaling issue, not to mention the possible difficulty of dealing with race condition. 
 
-ContentProvider provides a series of abstract methods to be implemented by developers to allow flexibility and customization for each application: query(); insert(); update(); delete(); getType(); onCreate().
+The second method looked at was using DatagramSocket class. This class allows broadcasting packet to all party listening on a particular socket without having to loop through all the output stream. However, this class extends an UDP implementation, and does not garentee message delivery. One possible solution was to employ at-most-once message delivery algorithm described in class, but without centralized server, the complexity increases dramatically. In addition, the problem of creating a single thread for each input stream is still undealt.
 
-To better understand this concept, Figure \ref{FigContentProvider} demonstrates the hierarchical relationship between application and its provider class. In the Contact application, ContactProvider implements ContentProvider class to provide specific ways the Contact application wants to interact with the database that stores contact information. Contact application interacts with ContentProvider through ContentResolver, which takes an Uri object that maps query request to objects in the database.
+The third method that was chosen was to use a Selector calss. This class allows the client to use one thread to handle multiple channels. Figure \ref{FigSelector} shows how an overview of how selector can be used by one thread to monitor several sockets. With this method, broadcasting packets will be handled with a single thread, as well as listening for packets.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[scale=0.65]{./Figs/contact_provider.png}
+  \includegraphics[scale=0.65]{./Figs/selectors.png}
   \caption
-  {Provider hierarchy for Contact Application}
-  \label{FigContentProvider}
+  {A thread using Selector to handle 3 Channels}
+  \label{FigSelector}
 \end{figure}
 
-\subsubsection{Auditing File System for Android Specific Data}\label{LitRevAudit}
+\paragraph*{Packet Structure} The packet sent between the clients needs to contain information about all aspect of the game. This includes player creation, action, acknowledgement, error handling as well as action sequencing. Code \ref{CodeMazewarPacket} shows the proposed packet structure. 
 
-Auditing File System is a method of storing encryption key on a remote server for local data that is encrypted \cite{Cohen1997}. The advantage of this method is that each time a local file is accessed, the encryption key is fetched from the remote server, thus can be logged. Also, if the local data storage is compromised, key access can be disabled remotely thus preventing all future access.
+{
+\singlespacing
+\begin{lstlisting}[caption = {[MazewarPacket.java]Structure of packets exchanged between players}, label = CodeMazewarPacket]
+public class MazewarPacket implements Serializable {
+    public static final int NULL = 0;
+    public static final int ERROR_DUPLICATED_CLIENT = 1;
+    public static final int ERROR_DUPLICATED_LOCATION = 1;
 
-\begin{figure}[h]
-  \left
-  \includegraphics[scale=0.65]{./Figs/remote_key_storage.png}
-  \caption
-  {Request map for Remote Encryption Key Storage and Management}
-  \label{FigRemoteKeyStorage}
-\end{figure}
+    public static final int REGISTER = 100;
+    public static final int REGISTER_SUCCESS = 101;
 
-At time of data creation, the data is encrypted, and the key is sent to a remote audit service. As out lined in Figure \ref{FigRemoteKeyStorage}, when client request access to a piece of data, the key is then fetched from the server. Each piece of local data is encrypted with its own symmetric key. Client downloads the key for a file each time it is accessed, and destroys the key immediately after use.
+    public static final int ADD = 103;
+    public static final int ADD_SUCCESS = 104;
 
-To properly implement this method, several area needs to be well thought out. First of all, to manage the key stored on remote side efficiently, a database schema specific for the application for key storage needs to be implemented. Second of all, the request should contain minimal information such that the network usage is minimized. Third of all, server should be able to handle concurrent requests for concurrent data access. These aspects will be properly addressed in Section \ref{Progress}.
+    public static final int MOVE_FORWARD = 105;
+    public static final int MOVE_BACKWARD = 106;
 
-\subsubsection{Per-row vs Per-column encryption}\label{LitRevEnc}
+    public static final int TURN_LEFT = 206;
+    public static final int TURN_RIGHT = 207;
 
-To encrypt entries of database, and remotely manage its keys, we need to explore the benefit of different encryption schemes. As will be shown, per-row encryption allows fine-grain auditability but requires complete duplication of unencrypted database on the server side, while per-column encryption allow coarse-grain auditability, but only requires duplication of database schema on the server side. For each method, we will look at how database query will be implemented on a sample contact application.
+    public static final int FIRE = 300;
+    public static final int KILLED = 301;
 
-\paragraph{Per-row encryption}\label{LitRevEncRow}
+    public static final int FIRST = 400;
+    public static final int PROPOSE = 401;
+    public static final int FINAL = 402;
 
-This method encrypts each row with a unique encryption key. The client side database will have each row encrypted with an unique encryption ID. Since querying an encrypted database directly is impossible, a copy of the unencrypted database is maintained on the server side with encryption id as well as decryption key. The sample database schema is outlined below.
+    public static final int QUIT = 400;
 
-Server: (EncID, Name, Email, Age, Key)
+    //packet origin identifier
+    public String owner;
+    public String killed;
 
-Client: (EncID, Name, Email, Age)
+	//packet content
+    public int type = MazewarPacket.NULL;
+    public HashMap<String, DirectedPoint> mazeMap = 
+    						new HashMap<String, DirectedPoint>();
+    public HashMap<String, Integer> mazeScore = 
+    						new HashMap<String, Integer>();
+    public HashMap<String, Integer> mazeSequnce = 
+    						new HashMap<String, Integer>();
+}
+\end{lstlisting}
+}
 
-As shown in Figure \ref{FigRowInsert} Insert will be performed twice, once with unencrypted data on the server side, and second time with encrypted data on the device side.
+The packet origin identifier identifies the client who generated the packet, and in the case where two clients are involved (eg. killing), the source and target of the clients. Packet contents contains a type variable that identify the action the packet aims to perform, such as moving or turning. MazeMap variable are used to supply clients with a new location of a particular player in case of respawn or new player join. MazeScore variable is used to update new joined player with current score table. MazeSequnce is used to maintain a total order of packet deliver accorss, the detail of this design is presented in Section \ref{DesignConsistency}.
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[scale=0.45]{./Figs/row_insert.png}
-  \caption
-  {Requset map of Insert method call for Per-Row encryption method}
-  \label{FigRowInsert}
-\end{figure}
+\subsection{How a player Locate, Leave and Join}\label{DesignGameFlow}
 
-As shown in Figure \ref{FigRowQuery}, two different type of query will be implemented with different logic. When the query involves a simple projection, a similar project on the column of decryption key is replied. Projection with selection requires us to find the specific EncID first, then send it back to the client side for the data to be queried and decrypted.
+This section puts all the component together to describe the life cycle of the game play. First of all, when a player wishes to join the game, a query is sent to the naming service which replies with a list of currently connected player, and the socket address they are listening on. The new player then establishes connection with all provided sockets, and wait for the other players to acknowledge this join request. When the existing player receives a new player request, it register the new connection locally, and replies with the its own current location. After the new player have received reply from everyone else it then starts to process any action related packet in the hold-back queue based on sequence number.
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[scale=0.45]{./Figs/row_query.png}
-  \caption
-  {Requset map of Query method call for Per-Row encryption method}
-  \label{FigRowQuery}
-\end{figure}
+When a player decides to leave, it sends a broadcast packet with type QUIT as in Code \ref{CodeMazewarPacket}, and wait for acknowledgement from all players. When all the player acknowledges the quit, the player can then gracefully exist. This to maintain total order as described in Section \ref{DesignConsistency}.
 
-\paragraph{Per-column encryption}\label{LitRevEncCol}
+\subsection{Maintaining Consistency}\label{DesignConsistency}
 
-This method encrypts each column with an unique encryption key. The client side database will have each column encrypted. The server side database will simply maintain a list of decryption key for each column.
+Consistency is a major issue in a distributed game in this case. To demonstrate possible scenario of inconsistent state, we will look at several cases. First of all, consider player A and player B both made a move to position (12,7). Player B will see its own movement first and the broadcast packet from player A second, and declare that player B has arrived at (12,7) first. Similarly player A will think itself arrived first, resulting in two different game state. Second of all, we look at two players that are right next to each other firing at each other at the same time. This is quite a frequent scenario since there are many corners that leads to players facing each other. Similar to the first case, the local players might see different order of event resulting in differnt player being vaporized on different machine. Thirdly, when a new player joins dynamically, it must captures the current game state, and put all subsequnce movement on hold before the current game state and be processed and displayed. This again requires an ordering of event accross the game.
 
-Server: (Column, Name, Key)
+To solve this issue, we realized that an ordering needs to be established. Several types of ordering in a distributed system were looked at. First, the FIFO ordering only guarantees that if process A produces a happens-before relation, then this relation is captured on all other processes broadcasted to, it provides no information on order accorss processes. Secondly, the Causual ordering were looked at, which guarantees if message m -$>$ m' where -$>$ is the happened-before relation induced, then any other process will also deliver m before m'. This again does not garentee two process will have same order of execution. Finially we arrive at total ordering, which garentees that the order of execution will be maintained throughout the system.
 
-Client: (Name, Email, Age)
-
-Since every column uses the same encryption key we simply need to request the key maintained on the server side and encrypt the data entries inserted into local database as outline in Figure \ref{FigColInsert}.
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[scale=0.45]{./Figs/col_insert.png}
-  \caption
-  {Requset map of Insert method call for Per-Column encryption method}
-  \label{FigColInsert}
-\end{figure}
-
-Since there is no way for us to query on encrypted data, we will decrypt the entire column, and perform query as outline in Figure \ref{FigColQuery}. After the query is completed we re-encrypt the entire column. This is similar to having an decryption key expired on a documented that is encrypted.
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[scale=0.45]{./Figs/col_query.png}
-  \caption
-  {Requset map of Query method call for Per-Column encryption method}
-  \label{FigColQuery}
-\end{figure}
-
-\subsection{Current State of Field}\label{LitRevCurrent}
-
-To properly understand the current state of field relavent to this research, we first realize that the method employed is a combination of database encryption and remote key management.
-
-Database encryption is a well explored topic. \textit{CryptDB} for example, is an open source database management system (DBMS) that operates on an encrypted database. It associates user password with the queries they performed directly on encrypted data. As a result, user can only view data relavent to themselves \cite{popa2011}. This solves the problem when a database administrator may want to access private data such as health record, as well as the situation when the entire DBMS is compromised. It works by realizing the idea that all SQL queries are made up of a set of well defined operators such as equals, orders and joins. It uses known encryption schems and privacy-preserving cryptographic method to allow DBMS to execute on encrypted data. Other open source database encryption methods also exists. Specifically for SQLite on Android, \textit{SQLCipher} is an extention to SQLite database platform that allows creation of encrypted database \cite{SqlCipher2008}. SQLCipher uses 256-bit AER in CBC mode for encryption, and once encrypted, queries performed on encrypted data will be unresolvable. Due to its low overhead and compact size, it is quickly becoming the most heavily used encryption database solution for mobile developers.
-
-The majority of research in the field of auditing file system and remote key manamgent is very recent. Specifically as mentioned in Section \ref{Intro}, \textit{Keypad} is an encrypted file system that aims to provide autiablitiy on data on the mobile device when the device is lost of stolen. The most obvious challenge for remote key management is posed by network availability. Keypad presents two unique methods to solve performance issue over slow or high-latency networks. First of all, encryption keys are cached and prefetched. For key caching, a experimental result of 100 seconds were determined to be most efficient \cite{Roxana2011}, key prefetching is performed for example, when a recursive file operation is detected such as searching. As for disconnected access, Keypad proposed to use paired devices over conntection such as bluetooth for accessibility. The most recent work by Professor David Lie at the University of Toronto has taken a similar approach as Keypad, and applied it to Android. The design extends EncFS \cite{encfs} byadding a unique file ID to the header of files. This ID is requested by the client at time of file creation and generated by the remote server. Similarly, when the file is accessed, the key associated with the same file ID is requested, and is expired after the file is closed. This appoarch enables auditability on Android powered device.
-
-Although there is a strong literature background for the methods described in Sections \ref{LitRevConPro} to \ref{LitRevEnc}, the combination of these methods has not been explored yet. For example, neither \textit{CryptDB} and \textit{SQLCipher} allows the tracking of individual encryption key for each data entry, thus lacking auditing ability. At this point, an auditable database system for Android specific data has yet to be developed. With the inclusion of database entry encryption and remote key management, the design has potential to be very effective at providing sigificantly higher degree of security and ownership over private data. 
-
-\subsection{Research Question and Study Paths}\label{LitRevQuestion}
-
-The major research question being tackled is: \textit{Investigate if Auditing File System protection can be extended to Android-specific data types, such as contacts, calendar items, browser bookmarks, and investigate the overhead and implementation effort of such protection}. As is usually done with the introduction of a new design, studies focusing on performance need to be conducted in order to effectively judge the effectiveness of this method. The studies will address three questions. First of all, what is the performance overhead incurred by employing an auditing database system on a mobile device. Second of all, does different method of encryption scheme described in Section \ref{LitRevEnc} alter the performance. This will guide furture implementation to employ more efficient scheme. Third of all, does optimization such as batch query operation alter the performance. Once the design is developed, the field of research can be moved forward along a number of paths. 
-
-\subsubsection{Performance Overhead}\label{LitRevNewRBF}
-
-The most basic study would be measure and record the overhead produced by added layer of audit database system. A set of real-world workload on a contact database can be recorded through tracing database query calls on the Contact database as part of the Android operating system. The tracing can be done through modifying the system to log each database query, and perform UI fuzzing on the Contact appliation. The log can then be analyzed and used to generate a set of method calls. These method calls can then be played back on the benchmark application with and without audit database system. A wall clock time will be recorded to study the performance overhead.
-
-\subsubsection{Encryption Method and Optimization}\label{LitRevSigma}
-
-To study the performance difference between per-row and per-column encryption as outlined in Section \ref{LitRevEnc}, a set of predetermined queries will be played back at random time interval with each encryption method. Table \ref{table:LitRevTableStudyEnc} outlines the detailed comparison that will be performed.
-
-\begin{table}[ht]
-\caption{Study performance difference between Per-row and Per-column encryption methods}
-\centering
-\begin{tabular}{l p{10cm}}
-\hline\hline
-Method & Description \\
-\hline \\
-Insert & Compare the time elapsed per 100 insert using each methods \\ [1ex]
-Query (simple projection) & Compare the time elapsed for query with simple projection on database with 100 entry \\ [1ex]
-Query (selection match) & Compare the time elapsed for querying a particular entry on database with 100 entry \\ [1ex]
-Query (selection greater) & Compare the time elapsed for querying entries greater than a particular value on database with 100 entry \\ [1ex]
-Delete & Compare the time elapsed for deleting a particular entry on database with 100 entry \\ [1ex]
-\hline
-\end{tabular}
-\label{table:LitRevTableStudyEnc}
-\end{table}
-
+Total ordering leads to a consistant game state at all times accross all players, and should be applied as part of this design. We should note that total ordering does not garentee fairness in real time. For example, if player A and B are next to each other and fires at one another, if player A fired first, and player B second, total ordering does not garentee that player A will always kill player B. Instead, it garentees that if player B killed player A, everyone in the game will see the same state. To achieve total fairness, a phyical clock synchronization is needed.
