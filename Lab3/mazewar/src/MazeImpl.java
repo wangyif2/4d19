@@ -337,8 +337,24 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return moveClient(client, dp.getDirection().invert());
     }
 
-    public synchronized void instantKillClient(Client killer, Client victim, DirectedPoint newDp) {
-        killClient(killer, victim, newDp, true);
+    public synchronized void killClient(Client source, Client target, DirectedPoint newDp, boolean isInstant) {
+        synchronized (clientMap) {
+            assert (source != null);
+            assert (target != null);
+            Mazewar.consolePrintLn(source.getName() + " just vaporized " +
+                    target.getName());
+            Object o = clientMap.remove(target);
+            assert (o instanceof Point);
+            Point point = (Point) o;
+            CellImpl cell = getCellImpl(point);
+            cell.setContents(null);
+
+            cell = getCellImpl(newDp);
+            cell.setContents(target);
+            clientMap.put(target, newDp);
+            update();
+            notifyClientKilled(source, target, isInstant);
+        }
     }
 
     public synchronized Iterator getClients() {
@@ -450,10 +466,11 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         if (contents != null) {
             // If it is a Client, kill it outright
             if (contents instanceof Client) {
-                //killClient(prj.getOwner(), (Client) contents);
+                DirectedPoint newDp = pickRandomLocation();
+                // Notify server the kill update
+                prj.getOwner().kill(((Client) contents).getName(), newDp);
                 cell.setContents(null);
                 deadPrj.add(prj);
-                update();
                 return deadPrj;
             } else {
                 // Bullets destroy each other
@@ -525,32 +542,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         client.addClientListener(this);
         update();
         notifyClientAdd(client, score);
-    }
-
-    /**
-     * Internal helper for handling the death of a {@link Client}.
-     *
-     * @param source The {@link Client} that fired the projectile.
-     * @param target The {@link Client} that was killed.
-     */
-    private synchronized void killClient(Client source, Client target, DirectedPoint newDp, boolean isInstant) {
-        synchronized (clientMap) {
-            assert (source != null);
-            assert (target != null);
-            Mazewar.consolePrintLn(source.getName() + " just vaporized " +
-                    target.getName());
-            Object o = clientMap.remove(target);
-            assert (o instanceof Point);
-            Point point = (Point) o;
-            CellImpl cell = getCellImpl(point);
-            cell.setContents(null);
-
-            cell = getCellImpl(newDp);
-            cell.setContents(target);
-            clientMap.put(target, newDp);
-            update();
-            notifyClientKilled(source, target, isInstant);
-        }
     }
 
     /**

@@ -195,7 +195,15 @@ public abstract class Client {
         }
     }
 
-    protected void quit() {}
+    /**
+     * Kill a client.
+     *
+     */
+    protected void kill(String victim, DirectedPoint newDp) {
+    }
+
+    protected void quit() {
+    }
 
     /**
      * Notify listeners that the client moved forward.

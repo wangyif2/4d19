@@ -61,6 +61,16 @@ public abstract class LocalClient extends Client implements KeyListener {
     }
 
     /**
+     * Notify server a kill.
+     */
+    protected void kill(String victim, DirectedPoint newDp) {
+        notifyServerKill(victim, newDp, false);
+        logger.info("Notify client: " + getName() + " killed " + victim +
+                "\n\t reSpawning at location " + newDp.getX() + " " + newDp.getY() + " " +
+                newDp.getDirection() + "\n");
+    }
+
+    /**
      * Notify server moving the client forward.
      *
      * @return <code>true</code> if move was successful, otherwise <code>false</code>.
@@ -194,15 +204,12 @@ public abstract class LocalClient extends Client implements KeyListener {
             DirectedPoint newDp = maze.canKill(contents);
             if (newDp != null) {
                 String victim = ((Client) contents).getName();
-                toServer.type = MazewarPacket.INSTANT_KiLL;
-                toServer.victim = victim;
-                toServer.mazeMap.put(victim, newDp);
-                notifyServer(toServer);
+                notifyServerKill(victim, newDp, true);
                 logger.info("Notify client: " + getName() + " instantly killed " + victim +
                         "\n\t reSpawning at location " + newDp.getX() + " " + newDp.getY() + " " +
                         newDp.getDirection() + "\n");
             } else {
-                logger.info(getName() + " Cannot fire!\n");
+                logger.info(getName() + " cancels projectile!\n");
             }
         } else {
             toServer.type = MazewarPacket.FIRE;
@@ -220,6 +227,15 @@ public abstract class LocalClient extends Client implements KeyListener {
 
         notifyServer(toServer);
         logger.info("Notify server quiting\n");
+    }
+
+    private void notifyServerKill(String victim, DirectedPoint newDp, boolean isInstant) {
+        MazewarPacket toServer = new MazewarPacket();
+        toServer.type = isInstant ? MazewarPacket.INSTANT_KILL : MazewarPacket.KILL;
+        toServer.owner = getName();
+        toServer.victim = victim;
+        toServer.mazeMap.put(victim, newDp);
+        notifyServer(toServer);
     }
 
     private void notifyServer(MazewarPacket toServer) {

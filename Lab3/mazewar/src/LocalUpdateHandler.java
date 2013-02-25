@@ -69,11 +69,19 @@ public class LocalUpdateHandler implements Runnable {
                             owner.fire();
                             logger.info("Client " + fromServer.owner + " fired\n");
                             break;
-                        case MazewarPacket.INSTANT_KiLL:;
-                            maze.instantKillClient(owner,
+                        case MazewarPacket.INSTANT_KILL:
+                            maze.killClient(owner,
                                     maze.getClientByName(fromServer.victim),
-                                    getNewDp(fromServer.mazeMap.get(fromServer.victim)));
+                                    getNewDp(fromServer.mazeMap.get(fromServer.victim)),
+                                    true);
                             logger.info("Client " + fromServer.owner + " instantly killed " + fromServer.victim + "\n");
+                            break;
+                        case MazewarPacket.KILL:
+                            maze.killClient(owner,
+                                    maze.getClientByName(fromServer.victim),
+                                    getNewDp(fromServer.mazeMap.get(fromServer.victim)),
+                                    false);
+                            logger.info("Client " + fromServer.owner + " killed " + fromServer.victim + "\n");
                             break;
                         case MazewarPacket.QUIT:
                             owner.quit();

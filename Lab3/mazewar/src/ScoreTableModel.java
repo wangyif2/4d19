@@ -219,10 +219,8 @@ public class ScoreTableModel implements TableModel, MazeListener {
         assert (o instanceof ScoreWrapper);
         scoreSet.remove(o);
         ScoreWrapper s = (ScoreWrapper) o;
-        if (isInstant)
-            s.adjustScore(scoreAdjInstKill);
-        else
-            s.adjustScore(scoreAdjKill);
+        int adj = isInstant ? scoreAdjInstKill : scoreAdjKill;
+        s.adjustScore(adj);
         scoreSet.add(s);
         o = clientMap.get(target);
         assert (o instanceof ScoreWrapper);

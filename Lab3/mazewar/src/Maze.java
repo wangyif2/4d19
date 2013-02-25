@@ -75,7 +75,7 @@ public abstract class Maze {
     public abstract DirectedPoint canKill(Object contents);
     public abstract boolean clientFire(Client client);
 
-    public abstract void instantKillClient(Client killer, Client victim, DirectedPoint newDp);
+    public abstract void killClient(Client killer, Client victim, DirectedPoint newDp, boolean isInstant);
 
     /**
      * Remove the specified {@link Client} from the {@link Maze}

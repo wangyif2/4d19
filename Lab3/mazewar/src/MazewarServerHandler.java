@@ -60,8 +60,11 @@ public class MazewarServerHandler extends Thread {
                     case MazewarPacket.FIRE:
                         clientFire(fromClient);
                         break;
-                    case MazewarPacket.INSTANT_KiLL:
+                    case MazewarPacket.INSTANT_KILL:
                         instantKillClient(fromClient);
+                        break;
+                    case MazewarPacket.KILL:
+                        killClient(fromClient);
                         break;
                     default:
                         logger.info("ERROR: Unrecognized packet!");
@@ -266,13 +269,13 @@ public class MazewarServerHandler extends Thread {
                 //adjust the score for killing
                 MazewarServer.mazeScore.put(tgtClientName, MazewarServer.mazeScore.get(tgtClientName) + MazewarServer.scoreAdjKilled);
                 MazewarServer.mazeScore.put(srcClientName, MazewarServer.mazeScore.get(srcClientName) + MazewarServer.scoreAdjKill);
-                logger.info("Client " + srcClientName + " killed " + tgtClientName + " on sender " + fromClient.owner
-                        + " reSpawn location " + tgtClientLoc.getX() + " " + tgtClientLoc.getY() + " " + tgtClientLoc.getDirection()
-                        + " current score of killed " + MazewarServer.mazeScore.get(tgtClientName)
-                        + " current score of killer " + MazewarServer.mazeScore.get(srcClientName));
             }
 
             MazewarServer.actionQueue.add(fromClient);
+            logger.info("Client " + srcClientName + " killed " + tgtClientName
+                    + "\n\treSpawn location " + tgtClientLoc.getX() + " " + tgtClientLoc.getY() + " " + tgtClientLoc.getDirection()
+                    + "\n\tcurrent score of victim " + MazewarServer.mazeScore.get(tgtClientName)
+                    + "\n\tcurrent score of killer " + MazewarServer.mazeScore.get(srcClientName));
         }
     }
 }

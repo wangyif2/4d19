@@ -23,7 +23,7 @@ public class MazewarPacket implements Serializable {
     public static final int TURN_RIGHT = 203;
 
     public static final int FIRE = 300;
-    public static final int INSTANT_KiLL = 301;
+    public static final int INSTANT_KILL = 301;
     public static final int KILL = 302;
 
     public static final int QUIT = 400;
