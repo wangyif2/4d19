@@ -1,4 +1,4 @@
-\section{Implementation}\label{Impl}
+ \label{Impl}
 
 This section presents the implementation of design proposed in section \ref{Design}.
 
@@ -69,17 +69,27 @@ This queue will be a priority queue that will automatically sort the packet insi
 
 \subsection*{Consistency Implementation}\label{ImplConsistency}
 
-As described in the book /textit{Distributed Systems Concepts and Design}, there are two methods of implmenting total ordering, a sequencer, and the ISIS method. Since sequncer requires a centralized component that needs to broadcast a global sequence number, this is equivelent to lab 2. To decentralize the sequencer, we use the ISIS method described below.
+As described in the book Distributed Systems Concepts and Design, there are two methods of implmenting total ordering, a sequencer, and the ISIS method. Since sequncer requires a centralized component that needs to broadcast a global sequence number, this is equivelent to lab 2. The second method was the ISIS method described below.
 
 \begin{enumerate}
 \item Client p broadcase  <m,i>  with message m and unique id i to everyone.
  
-\item On receiving m for the first time, m is added to the Holdback queue which is a priority queue and tagged as holdback. Reply to sender with a proposed priority, i.e., a sequence number /textit{seq number} = 1 + largest seq number heard so far, suffixed with the recipient’s process ID to break tie. Note that the priority queue is always sorted by priority.
+\item On receiving m for the first time, m is added to the Holdback queue which is a priority queue and tagged as holdback. Reply to sender with a proposed priority, i.e., a sequence number seq number = 1 + largest seq number heard so far, suffixed with the recipient’s process ID to break tie. Note that the priority queue is always sorted by priority.
+
+\item Client p collects all responses from the recipients, calculates their maximum, and re-broadcase original message with a final priority for m. 
+
+\item On receiving m (with final priority), the receiver mark the message as OK, reorder the priority queue, and deliver the set of lowest priority messages that are marked as deliverable.
+\end{enumerate}
+
+During lecture a third method was dicussed using lamport clock, acknowledgement and a holdback queue. The below section describes this implementation and why it was chosen for this design.
+
+\begin{enumerate}
+\item Client p broadcase  <m,l>  with message m and local lamport to everyone.
+ 
+\item On receiving m for the first time, m is added to the Holdback queue which is a priority queue and tagged as holdback. Reply to sender with a proposed priority, i.e., a sequence number seq number = 1 + largest seq number heard so far, suffixed with the recipient’s process ID to break tie. Note that the priority queue is always sorted by priority.
 
 \item Client p collects all responses from the recipients, calculates their maximum, and 
 re-broadcase original message with a final priority for m. 
 
 \item On receiving m (with final priority), the receiver mark the message as OK, reorder the priority queue, and deliver the set of lowest priority messages that are marked as deliverable.
 \end{enumerate}
-
-

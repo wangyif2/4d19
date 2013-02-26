@@ -4,7 +4,7 @@
 
 \paragraph*{Naming Service}
 
-In order for players to communicate with each other without a central server processing all of their request, they must know how many players are there, and how to communicate with them. This is where the Naming Service component comes in. This service maintains a hashmap of all currently connected players as well as their input/output stream. This hashmap is updated on player join/leave, and is supplied to newly created player for them to recognize current players. See Section \ref{DesignGameFlow} for details usage of this hashmap.
+In order for players to communicate with each other without a central server processing all of their request, they must know how many players are there, and how to communicate with them. This is where the Naming Service component comes in. This service maintains a hashmap of all currently connected players as well as their hostname and port address. This hashmap is updated on player join/leave, and is supplied to newly created player for them to recognize current players. See Section \ref{DesignGameFlow} for details usage of this hashmap.
 
 \paragraph*{Client Broadcaster}
 
