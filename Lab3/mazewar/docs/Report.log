@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.2.6)  24 FEB 2013 22:38
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.2.6)  26 FEB 2013 19:40
 entering extended mode
  %&-line parsing enabled.
 **\nonstopmode \input{"/home/robert/Documents/Enginnering Science/Fourth Year/W
@@ -433,11 +433,11 @@ LaTeX Info: Redefining \pageref on input line 33.
 
 \AtBeginShipoutBox=\box32
  (./Cover.tex
-<./Logos/nscilogo.jpg, id=43, 150.5625pt x 200.75pt>
+<./Logos/nscilogo.jpg, id=67, 150.5625pt x 200.75pt>
 File: ./Logos/nscilogo.jpg Graphic file (type jpg)
 
 <use ./Logos/nscilogo.jpg>
-<./Logos/utorontologo.jpg, id=44, 112.92188pt x 111.41624pt>
+<./Logos/utorontologo.jpg, id=68, 112.92188pt x 111.41624pt>
 File: ./Logos/utorontologo.jpg Graphic file (type jpg)
 
 <use ./Logos/utorontologo.jpg> [1
@@ -475,7 +475,7 @@ name{page.1}) has been already used, duplicate ignored
                    \relax 
 l.62 \newpage
               [1] (./Design.tex [2]
-<./Figs/selectors.png, id=99, 307.1475pt x 243.15843pt>
+<./Figs/selectors.png, id=129, 307.1475pt x 243.15843pt>
 File: ./Figs/selectors.png Graphic file (type png)
 
 <use ./Figs/selectors.png> [3 <./Figs/selectors.png (PNG copy)>]
@@ -503,30 +503,27 @@ LaTeX Font Info:    Font shape `OML/pcr/m/n' in size <10> not available
 Missing character: There is no â in font cmr12!
 Missing character: There is no € in font cmr12!
 Missing character: There is no ™ in font cmr12!
- [8]) [9]
+ [8]) [9] (./Evaluation.tex [10]) [11]
 (/home/robert/Documents/Enginnering Science/Fourth Year/Winter/ECE419H1/Lab/Lab
 3/mazewar/docs/Report.aux) ) 
 Here is how much of TeX's memory you used:
- 7445 strings out of 493848
- 107968 string characters out of 1152824
- 223775 words of memory out of 3000000
- 10455 multiletter control sequences out of 15000+50000
+ 7467 strings out of 493848
+ 108241 string characters out of 1152824
+ 223820 words of memory out of 3000000
+ 10462 multiletter control sequences out of 15000+50000
  12344 words of font info for 46 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
  39i,7n,42p,1227b,1737s stack positions out of 5000i,500n,10000p,200000b,50000s
-pdfTeX warning (dest): name{section*.17} has been r
-eferenced but does not exist, replaced by a fixed one
-
-{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</usr/share/texmf-texlive
-/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-texlive/fonts/type
-1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-texlive/fonts/type1/public/a
-msfonts/cm/cmmi10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/
-cmmi12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr12.pfb><
-/usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/
-texmf-texlive/fonts/type1/urw/courier/ucrr8a.pfb>
-Output written on Report.pdf (13 pages, 172493 bytes).
+{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.e
+nc}</usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/sh
+are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-
+texlive/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-texlive/fon
+ts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texmf-texlive/fonts/type1/pu
+blic/amsfonts/cm/cmr12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfont
+s/cm/cmsy10.pfb></usr/share/texmf-texlive/fonts/type1/urw/courier/ucrr8a.pfb>
+Output written on Report.pdf (15 pages, 180946 bytes).
 PDF statistics:
- 279 PDF objects out of 1000 (max. 8388607)
- 120 named destinations out of 1000 (max. 500000)
- 96 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 324 PDF objects out of 1000 (max. 8388607)
+ 132 named destinations out of 1000 (max. 500000)
+ 144 words of extra memory for PDF output out of 10000 (max. 10000000)
 

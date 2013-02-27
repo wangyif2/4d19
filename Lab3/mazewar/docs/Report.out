@@ -7,3 +7,10 @@
 \BOOKMARK [2][-]{subsection.2.3}{How a player Locate, Leave and Join}{section.2}
 \BOOKMARK [2][-]{subsection.2.4}{Maintaining Consistency}{section.2}
 \BOOKMARK [1][-]{section.3}{Implementation}{}
+\BOOKMARK [2][-]{subsection.3.1}{Component Implementation}{section.3}
+\BOOKMARK [2][-]{subsection.3.2}{Consistency Implementation}{section.3}
+\BOOKMARK [1][-]{section.4}{Evaluation}{}
+\BOOKMARK [2][-]{subsection.4.1}{Starting, Maintaining, Exiting}{section.4}
+\BOOKMARK [2][-]{subsection.4.2}{Performance on Current Platform}{section.4}
+\BOOKMARK [2][-]{subsection.4.3}{Consistency}{section.4}
+\BOOKMARK [2][-]{subsection.4.4}{Other Factors for Performance}{section.4}
