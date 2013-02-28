@@ -12,7 +12,7 @@ For other players to acknowledge movement of local player without a centralized 
 
 \paragraph*{Client Listener}
 
-To receive packets broadcasted from other players, a seperate thread runs continuously to listen on input streams of each different player through a selector. When a packet arrives, it temporarily put on hold until it can be determined that the ordering is correct. After that, the packet is processed, and the action specified in the packet is performed to update the local environment.
+To receive packets broadcasted from other players, a seperate thread is created to listen on each input stream from each player. When a packet arrives, it temporarily put on hold until it can be determined that the ordering is correct. After that, the packet is processed, and the action specified in the packet is performed to update the local environment.
 
 \paragraph*{Client Holdback Queue}
 

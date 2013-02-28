@@ -25,7 +25,7 @@ To determin the communication protocol between clients, many options were exploi
 The second method is the one used in our design. Each player creates a socket for every existing player, and allow them to connect and send packet. To deal with blocking on listening on the input stream, a thread is created for every input stream. Clearly there is overhead in this method that the number of thread needed is high, but since modern operating system handle multi-threading quite well, this method should be efficient for our context. 
 
 \paragraph*{Packet Structure} The packet sent between the clients needs to contain information about all aspect of the game. This includes player creation, action, acknowledgement, error handling as well as action sequencing. Code \ref{CodeMazewarPacket} shows the proposed packet structure. 
-\{page-breaking}
+\newpage
 {
 \singlespacing
 \begin{lstlisting}[caption = {[MazewarPacket.java]Structure of packets exchanged between players}, label = CodeMazewarPacket]
