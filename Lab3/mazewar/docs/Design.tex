@@ -20,22 +20,12 @@ Since there is no centralized component that can maintain order of the overall s
 
 \subsection{Communication Protocol}\label{DesignProtocol}
 
-To determin the communication protocol between clients, many options were exploited. First, a one to one socket for each pair of players were considered. In this design each player creates a socket for every existing player, and allow them to connect and send packet. To deal with blocking on listening on the input stream, a thread is created for every input stream. Clearly there is high overhead in this method that the number of thread needed is high, and will easily run into scaling issue, not to mention the possible difficulty of dealing with race condition. 
+To determin the communication protocol between clients, many options were exploited. The first method we looked at was using DatagramSocket class. This class allows broadcasting packet to all party listening on a particular socket without having to loop through all the output stream. However, this class extends an UDP implementation, and does not guarantee message delivery. One possible solution was to employ at-most-once message delivery algorithm described in class, but without centralized server, the complexity increases dramatically. In addition, the problem of creating a single thread for each input stream is still undealt.
 
-The second method looked at was using DatagramSocket class. This class allows broadcasting packet to all party listening on a particular socket without having to loop through all the output stream. However, this class extends an UDP implementation, and does not guarantee message delivery. One possible solution was to employ at-most-once message delivery algorithm described in class, but without centralized server, the complexity increases dramatically. In addition, the problem of creating a single thread for each input stream is still undealt.
-
-The third method that was chosen was to use a Selector calss. This class allows the client to use one thread to handle multiple channels. Figure \ref{FigSelector} shows an overview of how selector can be used by one thread to monitor several sockets. With this method, broadcasting packets will be handled with a single thread, as well as listening for packets.
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[scale=0.65]{./Figs/selectors.png}
-  \caption
-  {A thread using Selector to handle 3 Channels}
-  \label{FigSelector}
-\end{figure}
+The second method is the one used in our design. Each player creates a socket for every existing player, and allow them to connect and send packet. To deal with blocking on listening on the input stream, a thread is created for every input stream. Clearly there is overhead in this method that the number of thread needed is high, but since modern operating system handle multi-threading quite well, this method should be efficient for our context. 
 
 \paragraph*{Packet Structure} The packet sent between the clients needs to contain information about all aspect of the game. This includes player creation, action, acknowledgement, error handling as well as action sequencing. Code \ref{CodeMazewarPacket} shows the proposed packet structure. 
-
+\newpage
 {
 \singlespacing
 \begin{lstlisting}[caption = {[MazewarPacket.java]Structure of packets exchanged between players}, label = CodeMazewarPacket]

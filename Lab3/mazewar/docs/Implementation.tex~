@@ -18,50 +18,7 @@ Opposite to lab 2 server, the broadcast component will be a thread on the client
 
 \paragraph*{Client Listener}
 
-The listener on the client will be a thread that uses a Selector to monitor a list of channels as shown in Code \ref{CodeSelector}. 
-
-{
-\singlespacing
-\begin{lstlisting}[caption = {[ClientListener.java]Sample code of Selector monitoring a list of channel}, label = CodeSelector]
-Selector selector = Selector.open();
-
-channel.configureBlocking(false);
-
-SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
-
-
-while(true) {
-
-  int readyChannels = selector.select();
-
-  if(readyChannels == 0) continue;
-
-
-  Set<SelectionKey> selectedKeys = selector.selectedKeys();
-
-  Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-
-  while(keyIterator.hasNext()) {
-
-    SelectionKey key = keyIterator.next();
-
-    if(key.isAcceptable()) {
-        // a connection was accepted by a ServerSocketChannel.
-
-    } else if (key.isConnectable()) {
-        // a connection was established with a remote server.
-
-    } else if (key.isReadable()) {
-        // a channel is ready for reading
-
-    } else if (key.isWritable()) {
-        // a channel is ready for writing
-    }
-
-    keyIterator.remove();
-  }
-\end{lstlisting}
-}
+The listener on the client will be a series of threads each listening on an input stream to one of the currently connected players. 
 
 \paragraph*{Client Holdback Queue}
 

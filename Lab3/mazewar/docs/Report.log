@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.2.6)  26 FEB 2013 19:40
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.2.6)  28 FEB 2013 14:53
 entering extended mode
  %&-line parsing enabled.
 **\nonstopmode \input{"/home/robert/Documents/Enginnering Science/Fourth Year/W
@@ -433,11 +433,11 @@ LaTeX Info: Redefining \pageref on input line 33.
 
 \AtBeginShipoutBox=\box32
  (./Cover.tex
-<./Logos/nscilogo.jpg, id=67, 150.5625pt x 200.75pt>
+<./Logos/nscilogo.jpg, id=59, 150.5625pt x 200.75pt>
 File: ./Logos/nscilogo.jpg Graphic file (type jpg)
 
 <use ./Logos/nscilogo.jpg>
-<./Logos/utorontologo.jpg, id=68, 112.92188pt x 111.41624pt>
+<./Logos/utorontologo.jpg, id=60, 112.92188pt x 111.41624pt>
 File: ./Logos/utorontologo.jpg Graphic file (type jpg)
 
 <use ./Logos/utorontologo.jpg> [1
@@ -446,84 +446,72 @@ File: ./Logos/utorontologo.jpg Graphic file (type jpg)
 ogos/utorontologo.jpg>])
 (/home/robert/Documents/Enginnering Science/Fourth Year/Winter/ECE419H1/Lab/Lab
 3/mazewar/docs/Report.toc
-LaTeX Font Info:    Try loading font information for U+msa on input line 5.
+LaTeX Font Info:    Try loading font information for U+msa on input line 3.
  (/usr/share/texmf-texlive/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2009/06/22 v3.00 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 5.
+LaTeX Font Info:    Try loading font information for U+msb on input line 3.
 (/usr/share/texmf-texlive/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2009/06/22 v3.00 AMS symbols B
 ))
 \tf@toc=\write5
 \openout5 = `Report.toc'.
 
- [1]
-(/home/robert/Documents/Enginnering Science/Fourth Year/Winter/ECE419H1/Lab/Lab
-3/mazewar/docs/Report.lof)
-\tf@lof=\write6
-\openout6 = `Report.lof'.
-
- [2]
-(/home/robert/Documents/Enginnering Science/Fourth Year/Winter/ECE419H1/Lab/Lab
-3/mazewar/docs/Report.lol)
-\tf@lol=\write7
-\openout7 = `Report.lol'.
-
- [3] (./Intro.tex)pdfTeX warning (ext4): destination with the same identifier (
+ [1] (./Intro.tex)pdfTeX warning (ext4): destination with the same identifier (
 name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.62 \newpage
-              [1] (./Design.tex [2]
-<./Figs/selectors.png, id=129, 307.1475pt x 243.15843pt>
-File: ./Figs/selectors.png Graphic file (type png)
-
-<use ./Figs/selectors.png> [3 <./Figs/selectors.png (PNG copy)>]
-LaTeX Font Info:    Try loading font information for OT1+pcr on input line 41.
+l.47 \newpage
+              [1] (./Design.tex [2] [3]
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 31.
 
 (/usr/share/texmf-texlive/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
-LaTeX Font Info:    Try loading font information for OMS+pcr on input line 42.
+LaTeX Font Info:    Try loading font information for OMS+pcr on input line 32.
 
 (/usr/share/texmf-texlive/tex/latex/psnfss/omspcr.fd
 File: omspcr.fd 
 )
 LaTeX Font Info:    Font shape `OMS/pcr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 42.
-LaTeX Font Info:    Try loading font information for OML+pcr on input line 74.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 32.
+LaTeX Font Info:    Try loading font information for OML+pcr on input line 64.
 
 (/usr/share/texmf-texlive/tex/latex/psnfss/omlpcr.fd
 File: omlpcr.fd 
 )
 LaTeX Font Info:    Font shape `OML/pcr/m/n' in size <10> not available
-(Font)              Font shape `OML/cmm/m/it' tried instead on input line 74.
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 64.
  [4] [5]) [6]
 (./Implementation.tex [7]
 Missing character: There is no â in font cmr12!
 Missing character: There is no € in font cmr12!
 Missing character: There is no ™ in font cmr12!
- [8]) [9] (./Evaluation.tex [10]) [11]
+) [8] (./Evaluation.tex [9]) [10]
 (/home/robert/Documents/Enginnering Science/Fourth Year/Winter/ECE419H1/Lab/Lab
-3/mazewar/docs/Report.aux) ) 
+3/mazewar/docs/Report.aux)
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ ) 
 Here is how much of TeX's memory you used:
- 7467 strings out of 493848
- 108241 string characters out of 1152824
- 223820 words of memory out of 3000000
- 10462 multiletter control sequences out of 15000+50000
+ 7363 strings out of 493848
+ 106408 string characters out of 1152824
+ 223706 words of memory out of 3000000
+ 10412 multiletter control sequences out of 15000+50000
  12344 words of font info for 46 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
- 39i,7n,42p,1227b,1737s stack positions out of 5000i,500n,10000p,200000b,50000s
-{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.e
-nc}</usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/sh
-are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-
-texlive/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-texlive/fon
-ts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texmf-texlive/fonts/type1/pu
-blic/amsfonts/cm/cmr12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfont
-s/cm/cmsy10.pfb></usr/share/texmf-texlive/fonts/type1/urw/courier/ucrr8a.pfb>
-Output written on Report.pdf (15 pages, 180946 bytes).
+ 39i,5n,42p,1228b,1270s stack positions out of 5000i,500n,10000p,200000b,50000s
+{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</usr/share/texmf-texli
+ve/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-texlive/fonts/ty
+pe1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-texlive/fonts/type1/public
+/amsfonts/cm/cmmi10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/c
+m/cmmi12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr12.pfb
+></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/shar
+e/texmf-texlive/fonts/type1/urw/courier/ucrr8a.pfb>
+Output written on Report.pdf (12 pages, 161263 bytes).
 PDF statistics:
- 324 PDF objects out of 1000 (max. 8388607)
- 132 named destinations out of 1000 (max. 500000)
- 144 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 246 PDF objects out of 1000 (max. 8388607)
+ 86 named destinations out of 1000 (max. 500000)
+ 123 words of extra memory for PDF output out of 10000 (max. 10000000)
 
