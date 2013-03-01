@@ -25,9 +25,12 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.management.ManagementFactory;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -41,9 +44,7 @@ public class Mazewar extends JFrame {
     private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
 
     public static String myName;
-    public static long myPID;
     public static InetSocketAddress myAddress;
-    public static ServerSocket listeningSocket;
     public static HashMap<String, InetSocketAddress> connectedClients;
     public static Socket playerSocket = null;
     public static ObjectOutputStream out;
@@ -185,6 +186,8 @@ public class Mazewar extends JFrame {
 
             connectedClients = fromServer.connectedClients;
             logger.info("Registered at naming service with name: " + myName.toUpperCase() + " is successful!\n");
+
+            // Clean up socket connection
             in.close();
             out.close();
             socket.close();
@@ -201,6 +204,12 @@ public class Mazewar extends JFrame {
             System.err.println("ERROR: Class not found.");
             System.exit(1);
         }
+
+        // Create a connection listener to monitor new connection request
+        new ConnectionListener(myAddress.getPort());
+
+        // Connect to all existing players
+        connectToAllPlayers();
 
         // Create the RobotClient/GUIClient connect it to the KeyListener queue
         myClient = isRobot ? new RobotClient(myName) : new GUIClient(myName);
@@ -270,6 +279,21 @@ public class Mazewar extends JFrame {
         this.requestFocusInWindow();
     }
 
+    private void connectToAllPlayers() {
+        InetSocketAddress addr;
+        for (Map.Entry entry : connectedClients.entrySet()) {
+            addr = (InetSocketAddress) entry.getValue();
+            try {
+                Socket socket = new Socket(addr.getAddress(), addr.getPort());
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+                new PacketListener(out, in);
+                logger.info("Successfully connected with " + ((String)entry.getKey()).toUpperCase());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /**
      * Entry point for the game.
@@ -293,8 +317,8 @@ public class Mazewar extends JFrame {
         try {
             myAddress = new InetSocketAddress(InetAddress.getLocalHost(), Integer.parseInt(args[2]));
         } catch (UnknownHostException e) {
-            System.err.println("ERROR: Can't get localhost IP address!");
             e.printStackTrace();
+            System.err.println("ERROR: Can't get localhost IP address!");
             System.exit(-1);
         }
 
@@ -307,11 +331,6 @@ public class Mazewar extends JFrame {
                 System.exit(-1);
             }
         }
-
-        // Save my process ID
-        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
-        int index = jvmName.indexOf('@');
-        myPID = Long.parseLong(jvmName.substring(0, index));
 
         /* Create the GUI */
         new Mazewar(serverHostname, serverPort, isRobot);
