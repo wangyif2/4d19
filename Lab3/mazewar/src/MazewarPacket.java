@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 
 /**
@@ -31,6 +32,9 @@ public class MazewarPacket implements Serializable {
     //packet definitions
     public String owner;
     public String victim;
+
+    public InetSocketAddress address;
+    public HashMap<String, InetSocketAddress> connectedClients;
 
     public int type = MazewarPacket.NULL;
     public HashMap<String, DirectedPoint> mazeMap = new HashMap<String, DirectedPoint>();

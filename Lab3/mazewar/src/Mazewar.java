@@ -25,8 +25,9 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.lang.management.ManagementFactory;
+import java.net.*;
+import java.util.HashMap;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -38,7 +39,12 @@ import java.net.UnknownHostException;
 
 public class Mazewar extends JFrame {
     private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
+
     public static String myName;
+    public static long myPID;
+    public static InetSocketAddress myAddress;
+    public static ServerSocket listeningSocket;
+    public static HashMap<String, InetSocketAddress> connectedClients;
     public static Socket playerSocket = null;
     public static ObjectOutputStream out;
     public static ObjectInputStream in;
@@ -131,11 +137,11 @@ public class Mazewar extends JFrame {
     /**
      * The place where all the pieces are put together.
      *
-     * @param hostname
-     * @param port
+     * @param serverHostname
+     * @param serverPort
      * @param isRobot
      */
-    public Mazewar(String hostname, int port, boolean isRobot) {
+    public Mazewar(String serverHostname, int serverPort, boolean isRobot) {
         super("ECE419 Mazewar");
         consolePrintLn("ECE419 Mazewar started!");
 
@@ -149,14 +155,13 @@ public class Mazewar extends JFrame {
         assert (scoreModel != null);
         maze.addMazeListener(scoreModel);
 
-        // Network initialization
+        // Register at naming service
         try {
-            playerSocket = new Socket(hostname, port);
+            Socket socket = new Socket(serverHostname, serverPort);
 
-            /* stream to write back to server */
-            out = new ObjectOutputStream(playerSocket.getOutputStream());
-            /* stream to read from server */
-            in = new ObjectInputStream(playerSocket.getInputStream());
+            /* stream to write to/read from server */
+            out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
 
             MazewarPacket toServer;
             MazewarPacket fromServer;
@@ -171,13 +176,18 @@ public class Mazewar extends JFrame {
 
                 // Send register packet to server
                 toServer = new MazewarPacket();
-                toServer.type = MazewarPacket.REGISTER;
                 toServer.owner = myName;
-
+                toServer.address = myAddress;
                 out.writeObject(toServer);
+
                 fromServer = (MazewarPacket) in.readObject();
             } while (fromServer.type != MazewarPacket.REGISTER_SUCCESS);
-            logger.info("Registered with name: " + myName + " is successful!\n");
+
+            connectedClients = fromServer.connectedClients;
+            logger.info("Registered at naming service with name: " + myName.toUpperCase() + " is successful!\n");
+            in.close();
+            out.close();
+            socket.close();
         } catch (UnknownHostException e) {
             e.printStackTrace();
             System.err.println("ERROR: Don't know where to connect.");
@@ -268,31 +278,42 @@ public class Mazewar extends JFrame {
      */
     public static void main(String args[]) {
         // variables for hostname/port
-        String hostname;
-        int port;
+        String serverHostname;
+        int serverPort;
         boolean isRobot = false;
 
-
         // Check argument correctness
-        if (args.length != 2 && args.length != 3) {
+        if (args.length != 3 && args.length != 3) {
             System.err.println("ERROR: Invalid arguments!");
             System.exit(-1);
         }
 
-        hostname = args[0];
-        port = Integer.parseInt(args[1]);
+        serverHostname = args[0];
+        serverPort = Integer.parseInt(args[1]);
+        try {
+            myAddress = new InetSocketAddress(InetAddress.getLocalHost(), Integer.parseInt(args[2]));
+        } catch (UnknownHostException e) {
+            System.err.println("ERROR: Can't get localhost IP address!");
+            e.printStackTrace();
+            System.exit(-1);
+        }
 
         // Distinguish between robot client and gui client
-        if (args.length == 3) {
-            if (args[2].toLowerCase().equals("robot")) {
+        if (args.length == 4) {
+            if (args[3].toLowerCase().equals("robot")) {
                 isRobot = true;
-            } else if (!args[2].toLowerCase().equals("player")) {
+            } else if (!args[3].toLowerCase().equals("player")) {
                 System.err.println("ERROR: Invalid arguments!");
                 System.exit(-1);
             }
         }
 
+        // Save my process ID
+        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        int index = jvmName.indexOf('@');
+        myPID = Long.parseLong(jvmName.substring(0, index));
+
         /* Create the GUI */
-        new Mazewar(hostname, port, isRobot);
+        new Mazewar(serverHostname, serverPort, isRobot);
     }
 }
