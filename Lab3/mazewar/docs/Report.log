@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.2.6)  28 FEB 2013 14:53
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.2.6)  28 FEB 2013 20:10
 entering extended mode
  %&-line parsing enabled.
 **\nonstopmode \input{"/home/robert/Documents/Enginnering Science/Fourth Year/W
@@ -495,13 +495,13 @@ LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
  ) 
 Here is how much of TeX's memory you used:
- 7363 strings out of 493848
- 106408 string characters out of 1152824
+ 7364 strings out of 493848
+ 106413 string characters out of 1152824
  223706 words of memory out of 3000000
- 10412 multiletter control sequences out of 15000+50000
+ 10413 multiletter control sequences out of 15000+50000
  12344 words of font info for 46 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
- 39i,5n,42p,1228b,1270s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 39i,5n,42p,1224b,1270s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</usr/share/texmf-texli
 ve/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-texlive/fonts/ty
 pe1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-texlive/fonts/type1/public
@@ -509,7 +509,7 @@ pe1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-texlive/fonts/type1/public
 m/cmmi12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr12.pfb
 ></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/shar
 e/texmf-texlive/fonts/type1/urw/courier/ucrr8a.pfb>
-Output written on Report.pdf (12 pages, 161263 bytes).
+Output written on Report.pdf (12 pages, 160923 bytes).
 PDF statistics:
  246 PDF objects out of 1000 (max. 8388607)
  86 named destinations out of 1000 (max. 500000)
