@@ -2,26 +2,26 @@
 
 \subsection{Starting, Maintaining, Exiting}
 
-The strength in this design reflects from the fact that naming service is extreamly simple, allows it to scale from 100 to 1000s. On the other hand, it clearly forms a single point of failure. 
+The strength in this design reflects from the fact that naming service is extremely simple, allows it to scale from 100 to 1000s. On the other hand, it clearly forms a single point of failure. 
 
 \subsection{Performance on Current Platform}
 
-The performance of this design will be re-evalutated once the lab is complete. However, based on estimation, the packet traffic will approximately be doubled from implementation in lab 2, and since lab 2 offered great responsiveness on LAN, estimation is that user responsiveness for this design will be at least be playable.
+The performance of this design will be re-evaluated once the lab is complete. However, based on estimation, the packet traffic will be approximately doubled from implementation in lab 2, and since lab 2 offered great responsiveness on LAN, estimation is that user responsiveness for this design will at least be playable.
 
 \subsection{Consistency}
 
-The consistency issue is raised by different processes with a mixed number of thread all concurrently sending and receiving packets. However, since we implement a consistency algorithm described in Section \ref{ImplConsistency}, total system order is garenteed. As a result, all processes will playback packets in the same order and players will see consistat state in UI. Similarly, as discussed, this in no way garentees fairness due to the lacking of a syncornized physical clock.
+The consistency issue is raised by different processes with a mixed number of thread all concurrently sending and receiving packets. However, since we implement a consistency algorithm described in Section \ref{ImplConsistency}, total system order is guaranteed. As a result, all processes will playback packets in the same order and players will see consistent state in UI. Similarly, as discussed, this in no way guarantees fairness due to the lack of a synchrornized physical clock.
 
 \subsection{Other Factors for Performance}
 
 \paragraph*{Scaling with players}
 
-As discussed early, the naming service allows great scaling-ability. The broadcase method however, requires each pair of players to maintain a socket connection. Since TCP layer is required to garentee no packet loss and in order delivery, we could not use other method of packet boardcasting that does not required a large number of sockets. The number of socket connection grows exponentially as the number of players grow, and could eventually lead to slow system performance. However, as in the context of this lab, this design should easily support up to 4 players
+As discussed early, the naming service allows great scalability. The broadcast method however, requires each pair of players to maintain a socket connection. Since TCP layer is required to guarantee no packet loss and in order delivery, we could not use other method of packet broadcasting that does not require a large number of sockets. The number of socket connections grows exponentially as the number of players grow, and could eventually lead to slow system performance. However, as in the context of this lab, this design should easily support up to 4 players
 
-\paragraph*{High lantency network}
+\paragraph*{High latency network}
 
-In high lantency networks, packet could be lost and have high delivery time. However, since we employ TCP layer with our socket implementation, packet delivery is garenteed. However, there could be lantencies where packet from some machines are not delivered. In that case, the game will be staled in waiting for packet deliveries. As a result this design will only work well on a system where all players are present on a consistance and responsive network.
+In high latency networks, packet could be lost and have high delivery time. However, since we employ TCP layer with our socket implementation, packet delivery is guaranteed. However, there could be latencies where packet from some machines are not delivered. In that case, the game will be stalled in waiting for packet deliveries. As a result this design will only work well on a system where all players are present on a consistent and responsive network.
 
 \paragraph*{Mixed Devices}
 
-Same as the senario desbribed in the Hight lantency network, a mixed devices such as laptop/mobile on a mixed network produces high lantency due to overhead of the network protocal. These delays will be reflected on the UI since every acknowledgement of packet delivery needs to be recieved for a moved to be played.
+Same as the scenario described in the High latency network, a mixed group of devices such as laptop/mobile on a mixed network produces high latency due to overhead of the network protocol. These delays will be reflected on the UI since every acknowledgement of packet delivery needs to be received for a move to be played.
