@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -30,7 +29,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * The entry point and glue code for the game.  It also contains some helpful
@@ -45,9 +47,16 @@ public class Mazewar extends JFrame {
 
     public static String myName;
     public static InetSocketAddress myAddress;
-    public static HashMap<String, InetSocketAddress> connectedClients;
+    public static boolean allConnected;
+    public static Set<String> connectedClients = new HashSet<String>();
+    public static HashMap<String, ObjectOutputStream> connectedOuts = new HashMap<String, ObjectOutputStream>();
+    public static HashMap<String, ObjectInputStream> connectedIns = new HashMap<String, ObjectInputStream>();
+    public static int lamportClk = 0;
+    public static PriorityBlockingQueue<MazewarPacket> actionQueue = new PriorityBlockingQueue<MazewarPacket>();
+    public static HashMap<MazewarPacketIdentifier, Set<String>> ackTracker = new HashMap<MazewarPacketIdentifier, Set<String>>();
     public static Socket playerSocket = null;
     public static ObjectOutputStream out;
+
     public static ObjectInputStream in;
 
     /**
@@ -86,7 +95,6 @@ public class Mazewar extends JFrame {
      * The table the displays the scores.
      */
     private JTable scoreTable = null;
-
     /**
      * Create the textpane statically so that we can
      * write to it globally using
@@ -157,6 +165,7 @@ public class Mazewar extends JFrame {
         maze.addMazeListener(scoreModel);
 
         // Register at naming service
+        HashMap<String, InetSocketAddress> clientAddresses = null;
         try {
             Socket socket = new Socket(serverHostname, serverPort);
 
@@ -184,7 +193,8 @@ public class Mazewar extends JFrame {
                 fromServer = (MazewarPacket) in.readObject();
             } while (fromServer.type != MazewarPacket.REGISTER_SUCCESS);
 
-            connectedClients = fromServer.connectedClients;
+            connectedClients.add(myName);
+            clientAddresses = fromServer.connectedClients;
             logger.info("Registered at naming service with name: " + myName.toUpperCase() + " is successful!\n");
 
             // Clean up socket connection
@@ -208,91 +218,110 @@ public class Mazewar extends JFrame {
         // Create a connection listener to monitor new connection request
         new ConnectionListener(myAddress.getPort());
 
+        // Initialize a hold back queue for processing actions
+        actionQueue = new PriorityBlockingQueue<MazewarPacket>();
+        new ActionProcessor();
+
         // Connect to all existing players
-        connectToAllPlayers();
+        connectToAllPlayers(clientAddresses);
 
         // Create the RobotClient/GUIClient connect it to the KeyListener queue
-        myClient = isRobot ? new RobotClient(myName) : new GUIClient(myName);
-        maze.addClient(myClient);
-        if (isRobot)
-            this.addKeyListener(myClient);
-        else
-            this.addKeyListener(myClient);
-        myClient.start();
+//        myClient = isRobot ? new RobotClient(myName) : new GUIClient(myName);
+//        maze.addClient(myClient);
+//        if (isRobot)
+//            this.addKeyListener(myClient);
+//        else
+//            this.addKeyListener(myClient);
+//        myClient.start();
 
         // Create the panel that will display the maze.
-        overheadPanel = new OverheadMazePanel(maze, myClient);
-        assert (overheadPanel != null);
-        maze.addMazeListener(overheadPanel);
-
-        // Don't allow editing the console from the GUI
-        console.setEditable(false);
-        console.setFocusable(false);
-        console.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder()));
-
-        // Allow the console to scroll by putting it in a scrollpane
-        JScrollPane consoleScrollPane = new JScrollPane(console);
-        assert (consoleScrollPane != null);
-        consoleScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Console"));
-
-        // Create the score table
-        scoreTable = new JTable(scoreModel);
-        assert (scoreTable != null);
-        scoreTable.setFocusable(false);
-        scoreTable.setRowSelectionAllowed(false);
-
-        // Allow the score table to scroll too.
-        JScrollPane scoreScrollPane = new JScrollPane(scoreTable);
-        assert (scoreScrollPane != null);
-        scoreScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Scores"));
-
-        // Create the layout manager
-        GridBagLayout layout = new GridBagLayout();
-        GridBagConstraints c = new GridBagConstraints();
-        getContentPane().setLayout(layout);
-
-        // Define the constraints on the components.
-        c.fill = GridBagConstraints.BOTH;
-        c.weightx = 1.0;
-        c.weighty = 3.0;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        layout.setConstraints(overheadPanel, c);
-        c.gridwidth = GridBagConstraints.RELATIVE;
-        c.weightx = 2.0;
-        c.weighty = 1.0;
-        layout.setConstraints(consoleScrollPane, c);
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.weightx = 1.0;
-        layout.setConstraints(scoreScrollPane, c);
-
-        // Add the components
-        getContentPane().add(overheadPanel);
-        getContentPane().add(consoleScrollPane);
-        getContentPane().add(scoreScrollPane);
-
-        // Pack everything neatly.
-        pack();
-
-        // Let the magic begin.
-        setVisible(true);
-        overheadPanel.repaint();
-        this.requestFocusInWindow();
+//        overheadPanel = new OverheadMazePanel(maze, myClient);
+//        assert (overheadPanel != null);
+//        maze.addMazeListener(overheadPanel);
+//
+//        // Don't allow editing the console from the GUI
+//        console.setEditable(false);
+//        console.setFocusable(false);
+//        console.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder()));
+//
+//        // Allow the console to scroll by putting it in a scrollpane
+//        JScrollPane consoleScrollPane = new JScrollPane(console);
+//        assert (consoleScrollPane != null);
+//        consoleScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Console"));
+//
+//        // Create the score table
+//        scoreTable = new JTable(scoreModel);
+//        assert (scoreTable != null);
+//        scoreTable.setFocusable(false);
+//        scoreTable.setRowSelectionAllowed(false);
+//
+//        // Allow the score table to scroll too.
+//        JScrollPane scoreScrollPane = new JScrollPane(scoreTable);
+//        assert (scoreScrollPane != null);
+//        scoreScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Scores"));
+//
+//        // Create the layout manager
+//        GridBagLayout layout = new GridBagLayout();
+//        GridBagConstraints c = new GridBagConstraints();
+//        getContentPane().setLayout(layout);
+//
+//        // Define the constraints on the components.
+//        c.fill = GridBagConstraints.BOTH;
+//        c.weightx = 1.0;
+//        c.weighty = 3.0;
+//        c.gridwidth = GridBagConstraints.REMAINDER;
+//        layout.setConstraints(overheadPanel, c);
+//        c.gridwidth = GridBagConstraints.RELATIVE;
+//        c.weightx = 2.0;
+//        c.weighty = 1.0;
+//        layout.setConstraints(consoleScrollPane, c);
+//        c.gridwidth = GridBagConstraints.REMAINDER;
+//        c.weightx = 1.0;
+//        layout.setConstraints(scoreScrollPane, c);
+//
+//        // Add the components
+//        getContentPane().add(overheadPanel);
+//        getContentPane().add(consoleScrollPane);
+//        getContentPane().add(scoreScrollPane);
+//
+//        // Pack everything neatly.
+//        pack();
+//
+//        // Let the magic begin.
+//        setVisible(true);
+//        overheadPanel.repaint();
+//        this.requestFocusInWindow();
     }
 
-    private void connectToAllPlayers() {
+    private void connectToAllPlayers(HashMap<String, InetSocketAddress> clientAddresses) {
+        // Add all clients to connectedClients Set
+        connectedClients.addAll(clientAddresses.keySet());
+
+        // Establish connection with all clients
         InetSocketAddress addr;
-        for (Map.Entry entry : connectedClients.entrySet()) {
-            addr = (InetSocketAddress) entry.getValue();
+        for (Map.Entry<String, InetSocketAddress> entry : clientAddresses.entrySet()) {
+            addr = entry.getValue();
             try {
                 Socket socket = new Socket(addr.getAddress(), addr.getPort());
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+                logger.info("Successfully connected with " + entry.getKey().toUpperCase());
+
+                // Tell myName to the client
+                MazewarPacket outgoing = new MazewarPacket();
+                outgoing.owner = myName;
+                out.writeObject(outgoing);
+
+                // Add in/out to hash maps
+                connectedOuts.put(entry.getKey(), out);
+                connectedIns.put(entry.getKey(), in);
+
                 new PacketListener(out, in);
-                logger.info("Successfully connected with " + ((String)entry.getKey()).toUpperCase());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        allConnected = true;
     }
 
     /**
