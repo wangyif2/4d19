@@ -82,6 +82,22 @@ public abstract class Client {
     }
 
     /**
+     * Find out what score this {@link Client} is presently having.
+     *
+     * @return An integer {@link Integer}.
+     */
+    public Integer getScore() {
+        return score;
+    }
+
+    /**
+     * Update the score for {@link Client}.
+     */
+    public void setScore(Integer score) {
+        this.score = score;
+    }
+
+    /**
      * Add an object to be notified when this {@link Client} performs an
      * action.
      *
@@ -119,6 +135,11 @@ public abstract class Client {
      * Name of the client.
      */
     private String name = null;
+
+    /**
+     * Score of the client
+     */
+    private Integer score;
 
     /**
      * Create a new client with the specified name.
@@ -252,5 +273,4 @@ public abstract class Client {
             cl.clientUpdate(this, ce);
         }
     }
-
 }

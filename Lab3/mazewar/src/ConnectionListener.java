@@ -6,16 +6,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * User: Ivan
  * Date: 02/03/13
  */
 public class ConnectionListener implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(MazewarServerHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConnectionListener.class);
 
     private Thread thread;
     private boolean listening = true;
@@ -50,11 +47,10 @@ public class ConnectionListener implements Runnable {
                 logger.info("Received connection request!\n");
 
                 // Spawn new packet listener
-                new PacketListener(out, in);
+                new PacketListener(in);
 
                 // Multicast an Add_NOTICE to all clients
                 notifyClientAddition(incoming.owner);
-
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -67,57 +63,14 @@ public class ConnectionListener implements Runnable {
     private void notifyClientAddition(String newClient) {
         MazewarPacket outgoing = new MazewarPacket();
         outgoing.type = MazewarPacket.ADD_NOTICE;
-        outgoing.lamportClk = ++Mazewar.lamportClk;
-        outgoing.seqNum = outgoing.lamportClk;
-        outgoing.owner = Mazewar.myName;
         outgoing.newClient = newClient;
 
-        // ACK to myself
-        Set<String> receivedACK = new HashSet<String>();
-        receivedACK.add(Mazewar.myName);
-        Mazewar.ackTracker.put(outgoing, receivedACK);
-
-        // Add ADD_NOTICE to queue
-        Mazewar.actionQueue.add(outgoing);
-
         // Multicast ADD_NOTICE to all clients
-        multicastAddNotice(outgoing);
+        Mazewar.multicaster.multicastAction(outgoing);
         logger.info("Lamport clk is updated to: " + Mazewar.lamportClk);
 
         // Multicast the ACK to all clients
-        multicastACK(outgoing);
+        Mazewar.multicaster.multicastACK(outgoing);
         logger.info("Lamport clk is updated to: " + Mazewar.lamportClk + "\n");
-    }
-
-    private void multicastAddNotice(MazewarPacket outgoing) {
-        synchronized (Mazewar.connectedOuts) {
-            for (Map.Entry<String, ObjectOutputStream> entry : Mazewar.connectedOuts.entrySet()) {
-                try {
-                    (entry.getValue()).writeObject(outgoing);
-                    logger.info("Sent " + outgoing.newClient.toUpperCase() + "'s add notice to " + entry.getKey().toUpperCase());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private void multicastACK(MazewarPacket outgoing) {
-        MazewarPacket ack = new MazewarPacket();
-        ack.lamportClk = outgoing.lamportClk;
-        ack.owner = outgoing.owner;
-        ack.ACKer = Mazewar.myName;
-        ack.seqNum = ++Mazewar.lamportClk;
-
-        synchronized (Mazewar.connectedOuts) {
-            for (Map.Entry<String, ObjectOutputStream> entry : Mazewar.connectedOuts.entrySet()) {
-                try {
-                    entry.getValue().writeObject(ack);
-                    logger.info("Sent ACK to " + entry.getKey().toUpperCase() + " with seq num: " + ack.seqNum);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 }

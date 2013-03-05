@@ -61,9 +61,16 @@ public abstract class Maze {
      *
      * @param client {@link Client} to be added to the {@link Maze}.
      */
-    public abstract void addClient(Client client);
+    public abstract DirectedPoint addClient(Client client);
 
-    public abstract void addRemoteClient(Client client, DirectedPoint dirPoint);
+    /**
+     * Add a {@link RemoteClient} at its current location in the {@link Maze}.
+     *
+     * @param clientName {@link String}
+     * @param dirPoint {@link DirectedPoint}
+     * @param score {@link Integer} to be added to the {@link Maze}.
+     */
+    public abstract void addRemoteClient(String clientName, DirectedPoint dirPoint, Integer score);
 
     /**
      * Create a new {@link Projectile} from the specified {@link Client}
@@ -131,6 +138,8 @@ public abstract class Maze {
      * @return {@link Iterator} over clients in the {@link Maze}.
      */
     public abstract Iterator getClients();
+
+    public abstract int getNumOfClients();
 
     /* Maze Listeners ******************************************************/
 

@@ -3,9 +3,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -13,15 +11,13 @@ import java.util.Set;
  * Date: 02/03/13
  */
 public class PacketListener implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(MazewarServerHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(PacketListener.class);
 
     private Thread thread;
-    private ObjectOutputStream out;
     private ObjectInputStream in;
 
-    public PacketListener(ObjectOutputStream out, ObjectInputStream in) {
+    public PacketListener(ObjectInputStream in) {
         thread = new Thread(this);
-        this.out = out;
         this.in = in;
 
         thread.start();
@@ -32,8 +28,18 @@ public class PacketListener implements Runnable {
         MazewarPacket incoming;
         while (true) {
             try {
-                assert (in != null);
+                // Listen to new incoming packet
                 incoming = (MazewarPacket) in.readObject();
+
+                // Add remote client to maze if the packet is REPORT_LOCATION type
+                if (incoming.type == MazewarPacket.REPORT_LOCATION) {
+                    Mazewar.maze.addRemoteClient(incoming.owner, incoming.directedPoint, incoming.score);
+                    continue;
+                }
+
+                /**
+                 * For all other types of packets:
+                 */
                 // Update local lamport clock
                 Mazewar.lamportClk = incoming.seqNum > Mazewar.lamportClk ? incoming.seqNum : Mazewar.lamportClk;
 
@@ -46,17 +52,20 @@ public class PacketListener implements Runnable {
                     if (incoming.type == MazewarPacket.ADD_NOTICE)
                         while (!Mazewar.connectedClients.contains(incoming.newClient) || !Mazewar.allConnected) ;
 
-                    // ACK to myself
-                    Set<String> receivedACK = new HashSet<String>();
-                    receivedACK.add(Mazewar.myName);
-                    Mazewar.ackTracker.put(incoming, receivedACK);
+                    synchronized (Mazewar.ackTracker) {
+                        // ACK to myself
+                        Set<String> receivedACK = new HashSet<String>();
+                        receivedACK.add(Mazewar.myName);
+                        Mazewar.ackTracker.put(incoming, receivedACK);
+                    }
 
                     // Add action to queue
                     Mazewar.actionQueue.add(incoming);
 
                     // Multicast ACK to all clients
-                    multicastACK(incoming);
+                    Mazewar.multicaster.multicastACK(incoming);
                 } else {
+                    /* ACK packet*/
                     // Make sure the packet has arrived before receiving the ACK
                     while (!Mazewar.ackTracker.containsKey(incoming)) ;
 
@@ -74,24 +83,6 @@ public class PacketListener implements Runnable {
                 e.printStackTrace();
             }
         }
-    }
 
-    private void multicastACK(MazewarPacket incoming) {
-        MazewarPacket ack = new MazewarPacket();
-        ack.lamportClk = incoming.lamportClk;
-        ack.owner = incoming.owner;
-        ack.ACKer = Mazewar.myName;
-        ack.seqNum = ++Mazewar.lamportClk;
-
-        synchronized (Mazewar.connectedOuts) {
-            for (Map.Entry<String, ObjectOutputStream> entry : Mazewar.connectedOuts.entrySet()) {
-                try {
-                    entry.getValue().writeObject(ack);
-                    logger.info("Sent ACK to " + entry.getKey().toUpperCase() + " with seq num: " + ack.seqNum);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 }

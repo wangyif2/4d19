@@ -45,7 +45,7 @@ public class LocalUpdateHandler implements Runnable {
                 if (fromServer != null) {
                     switch (fromServer.type) {
                         case MazewarPacket.ADD:
-                            maze.addRemoteClient(new RemoteClient(fromServer.owner), getNewDp(fromServer.mazeMap.get(fromServer.owner)));
+                            //maze.addRemoteClient(new RemoteClient(fromServer.owner), getNewDp(fromServer.mazeMap.get(fromServer.owner)));
                             logger.info("Added remote client: " + fromServer.owner + "\n");
                             break;
                         case MazewarPacket.MOVE_FORWARD:
@@ -69,17 +69,17 @@ public class LocalUpdateHandler implements Runnable {
                             logger.info("Client " + fromServer.owner + " fired\n");
                             break;
                         case MazewarPacket.INSTANT_KILL:
-                            maze.killClient(owner,
-                                    maze.getClientByName(fromServer.victim),
-                                    getNewDp(fromServer.mazeMap.get(fromServer.victim)),
-                                    true);
+//                            maze.killClient(owner,
+//                                    maze.getClientByName(fromServer.victim),
+//                                    getNewDp(fromServer.mazeMap.get(fromServer.victim)),
+//                                    true);
                             logger.info("Client " + fromServer.owner + " instantly killed " + fromServer.victim + "\n");
                             break;
                         case MazewarPacket.KILL:
-                            maze.killClient(owner,
-                                    maze.getClientByName(fromServer.victim),
-                                    getNewDp(fromServer.mazeMap.get(fromServer.victim)),
-                                    false);
+//                            maze.killClient(owner,
+//                                    maze.getClientByName(fromServer.victim),
+//                                    getNewDp(fromServer.mazeMap.get(fromServer.victim)),
+//                                    false);
                             logger.info("Client " + fromServer.owner + " killed " + fromServer.victim + "\n");
                             break;
                         case MazewarPacket.QUIT:

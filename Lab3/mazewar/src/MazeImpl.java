@@ -186,29 +186,30 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return getCellImpl(point);
     }
 
-    public synchronized void addClient(Client client) {
+    public synchronized DirectedPoint addClient(Client client) {
         assert (client != null);
 
         DirectedPoint newDp;
-        MazewarPacket fromServer;
-
+        // Make sure the client takes a empty cell
         do {
             newDp = pickRandomLocation();
-            fromServer = addClientToServer(client, newDp);
-        } while (fromServer.type != MazewarPacket.ADD_SUCCESS);
+        } while (isPointOccupied(newDp));
         logger.info("Added " + client.getName() +
                 " @ X: " + newDp.getX() + " Y: " + newDp.getY() +
                 " facing " + newDp.getDirection() + "\n");
-        // Sync all remote clients to maze
-        syncRemoteClients(fromServer.mazeMap, fromServer.mazeScore);
+
         // Add LocalClient to maze
         addClient(client, newDp, 0);
-        // Start LocalClient thread
+        // Start projectile thread
         thread.start();
+        return newDp;
     }
 
-    public synchronized void addRemoteClient(Client client, DirectedPoint dirPoint) {
-        addClient(client, dirPoint, 0);
+    public synchronized void addRemoteClient(String clientName, DirectedPoint dirPoint, Integer score) {
+        RemoteClient client = new RemoteClient(clientName);
+        addClient(client, new DirectedPoint(dirPoint), score);
+        logger.info("RemoteClient: " + clientName + " is synced with dir " +
+                dirPoint.getDirection() + " and score " + score + "\n");
     }
 
     public synchronized Point getClientPoint(Client client) {
@@ -373,6 +374,11 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         }
     }
 
+    public synchronized int getNumOfClients() {
+        synchronized (clientMap) {
+            return clientMap.size();
+        }
+    }
 
     public void addMazeListener(MazeListener ml) {
         listenerSet.add(ml);
@@ -507,43 +513,12 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         }
     }
 
-    private synchronized MazewarPacket addClientToServer(Client client, DirectedPoint dirPoint) {
-        MazewarPacket toServer = new MazewarPacket();
-
-        toServer.owner = client.getName();
-        toServer.type = MazewarPacket.ADD;
-        toServer.mazeMap.put(client.getName(), dirPoint);
-
-        try {
-            Mazewar.out.writeObject(toServer);
-            return (MazewarPacket) Mazewar.in.readObject();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private synchronized void syncRemoteClients(HashMap<String, DirectedPoint> mazeMap, HashMap<String, Integer> mazeScore) {
-        for (Map.Entry<String, DirectedPoint> cient : mazeMap.entrySet()) {
-            String clientName = cient.getKey();
-            Point p = cient.getValue();
-            Direction d = cient.getValue().getDirection();
-            Integer s = mazeScore.get(clientName);
-
-            RemoteClient c = new RemoteClient(clientName);
-            addClient(c, new DirectedPoint(p, d), s);
-            logger.info("RemoteClient: " + clientName + " is synced with dir " +
-                    cient.getValue().getDirection() + " and score " + s + "\n");
-        }
-    }
-
     /**
      * Internal helper for adding a {@link Client} to the {@link Maze}.
      *
      * @param client   The {@link Client} to be added.
      * @param dirPoint The location the {@link Client} should be added.
+     * @param score The score of the {@link Client}.
      */
     private synchronized void addClient(Client client, DirectedPoint dirPoint, Integer score) {
         synchronized (clientMap) {
@@ -558,6 +533,16 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             update();
             notifyClientAdd(client, score);
         }
+    }
+
+    private boolean isPointOccupied(DirectedPoint newDp) {
+        Iterator it = getClients();
+        while (it.hasNext()) {
+            Client c = (Client) it.next();
+            if (c.getPoint().equals(newDp))
+                return true;
+        }
+        return false;
     }
 
     /**

@@ -38,6 +38,7 @@ import java.io.IOException;
 public abstract class LocalClient extends Client implements KeyListener {
     private static final Logger logger = LoggerFactory.getLogger(LocalClient.class);
     private LocalUpdateHandler localUpdate;
+    protected boolean pause = false;
 
     /**
      * Create a {@link Client} local to this machine.
@@ -51,12 +52,20 @@ public abstract class LocalClient extends Client implements KeyListener {
     }
 
     public void start() {
-        localUpdate.start();
+        //localUpdate.start();
     }
 
     public void registerMaze(Maze maze) {
         super.registerMaze(maze);
         localUpdate.registerMaze(maze);
+    }
+
+    protected void pause() {
+        pause = true;
+    }
+
+    protected void resume() {
+        pause = false;
     }
 
     /**
@@ -85,7 +94,7 @@ public abstract class LocalClient extends Client implements KeyListener {
             MazewarPacket toServer = new MazewarPacket();
             toServer.owner = getName();
             toServer.type = MazewarPacket.MOVE_FORWARD;
-            toServer.mazeMap.put(getName(), newDp);
+            //toServer.mazeMap.put(getName(), newDp);
             notifyServer(toServer);
             logger.info("Notify moveClient: " + getName() +
                     "\n\tfrom X: " + oldPoint.getX() +
@@ -116,7 +125,7 @@ public abstract class LocalClient extends Client implements KeyListener {
             MazewarPacket toServer = new MazewarPacket();
             toServer.owner = getName();
             toServer.type = MazewarPacket.MOVE_BACKWARD;
-            toServer.mazeMap.put(getName(), newDp);
+            //toServer.mazeMap.put(getName(), newDp);
             notifyServer(toServer);
             logger.info("Notify moveClient: " + getName() +
                     "\n\tfrom X: " + oldPoint.getX() +
@@ -143,7 +152,7 @@ public abstract class LocalClient extends Client implements KeyListener {
 
         toServer.owner = getName();
         toServer.type = MazewarPacket.TURN_LEFT;
-        toServer.mazeMap.put(getName(), newDp);
+        //toServer.mazeMap.put(getName(), newDp);
         notifyServer(toServer);
         logger.info("Nofity rotateClient: " + getName() +
                 "\n\tfrom X: " + oldPoint.getX() +
@@ -166,7 +175,7 @@ public abstract class LocalClient extends Client implements KeyListener {
 
         toServer.owner = getName();
         toServer.type = MazewarPacket.TURN_RIGHT;
-        toServer.mazeMap.put(getName(), newDp);
+        //toServer.mazeMap.put(getName(), newDp);
         notifyServer(toServer);
         logger.info("Nofity rotateClient: " + getName() +
                 "\n\tfrom X: " + oldPoint.getX() +
@@ -227,7 +236,7 @@ public abstract class LocalClient extends Client implements KeyListener {
         toServer.type = isInstant ? MazewarPacket.INSTANT_KILL : MazewarPacket.KILL;
         toServer.owner = getName();
         toServer.victim = victim;
-        toServer.mazeMap.put(victim, newDp);
+        //toServer.mazeMap.put(victim, newDp);
         notifyServer(toServer);
     }
 

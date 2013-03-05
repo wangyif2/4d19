@@ -41,6 +41,9 @@ public class GUIClient extends LocalClient {
      * @param e The {@link KeyEvent} that occurred.
      */
     public void keyPressed(KeyEvent e) {
+        // Ignore key event if game is paused
+        if (pause) return;
+
         // If the user pressed Q, invoke the cleanup code and quit.
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
             notifyServerQuit();

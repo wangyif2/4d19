@@ -15,33 +15,34 @@ public class MazewarPacket extends MazewarPacketIdentifier implements Serializab
     public static final int REGISTER_SUCCESS = 101;
 
     public static final int ADD_NOTICE = 200;
-    public static final int ADD = 201;
-    public static final int ADD_SUCCESS = 202;
+    public static final int REPORT_LOCATION = 201;
+    public static final int ADD = 202;
+    public static final int ADD_SUCCESS = 203;
 
-    public static final int MOVE_FORWARD = 200;
-    public static final int MOVE_BACKWARD = 202;
+    public static final int MOVE_FORWARD = 300;
+    public static final int MOVE_BACKWARD = 301;
 
-    public static final int TURN_LEFT = 203;
-    public static final int TURN_RIGHT = 204;
+    public static final int TURN_LEFT = 302;
+    public static final int TURN_RIGHT = 303;
 
-    public static final int FIRE = 300;
-    public static final int INSTANT_KILL = 301;
-    public static final int KILL = 302;
+    public static final int FIRE = 400;
+    public static final int INSTANT_KILL = 401;
+    public static final int KILL = 402;
 
-    public static final int QUIT = 400;
+    public static final int QUIT = 500;
 
     //packet definitions
-    public String ACKer;
-    public int seqNum;
     public String newClient;
+    public String ACKer;
     public String victim;
+    public int seqNum;
 
     public InetSocketAddress address;
     public HashMap<String, InetSocketAddress> connectedClients;
 
     public int type = MazewarPacket.NULL;
-    public HashMap<String, DirectedPoint> mazeMap = new HashMap<String, DirectedPoint>();
-    public HashMap<String, Integer> mazeScore = new HashMap<String, Integer>();
+    public DirectedPoint directedPoint;
+    public Integer score;
 
     @Override
     public int compareTo(MazewarPacket o) {

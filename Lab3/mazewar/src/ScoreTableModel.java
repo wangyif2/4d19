@@ -198,6 +198,7 @@ public class ScoreTableModel implements TableModel, MazeListener {
         s.score = score;
         scoreSet.add(s);
         clientMap.put(client, s);
+        client.setScore(score);
         notifyListeners();
     }
 
@@ -209,6 +210,7 @@ public class ScoreTableModel implements TableModel, MazeListener {
         ScoreWrapper s = (ScoreWrapper) o;
         s.adjustScore(scoreAdjFire);
         scoreSet.add(s);
+        client.setScore(s.score);
         notifyListeners();
     }
 
@@ -222,12 +224,14 @@ public class ScoreTableModel implements TableModel, MazeListener {
         int adj = isInstant ? scoreAdjInstKill : scoreAdjKill;
         s.adjustScore(adj);
         scoreSet.add(s);
+        source.setScore(s.score);
         o = clientMap.get(target);
         assert (o instanceof ScoreWrapper);
         scoreSet.remove(o);
         s = (ScoreWrapper) o;
         s.adjustScore(scoreAdjKilled);
         scoreSet.add(s);
+        target.setScore(s.score);
         notifyListeners();
     }
 

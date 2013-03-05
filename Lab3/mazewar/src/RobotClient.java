@@ -103,6 +103,9 @@ public class RobotClient extends LocalClient implements Runnable {
 
         // Loop while we are active
         while (active) {
+            // Stop robot movements if game is paused
+            if (pause) continue;
+
             // Try to move forward
             if (!notifyServerForward()) {
                 // If we fail...
@@ -131,6 +134,9 @@ public class RobotClient extends LocalClient implements Runnable {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        // Ignore key event if game is paused
+        if (pause) return;
+
         // If the user pressed Q, invoke the cleanup code and quit.
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
             notifyServerQuit();
