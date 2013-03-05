@@ -141,19 +141,21 @@ public abstract class LocalClient extends Client implements KeyListener {
     }
 
     /**
-     * Notify server turning the client left.
+     * Notify connected clients turning the client left.
      */
-    protected void notifyServerTurnLeft() {
-        MazewarPacket toServer = new MazewarPacket();
-
+    protected void notifyTurnLeftAction() {
         Point oldPoint = getPoint();
         Direction d = getOrientation();
         DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
 
-        toServer.owner = getName();
-        toServer.type = MazewarPacket.TURN_LEFT;
-        //toServer.mazeMap.put(getName(), newDp);
-        notifyServer(toServer);
+        MazewarPacket outgoing = new MazewarPacket();
+        outgoing.type = MazewarPacket.TURN_LEFT;
+
+        // Multicast the turning left action
+        Mazewar.multicaster.multicastAction(outgoing);
+
+        // Multicast ACK to all clients
+        Mazewar.multicaster.multicastACK(outgoing);
         logger.info("Nofity rotateClient: " + getName() +
                 "\n\tfrom X: " + oldPoint.getX() +
                 "\n\t     Y: " + oldPoint.getY() +
@@ -164,19 +166,21 @@ public abstract class LocalClient extends Client implements KeyListener {
     }
 
     /**
-     * Notify server turning the client right.
+     * Notify connected clients turning the client right.
      */
-    protected void notifyServerTurnRight() {
-        MazewarPacket toServer = new MazewarPacket();
-
+    protected void notifyTurnRightAction() {
         Point oldPoint = getPoint();
         Direction d = getOrientation();
-        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
+        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnRight());
 
-        toServer.owner = getName();
-        toServer.type = MazewarPacket.TURN_RIGHT;
-        //toServer.mazeMap.put(getName(), newDp);
-        notifyServer(toServer);
+        MazewarPacket outgoing = new MazewarPacket();
+        outgoing.type = MazewarPacket.TURN_RIGHT;
+
+        // Multicast the turning right action
+        Mazewar.multicaster.multicastAction(outgoing);
+
+        // Multicast ACK to all clients
+        Mazewar.multicaster.multicastACK(outgoing);
         logger.info("Nofity rotateClient: " + getName() +
                 "\n\tfrom X: " + oldPoint.getX() +
                 "\n\t     Y: " + oldPoint.getY() +

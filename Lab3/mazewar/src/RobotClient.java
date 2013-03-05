@@ -111,10 +111,10 @@ public class RobotClient extends LocalClient implements Runnable {
                 // If we fail...
                 if (randomGen.nextInt(3) == 1) {
                     // turn left!
-                    notifyServerTurnLeft();
+                    notifyTurnLeftAction();
                 } else {
                     // or perhaps turn right!
-                    notifyServerTurnRight();
+                    notifyTurnRightAction();
                 }
             }
 

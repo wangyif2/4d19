@@ -56,10 +56,10 @@ public class GUIClient extends LocalClient {
             notifyServerBackup();
             // Left-arrow turns left.
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            notifyServerTurnLeft();
+            notifyTurnLeftAction();
             // Right-arrow turns right.
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            notifyServerTurnRight();
+            notifyTurnRightAction();
             // Spacebar fires.
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             notifyServerFire();
