@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
 
 /**
@@ -54,7 +55,7 @@ public class Mazewar extends JFrame {
     public static HashMap<String, ObjectInputStream> connectedIns = new HashMap<String, ObjectInputStream>();
     public static int lamportClk = 0;
     public static PriorityBlockingQueue<MazewarPacket> actionQueue = new PriorityBlockingQueue<MazewarPacket>();
-    public static HashMap<MazewarPacketIdentifier, Set<String>> ackTracker = new HashMap<MazewarPacketIdentifier, Set<String>>();
+    public static ConcurrentHashMap<MazewarPacketIdentifier, Set<String>> ackTracker = new ConcurrentHashMap<MazewarPacketIdentifier, Set<String>>();
     public static Socket playerSocket = null;
     public static ObjectOutputStream out;
 
@@ -352,7 +353,7 @@ public class Mazewar extends JFrame {
         boolean isRobot = false;
 
         // Check argument correctness
-        if (args.length != 3 && args.length != 3) {
+        if (args.length != 3 && args.length != 4) {
             System.err.println("ERROR: Invalid arguments!");
             System.exit(-1);
         }

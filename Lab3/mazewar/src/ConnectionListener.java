@@ -41,10 +41,12 @@ public class ConnectionListener implements Runnable {
 
                 // Add client name and in/out stream
                 MazewarPacket incoming = (MazewarPacket) in.readObject();
-                Mazewar.connectedIns.put(incoming.owner, in);
-                Mazewar.connectedOuts.put(incoming.owner, out);
-                Mazewar.connectedClients.add(incoming.owner);
-                logger.info("Received connection request!\n");
+                synchronized (Mazewar.connectedOuts) {
+                    Mazewar.connectedIns.put(incoming.owner, in);
+                    Mazewar.connectedOuts.put(incoming.owner, out);
+                    Mazewar.connectedClients.add(incoming.owner);
+                    logger.info("Received connection request!\n");
+                }
 
                 // Spawn new packet listener
                 new PacketListener(in);

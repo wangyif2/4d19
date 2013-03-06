@@ -107,21 +107,21 @@ public class RobotClient extends LocalClient implements Runnable {
             if (pause) continue;
 
             // Try to move forward
-            if (!notifyServerForward()) {
-                // If we fail...
-                if (randomGen.nextInt(3) == 1) {
-                    // turn left!
-                    notifyTurnLeftAction();
-                } else {
-                    // or perhaps turn right!
-                    notifyTurnRightAction();
-                }
+            //if (!notifyServerForward()) {
+            // If we fail...
+            if (randomGen.nextInt(3) == 1) {
+                // turn left!
+                notifyTurnLeftAction();
+            } else {
+                // or perhaps turn right!
+                notifyTurnRightAction();
             }
+            //}
 
             // Shoot at things once and a while.
-            if (randomGen.nextInt(10) == 1) {
-                notifyServerFire();
-            }
+//            if (randomGen.nextInt(10) == 1) {
+//                notifyServerFire();
+//            }
 
             // Sleep so the humans can possibly compete.
             try {

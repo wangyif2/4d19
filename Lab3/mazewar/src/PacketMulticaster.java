@@ -61,7 +61,7 @@ public class PacketMulticaster {
     }
 
     private void multicast(MazewarPacket outgoing) {
-        synchronized (connectedOuts) {
+        synchronized (Mazewar.connectedOuts) {
             for (Map.Entry<String, ObjectOutputStream> entry : connectedOuts.entrySet()) {
                 try {
                     entry.getValue().writeObject(outgoing);

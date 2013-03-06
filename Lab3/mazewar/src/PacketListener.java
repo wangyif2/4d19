@@ -33,6 +33,7 @@ public class PacketListener implements Runnable {
 
                 // Add remote client to maze if the packet is REPORT_LOCATION type
                 if (incoming.type == MazewarPacket.REPORT_LOCATION) {
+                    logger.info("Received location report from: " + incoming.owner);
                     Mazewar.maze.addRemoteClient(incoming.owner, incoming.directedPoint, incoming.score);
                     continue;
                 }

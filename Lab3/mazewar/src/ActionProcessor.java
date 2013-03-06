@@ -36,8 +36,7 @@ public class ActionProcessor implements Runnable {
                                 /* Add a new remote client */
                                 Mazewar.maze.addRemoteClient(nextAction.owner, nextAction.directedPoint, 0);
                                 Mazewar.myClient.resume();
-                            }
-                            else {
+                            } else {
                                 /* I am the new client */
                                 Mazewar.isRegisterComplete = true;
                             }
@@ -57,16 +56,16 @@ public class ActionProcessor implements Runnable {
     }
 
     private void addClient(MazewarPacket nextAction) {
-        // Clear queue
-        Mazewar.actionQueue.clear();
-
         String newClient = nextAction.newClient;
         MazewarPacket outgoing;
         if (newClient.equals(Mazewar.myName)) {
             /* I am the new client */
             logger.info("Packet " + nextAction.lamportClk + " from " + nextAction.owner + " is processed\n");
             // Wait until all existing clients have reported their locations
-            while (Mazewar.maze.getNumOfClients() < Mazewar.connectedIns.size()) ;
+            while (Mazewar.maze.getNumOfClients() < Mazewar.connectedOuts.size()) ;
+
+            // Clear queue
+            Mazewar.actionQueue.clear();
 
             outgoing = new MazewarPacket();
             outgoing.type = MazewarPacket.ADD;
@@ -82,6 +81,9 @@ public class ActionProcessor implements Runnable {
             // Suspend user input and random generator
             Mazewar.myClient.pause();
 
+            // Clear queue
+            Mazewar.actionQueue.clear();
+
             // Get my location
             Point p = Mazewar.myClient.getPoint();
             Direction d = Mazewar.myClient.getOrientation();
@@ -94,11 +96,14 @@ public class ActionProcessor implements Runnable {
             outgoing.directedPoint = myDp;
             outgoing.score = Mazewar.myClient.getScore();
 
-            // Report my location to the new guy
-            try {
-                Mazewar.connectedOuts.get(newClient).writeObject(outgoing);
-            } catch (IOException e) {
-                e.printStackTrace();
+            synchronized (Mazewar.connectedOuts) {
+                logger.info("Reporting my location to: " + newClient);
+                // Report my location to the new guy
+                try {
+                    Mazewar.connectedOuts.get(newClient).writeObject(outgoing);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
