@@ -41,6 +41,14 @@ public class ActionProcessor implements Runnable {
                                 Mazewar.isRegisterComplete = true;
                             }
                             break;
+                        case MazewarPacket.MOVE_FORWARD:
+                            if (Mazewar.maze.getClientByName(nextAction.owner).forward())
+                                logger.info("Moved client: " + nextAction.owner + " forward\n");
+                            break;
+                        case MazewarPacket.MOVE_BACKWARD:
+                            if (Mazewar.maze.getClientByName(nextAction.owner).backup())
+                                logger.info("Moved client: " + nextAction.owner + " backward\n");
+                            break;
                         case MazewarPacket.TURN_LEFT:
                             Mazewar.maze.getClientByName(nextAction.owner).turnLeft();
                             logger.info("Rotated client: " + nextAction.owner + " left\n");

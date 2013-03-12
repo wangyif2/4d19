@@ -79,23 +79,27 @@ public abstract class LocalClient extends Client implements KeyListener {
     }
 
     /**
-     * Notify server moving the client forward.
+     * Notify connected clients moving the client forward.
      *
      * @return <code>true</code> if move was successful, otherwise <code>false</code>.
      */
-    protected boolean notifyServerForward() {
+    protected boolean notifyForwardAction() {
         assert (maze != null);
 
         if (maze.canMoveForward(this)) {
             Point oldPoint = getPoint();
             Direction d = getOrientation();
-            DirectedPoint newDp = new DirectedPoint(oldPoint.move(d), d);
 
-            MazewarPacket toServer = new MazewarPacket();
-            toServer.owner = getName();
-            toServer.type = MazewarPacket.MOVE_FORWARD;
-            //toServer.mazeMap.put(getName(), newDp);
-            notifyServer(toServer);
+            MazewarPacket outgoing = new MazewarPacket();
+            outgoing.type = MazewarPacket.MOVE_FORWARD;
+
+            // Multicast the moving backward action
+            Mazewar.multicaster.multicastAction(outgoing);
+
+            // Multicast ACK to all clients
+            Mazewar.multicaster.multicastACK(outgoing);
+
+            DirectedPoint newDp = new DirectedPoint(oldPoint.move(d), d);
             logger.info("Notify moveClient: " + getName() +
                     "\n\tfrom X: " + oldPoint.getX() +
                     "\n\t     Y: " + oldPoint.getY() +
@@ -110,23 +114,27 @@ public abstract class LocalClient extends Client implements KeyListener {
     }
 
     /**
-     * Notify server moving the client backward.
+     * Notify connected clients moving the client backward.
      *
      * @return <code>true</code> if move was successful, otherwise <code>false</code>.
      */
-    protected boolean notifyServerBackup() {
+    protected boolean notifyBackupAction() {
         assert (maze != null);
 
         if (maze.canMoveBackward(this)) {
             Point oldPoint = getPoint();
             Direction d = getOrientation();
-            DirectedPoint newDp = new DirectedPoint(oldPoint.move(d.invert()), d);
 
-            MazewarPacket toServer = new MazewarPacket();
-            toServer.owner = getName();
-            toServer.type = MazewarPacket.MOVE_BACKWARD;
-            //toServer.mazeMap.put(getName(), newDp);
-            notifyServer(toServer);
+            MazewarPacket outgoing = new MazewarPacket();
+            outgoing.type = MazewarPacket.MOVE_BACKWARD;
+
+            // Multicast the moving backward action
+            Mazewar.multicaster.multicastAction(outgoing);
+
+            // Multicast ACK to all clients
+            Mazewar.multicaster.multicastACK(outgoing);
+
+            DirectedPoint newDp = new DirectedPoint(oldPoint.move(d.invert()), d);
             logger.info("Notify moveClient: " + getName() +
                     "\n\tfrom X: " + oldPoint.getX() +
                     "\n\t     Y: " + oldPoint.getY() +

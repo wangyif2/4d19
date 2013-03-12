@@ -320,32 +320,20 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
     public synchronized boolean canMoveForward(Client client) {
         Direction d = client.getOrientation();
-        return canMove(client, d);
+        return !hitWall(client, d);
     }
 
     public synchronized boolean canMoveBackward(Client client) {
         Direction d = client.getOrientation().invert();
-        return canMove(client, d);
+        return !hitWall(client, d);
     }
 
     public synchronized boolean moveClientForward(Client client) {
-        synchronized (clientMap) {
-            assert (client != null);
-            Object o = clientMap.get(client);
-            assert (o instanceof DirectedPoint);
-            DirectedPoint dp = (DirectedPoint) o;
-            return moveClient(client, dp.getDirection());
-        }
+        return moveClient(client, client.getOrientation());
     }
 
     public synchronized boolean moveClientBackward(Client client) {
-        synchronized (clientMap) {
-            assert (client != null);
-            Object o = clientMap.get(client);
-            assert (o instanceof DirectedPoint);
-            DirectedPoint dp = (DirectedPoint) o;
-            return moveClient(client, dp.getDirection().invert());
-        }
+        return moveClient(client, client.getOrientation().invert());
     }
 
     public synchronized void killClient(Client source, Client target, DirectedPoint newDp, boolean isInstant) {
@@ -518,7 +506,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
      *
      * @param client   The {@link Client} to be added.
      * @param dirPoint The location the {@link Client} should be added.
-     * @param score The score of the {@link Client}.
+     * @param score    The score of the {@link Client}.
      */
     private synchronized void addClient(Client client, DirectedPoint dirPoint, Integer score) {
         synchronized (clientMap) {
@@ -577,7 +565,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         }
     }
 
-    private synchronized boolean canMove(Client client, Direction d) {
+    private synchronized boolean hitWall(Client client, Direction d) {
         assert (client != null);
         assert (d != null);
         Point oldPoint = getClientPoint(client);
@@ -585,20 +573,10 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
         /* Check that you can move in the given direction */
         if (oldCell.isWall(d)) {
-            /* Move failed */
-            return false;
+            /* Attempt moving towards wall */
+            return true;
         }
-
-        DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
-
-        /* Is the point withint the bounds of maze? */
-        assert (checkBounds(newPoint));
-        CellImpl newCell = getCellImpl(newPoint);
-        if (newCell.getContents() != null) {
-            /* Move failed */
-            return false;
-        }
-        return true;
+        return false;
     }
 
     /**
@@ -619,7 +597,16 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             CellImpl oldCell = getCellImpl(oldPoint);
 
             DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
+
+            /* Is the point withint the bounds of maze? */
+            assert (checkBounds(newPoint));
+
+            /* Is move valid */
             CellImpl newCell = getCellImpl(newPoint);
+            if (newCell.getContents() != null) {
+                /* Move failed */
+                return false;
+            }
 
             /* Write the new cell */
             clientMap.put(client, newPoint);

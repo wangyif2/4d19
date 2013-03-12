@@ -50,10 +50,10 @@ public class GUIClient extends LocalClient {
             Mazewar.quit();
             // Up-arrow moves forward.
         } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-            notifyServerForward();
+            notifyForwardAction();
             // Down-arrow moves backward.
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            notifyServerBackup();
+            notifyBackupAction();
             // Left-arrow turns left.
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             notifyTurnLeftAction();
