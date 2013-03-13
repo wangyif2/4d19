@@ -35,7 +35,9 @@ public class RemoteClient extends Client {
         super(name);
     }
 
+    @Override
     public void quit() {
+        Mazewar.connectedClients.remove(getName());
         maze.removeClient(this);
     }
 }

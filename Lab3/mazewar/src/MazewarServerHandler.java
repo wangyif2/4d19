@@ -39,25 +39,14 @@ public class MazewarServerHandler implements Runnable {
         try {
             synchronized (MazewarServer.connectedClients) {
                 MazewarPacket fromClient = (MazewarPacket) in.readObject();
-                MazewarPacket toClient;
-                while (MazewarServer.connectedClients.containsKey(fromClient.owner)) {
-                    // Notify new client to change name
-                    toClient = new MazewarPacket();
-                    toClient.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
-                    out.writeObject(toClient);
-
-                    fromClient = (MazewarPacket) in.readObject();
-                    assert (fromClient != null);
+                switch (fromClient.type) {
+                    case MazewarPacket.REGISTER:
+                        registerClient(fromClient);
+                        break;
+                    case MazewarPacket.QUIT:
+                        unregisterClient(fromClient);
+                        break;
                 }
-
-                // Reply with all connected clients
-                toClient = new MazewarPacket();
-                toClient.type = MazewarPacket.REGISTER_SUCCESS;
-                toClient.connectedClients = MazewarServer.connectedClients;
-                out.writeObject(toClient);
-
-                MazewarServer.connectedClients.put(fromClient.owner, fromClient.address);
-                logger.info("Successfully registered " + fromClient.owner.toUpperCase() + " with " + fromClient.address + " to naming service\n");
 
                 // Clean up after registration
                 in.close();
@@ -69,5 +58,40 @@ public class MazewarServerHandler implements Runnable {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private void registerClient(MazewarPacket fromClient) {
+        MazewarPacket toClient;
+        try {
+            while (MazewarServer.connectedClients.containsKey(fromClient.owner)) {
+                // Notify new client to change name
+                toClient = new MazewarPacket();
+                toClient.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
+
+                out.writeObject(toClient);
+
+                fromClient = (MazewarPacket) in.readObject();
+                assert (fromClient != null);
+            }
+
+            // Reply with all connected clients
+            toClient = new MazewarPacket();
+            toClient.type = MazewarPacket.REGISTER_SUCCESS;
+            toClient.connectedClients = MazewarServer.connectedClients;
+            out.writeObject(toClient);
+
+            MazewarServer.connectedClients.put(fromClient.owner, fromClient.address);
+            logger.info("Successfully registered " + fromClient.owner.toUpperCase() + " with " + fromClient.address + " to naming service\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void unregisterClient(MazewarPacket fromClient) {
+        MazewarServer.connectedClients.remove(fromClient.owner);
+        logger.info("Successfully unregistered " + fromClient.owner.toUpperCase() + " from naming service\n");
+
     }
 }

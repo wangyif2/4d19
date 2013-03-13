@@ -49,7 +49,7 @@ public class ConnectionListener implements Runnable {
                 }
 
                 // Spawn new packet listener
-                new PacketListener(in);
+                new PacketListener(incoming.owner, newSocket, in);
 
                 // Multicast an Add_NOTICE to all clients
                 notifyClientAddition(incoming.owner);

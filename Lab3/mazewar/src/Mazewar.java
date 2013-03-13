@@ -47,6 +47,8 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class Mazewar extends JFrame {
     private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
 
+    private static String serverHostname;
+    private static int serverPort;
     public static String myName;
     public static InetSocketAddress myAddress;
     public static boolean allConnected;
@@ -56,10 +58,6 @@ public class Mazewar extends JFrame {
     public static int lamportClk = 0;
     public static PriorityBlockingQueue<MazewarPacket> actionQueue = new PriorityBlockingQueue<MazewarPacket>();
     public static ConcurrentHashMap<MazewarPacketIdentifier, Set<String>> ackTracker = new ConcurrentHashMap<MazewarPacketIdentifier, Set<String>>();
-    public static Socket playerSocket = null;
-    public static ObjectOutputStream out;
-
-    public static ObjectInputStream in;
 
     public static boolean isRegisterComplete = false;
 
@@ -137,12 +135,41 @@ public class Mazewar extends JFrame {
      * Static method for performing cleanup before exiting the game.
      */
     public static void quit() {
-        // Network clean-up
+        // Unregister from the server
         try {
-            out.close();
+            Socket socket = new Socket(serverHostname, serverPort);
+
+            /* stream to write to/read from server */
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
+            MazewarPacket toServer;
+
+
+            // Send register packet to server
+            toServer = new MazewarPacket();
+            toServer.type = MazewarPacket.QUIT;
+            toServer.owner = myName;
+            out.writeObject(toServer);
+
+            logger.info("Unregistered from naming service\n");
+
+            // Clean up socket connection
             in.close();
-            playerSocket.close();
+            out.close();
+            socket.close();
+
+            // Wait a bit
+            Thread.sleep(500);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            System.err.println("ERROR: Don't know where to connect.");
+            System.exit(1);
         } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("ERROR: Couldn't get I/O for the connection.");
+            System.exit(1);
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -152,11 +179,9 @@ public class Mazewar extends JFrame {
     /**
      * The place where all the pieces are put together.
      *
-     * @param serverHostname
-     * @param serverPort
      * @param isRobot
      */
-    public Mazewar(String serverHostname, int serverPort, boolean isRobot) {
+    public Mazewar(boolean isRobot) {
         super("ECE419 Mazewar");
         consolePrintLn("ECE419 Mazewar started!");
 
@@ -176,8 +201,8 @@ public class Mazewar extends JFrame {
             Socket socket = new Socket(serverHostname, serverPort);
 
             /* stream to write to/read from server */
-            out = new ObjectOutputStream(socket.getOutputStream());
-            in = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
             MazewarPacket toServer;
             MazewarPacket fromServer;
@@ -192,6 +217,7 @@ public class Mazewar extends JFrame {
 
                 // Send register packet to server
                 toServer = new MazewarPacket();
+                toServer.type = MazewarPacket.REGISTER;
                 toServer.owner = myName;
                 toServer.address = myAddress;
                 out.writeObject(toServer);
@@ -333,7 +359,7 @@ public class Mazewar extends JFrame {
                 connectedOuts.put(entry.getKey(), out);
                 connectedIns.put(entry.getKey(), in);
 
-                new PacketListener(in);
+                new PacketListener(entry.getKey(), socket, in);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -347,9 +373,7 @@ public class Mazewar extends JFrame {
      * @param args Command-line arguments.
      */
     public static void main(String args[]) {
-        // variables for hostname/port
-        String serverHostname;
-        int serverPort;
+        // variable to distinguish between AI and player
         boolean isRobot = false;
 
         // Check argument correctness
@@ -379,6 +403,6 @@ public class Mazewar extends JFrame {
         }
 
         /* Create the GUI */
-        new Mazewar(serverHostname, serverPort, isRobot);
+        new Mazewar(isRobot);
     }
 }

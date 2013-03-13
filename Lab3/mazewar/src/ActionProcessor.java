@@ -57,6 +57,10 @@ public class ActionProcessor implements Runnable {
                             Mazewar.maze.getClientByName(nextAction.owner).turnRight();
                             logger.info("Rotated client: " + nextAction.owner + " right\n");
                             break;
+                        case MazewarPacket.QUIT:
+                            Mazewar.maze.getClientByName(nextAction.owner).quit();
+                            logger.info("Client: " + nextAction.owner + " quiting\n");
+                            break;
                     }
                 }
             }

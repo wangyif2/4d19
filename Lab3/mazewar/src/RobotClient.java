@@ -139,8 +139,7 @@ public class RobotClient extends LocalClient implements Runnable {
 
         // If the user pressed Q, invoke the cleanup code and quit.
         if ((e.getKeyChar() == 'q') || (e.getKeyChar() == 'Q')) {
-            notifyServerQuit();
-            Mazewar.quit();
+            notifyQuit();
         }
     }
 

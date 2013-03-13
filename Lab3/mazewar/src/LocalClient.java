@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.KeyListener;
-import java.io.IOException;
 
 /**
  * An abstract class for {@link Client}s in a {@link Maze} that local to the
@@ -227,20 +226,22 @@ public abstract class LocalClient extends Client implements KeyListener {
             }
         } else {
             toServer.type = MazewarPacket.FIRE;
-            notifyServer(toServer);
+            //notifyServer(toServer);
             logger.info("Notify client: " + getName() + " fired\n");
         }
     }
 
-    protected void notifyServerQuit() {
+    protected void notifyQuit() {
         assert (maze != null);
-        MazewarPacket toServer = new MazewarPacket();
+        MazewarPacket outgoing = new MazewarPacket();
+        outgoing.type = MazewarPacket.QUIT;
 
-        toServer.owner = getName();
-        toServer.type = MazewarPacket.QUIT;
+        // Multicast the turning right action
+        Mazewar.multicaster.multicastAction(outgoing);
 
-        notifyServer(toServer);
-        logger.info("Notify server quiting\n");
+        // Multicast ACK to all clients
+        Mazewar.multicaster.multicastACK(outgoing);
+        logger.info("Nofity " + getName() + " quitting\n");
     }
 
     private void notifyServerKill(String victim, DirectedPoint newDp, boolean isInstant) {
@@ -249,16 +250,7 @@ public abstract class LocalClient extends Client implements KeyListener {
         toServer.owner = getName();
         toServer.victim = victim;
         //toServer.mazeMap.put(victim, newDp);
-        notifyServer(toServer);
+        //notifyServer(toServer);
     }
 
-    private void notifyServer(MazewarPacket toServer) {
-        synchronized (Mazewar.out) {
-            try {
-                Mazewar.out.writeObject(toServer);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
