@@ -14,11 +14,11 @@ public class MazewarServer {
     private static final Logger logger = LoggerFactory.getLogger(MazewarServer.class);
 
     private static int port;
-    public static HashMap<String, InetSocketAddress> connectedClients;
+    public static HashMap<String, InetSocketAddress> clientAddresses;
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
-        connectedClients = new HashMap<String, InetSocketAddress>();
+        clientAddresses = new HashMap<String, InetSocketAddress>();
 
         boolean listening = true;
 

@@ -47,20 +47,35 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class Mazewar extends JFrame {
     private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
 
+    // Naming service host name and port
     private static String serverHostname;
     private static int serverPort;
+
+    // Local information
     public static String myName;
     public static InetSocketAddress myAddress;
-    public static boolean allConnected;
-    public static Set<String> connectedClients = new HashSet<String>();
-    public static HashMap<String, ObjectOutputStream> connectedOuts = new HashMap<String, ObjectOutputStream>();
-    public static HashMap<String, ObjectInputStream> connectedIns = new HashMap<String, ObjectInputStream>();
-    public static int lamportClk = 0;
-    public static PriorityBlockingQueue<MazewarPacket> actionQueue = new PriorityBlockingQueue<MazewarPacket>();
-    public static ConcurrentHashMap<MazewarPacketIdentifier, Set<String>> ackTracker = new ConcurrentHashMap<MazewarPacketIdentifier, Set<String>>();
 
+    // Boolean to indicate that connections to all existing clients have been established
+    public static boolean allConnected;
+    // Boolean to indicate that registration with all existing clients has completed
     public static boolean isRegisterComplete = false;
 
+    // Name set of all existing clients, including myself
+    public static Set<String> connectedClients = new HashSet<String>();
+    // Hashmap that maps client name to its input/output stream
+    public static HashMap<String, ObjectInputStream> connectedIns = new HashMap<String, ObjectInputStream>();
+
+    public static HashMap<String, ObjectOutputStream> connectedOuts = new HashMap<String, ObjectOutputStream>();
+    // Hold back queue to store all requested actions
+    public static PriorityBlockingQueue<MazewarPacket> actionQueue;
+
+    // Hashmap to track the ack message status for each packet
+    public static ConcurrentHashMap<MazewarPacketIdentifier, Set<String>> ackTracker = new ConcurrentHashMap<MazewarPacketIdentifier, Set<String>>();
+
+    // Local lamport clock
+    public static Integer lamportClk = 0;
+
+    // Multicast object
     public static PacketMulticaster multicaster;
 
     /**
@@ -145,7 +160,6 @@ public class Mazewar extends JFrame {
 
             MazewarPacket toServer;
 
-
             // Send register packet to server
             toServer = new MazewarPacket();
             toServer.type = MazewarPacket.QUIT;
@@ -159,7 +173,7 @@ public class Mazewar extends JFrame {
             out.close();
             socket.close();
 
-            // Wait a bit
+            // Wait for half a second before a clean exit
             Thread.sleep(500);
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -225,8 +239,12 @@ public class Mazewar extends JFrame {
                 fromServer = (MazewarPacket) in.readObject();
             } while (fromServer.type != MazewarPacket.REGISTER_SUCCESS);
 
+            clientAddresses = fromServer.clientAddresses;
+
+            // Add all clients to clientAddresses Set, including myself
+            connectedClients.addAll(clientAddresses.keySet());
             connectedClients.add(myName);
-            clientAddresses = fromServer.connectedClients;
+
             logger.info("Registered at naming service with name: " + myName.toUpperCase() + " is successful!\n");
 
             // Clean up socket connection
@@ -248,35 +266,36 @@ public class Mazewar extends JFrame {
         }
 
         // Create a packet multicaster
-        multicaster = new PacketMulticaster(connectedClients, connectedOuts, connectedIns);
+        multicaster = new PacketMulticaster(connectedOuts);
+
+        // Initialize a hold back queue, and create a new thread for processing actions
+        actionQueue = new PriorityBlockingQueue<MazewarPacket>();
+        new ActionProcessor();
 
         // Create a connection listener to monitor new connection request
         new ConnectionListener(myAddress.getPort());
 
-        // Initialize a hold back queue for processing actions
-        actionQueue = new PriorityBlockingQueue<MazewarPacket>();
-        new ActionProcessor();
-
         // Connect to all existing players
         connectToAllPlayers(clientAddresses);
 
-        // Create the RobotClient/GUIClient connect it to the KeyListener queue
+        // Create the RobotClient/GUIClient, connect it to the KeyListener queue
         myClient = isRobot ? new RobotClient(myName) : new GUIClient(myName);
+
         // Add myself to maze right away if I am the first one
         if (connectedClients.size() == 1) {
-            maze.addClient(myClient);
+            maze.addLocalClient(myClient);
             isRegisterComplete = true;
         }
+
         // Wait until the register process is complete
         while (!isRegisterComplete) try {
-            Thread.sleep(100);
+            Thread.sleep(10);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         // Start the game
         this.addKeyListener(myClient);
-        myClient.start();
 
         // Create the panel that will display the maze.
         overheadPanel = new OverheadMazePanel(maze, myClient);
@@ -338,9 +357,6 @@ public class Mazewar extends JFrame {
     }
 
     private void connectToAllPlayers(HashMap<String, InetSocketAddress> clientAddresses) {
-        // Add all clients to connectedClients Set
-        connectedClients.addAll(clientAddresses.keySet());
-
         // Establish connection with all clients
         InetSocketAddress addr;
         for (Map.Entry<String, InetSocketAddress> entry : clientAddresses.entrySet()) {
@@ -355,9 +371,11 @@ public class Mazewar extends JFrame {
                 outgoing.owner = myName;
                 out.writeObject(outgoing);
 
-                // Add in/out to hash maps
-                connectedOuts.put(entry.getKey(), out);
-                connectedIns.put(entry.getKey(), in);
+                synchronized (connectedOuts) {
+                    // Add in/out to hash maps
+                    connectedOuts.put(entry.getKey(), out);
+                    connectedIns.put(entry.getKey(), in);
+                }
 
                 new PacketListener(entry.getKey(), socket, in);
             } catch (IOException e) {

@@ -221,9 +221,7 @@ public abstract class Client {
     /**
      * Quit a client
      */
-    protected void quit() {
-        Mazewar.quit();
-    }
+    protected abstract void quit();
 
     /**
      * Notify listeners that the client moved forward.

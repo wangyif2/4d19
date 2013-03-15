@@ -27,51 +27,61 @@ public class ActionProcessor implements Runnable {
                 // Perform action when all connected clients have acknowledged the action
                 if (Mazewar.ackTracker.get(nextAction).equals(Mazewar.connectedClients)) {
                     Mazewar.actionQueue.poll();
+                    Mazewar.ackTracker.remove(nextAction);
                     switch (nextAction.type) {
                         case MazewarPacket.ADD_NOTICE:
-                            addClient(nextAction);
+                            if (nextAction.newClient.equals(Mazewar.myName))
+                                Mazewar.myClient.notifyAdd();
+                            else
+                                reportLocation(nextAction.newClient, Mazewar.myClient);
+                            logger.info("Add notice from " + nextAction.owner + " with clk " + nextAction.lamportClk + " is processed!\n");
                             break;
                         case MazewarPacket.ADD:
-                            if (!nextAction.owner.equals(Mazewar.myName)) {
+                            if (nextAction.owner.equals(Mazewar.myName)) {
+                                /* I am the new client */
+                                Mazewar.isRegisterComplete = true;
+                                logger.info("Registration completed and game STARTS!\n");
+                            } else {
                                 /* Add a new remote client */
                                 Mazewar.maze.addRemoteClient(nextAction.owner, nextAction.directedPoint, 0);
                                 Mazewar.myClient.resume();
-                            } else {
-                                /* I am the new client */
-                                Mazewar.isRegisterComplete = true;
+                                logger.info("Added " + nextAction.owner +
+                                        "\n\t@ X: " + nextAction.directedPoint.getX() + " Y: " + nextAction.directedPoint.getY() +
+                                        "\n\tfacing " + nextAction.directedPoint.getDirection() +
+                                        "\n\twith clk " + nextAction.lamportClk + " is processed!\n");
                             }
                             break;
                         case MazewarPacket.MOVE_FORWARD:
                             if (Mazewar.maze.getClientByName(nextAction.owner).forward())
-                                logger.info("Moved client: " + nextAction.owner + " forward\n");
+                                logger.info("Moved client: " + nextAction.owner + " forward with clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.MOVE_BACKWARD:
                             if (Mazewar.maze.getClientByName(nextAction.owner).backup())
-                                logger.info("Moved client: " + nextAction.owner + " backward\n");
+                                logger.info("Moved client: " + nextAction.owner + " backward with clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.TURN_LEFT:
                             Mazewar.maze.getClientByName(nextAction.owner).turnLeft();
-                            logger.info("Rotated client: " + nextAction.owner + " left\n");
+                            logger.info("Rotated client: " + nextAction.owner + " left with clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.TURN_RIGHT:
                             Mazewar.maze.getClientByName(nextAction.owner).turnRight();
-                            logger.info("Rotated client: " + nextAction.owner + " right\n");
+                            logger.info("Rotated client: " + nextAction.owner + " right with clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.FIRE:
                             if (Mazewar.maze.getClientByName(nextAction.owner).fire())
-                                logger.info("Client: " + nextAction.owner + " fired\n");
+                                logger.info("Client: " + nextAction.owner + " fired with clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.INSTANT_KILL:
                             Mazewar.maze.getClientByName(nextAction.owner).kill(nextAction.victim, nextAction.directedPoint, true);
                             logger.info(nextAction.owner + " instantly killed client: " + nextAction.victim +
                                     "\n\t reSpawning at location " + nextAction.directedPoint.getX() + " " + nextAction.directedPoint.getY() + " " +
-                                    nextAction.directedPoint.getDirection() + "\n");
+                                    nextAction.directedPoint.getDirection() + " with clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.KILL:
                             Mazewar.maze.getClientByName(nextAction.owner).kill(nextAction.victim, nextAction.directedPoint, false);
                             logger.info(nextAction.owner + " killed client: " + nextAction.victim +
                                     "\n\t reSpawning at location " + nextAction.directedPoint.getX() + " " + nextAction.directedPoint.getY() + " " +
-                                    nextAction.directedPoint.getDirection() + "\n");
+                                    nextAction.directedPoint.getDirection() + " with clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.QUIT:
                             Mazewar.maze.getClientByName(nextAction.owner).quit();
@@ -83,55 +93,31 @@ public class ActionProcessor implements Runnable {
         }
     }
 
-    private void addClient(MazewarPacket nextAction) {
-        String newClient = nextAction.newClient;
-        MazewarPacket outgoing;
-        if (newClient.equals(Mazewar.myName)) {
-            /* I am the new client */
-            logger.info("Packet " + nextAction.lamportClk + " from " + nextAction.owner + " is processed\n");
-            // Wait until all existing clients have reported their locations
-            while (Mazewar.maze.getNumOfClients() < Mazewar.connectedOuts.size()) ;
+    private void reportLocation(String newClient, LocalClient me) {
+        // Suspend user input and random generator
+        me.pause();
 
-            // Clear queue
-            Mazewar.actionQueue.clear();
+        // Clear queue
+        Mazewar.actionQueue.clear();
+        Mazewar.ackTracker.clear();
 
-            outgoing = new MazewarPacket();
-            outgoing.type = MazewarPacket.ADD;
-            outgoing.directedPoint = Mazewar.maze.addClient(Mazewar.myClient);
+        // Get my location
+        DirectedPoint myDp = new DirectedPoint(me.getPoint(), me.getOrientation());
 
-            // Multicast ADD packet to all clients
-            Mazewar.multicaster.multicastAction(outgoing);
+        // Prepare packet to report my location
+        MazewarPacket outgoing = new MazewarPacket();
+        outgoing.type = MazewarPacket.REPORT_LOCATION;
+        outgoing.owner = Mazewar.myName;
+        outgoing.directedPoint = myDp;
+        outgoing.score = me.getScore();
 
-            // Multicast ACK to all clients
-            Mazewar.multicaster.multicastACK(outgoing);
-        } else {
-            logger.info("Packet " + nextAction.lamportClk + " from " + nextAction.owner + " is processed\n");
-            // Suspend user input and random generator
-            Mazewar.myClient.pause();
-
-            // Clear queue
-            Mazewar.actionQueue.clear();
-
-            // Get my location
-            Point p = Mazewar.myClient.getPoint();
-            Direction d = Mazewar.myClient.getOrientation();
-            DirectedPoint myDp = new DirectedPoint(p, d);
-
-            // Prepare packet to report my location
-            outgoing = new MazewarPacket();
-            outgoing.type = MazewarPacket.REPORT_LOCATION;
-            outgoing.owner = Mazewar.myName;
-            outgoing.directedPoint = myDp;
-            outgoing.score = Mazewar.myClient.getScore();
-
-            synchronized (Mazewar.connectedOuts) {
-                logger.info("Reporting my location to: " + newClient);
-                // Report my location to the new guy
-                try {
-                    Mazewar.connectedOuts.get(newClient).writeObject(outgoing);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        synchronized (Mazewar.connectedOuts) {
+            logger.info("Reporting my location to: " + newClient);
+            // Report my location to the new guy
+            try {
+                Mazewar.connectedOuts.get(newClient).writeObject(outgoing);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

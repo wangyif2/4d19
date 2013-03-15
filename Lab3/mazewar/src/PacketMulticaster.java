@@ -2,7 +2,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,48 +15,45 @@ import java.util.Set;
 public class PacketMulticaster {
     private static final Logger logger = LoggerFactory.getLogger(PacketMulticaster.class);
 
-    private Set<String> connectedClients = new HashSet<String>();
     private HashMap<String, ObjectOutputStream> connectedOuts = new HashMap<String, ObjectOutputStream>();
-    private HashMap<String, ObjectInputStream> connectedIns = new HashMap<String, ObjectInputStream>();
 
-    public PacketMulticaster(Set<String> connectedClients, HashMap<String,
-            ObjectOutputStream> connectedOuts, HashMap<String, ObjectInputStream> connectedIns) {
-        this.connectedClients = connectedClients;
+    public PacketMulticaster(HashMap<String, ObjectOutputStream> connectedOuts) {
         this.connectedOuts = connectedOuts;
-        this.connectedIns = connectedIns;
     }
 
     public void multicastAction(MazewarPacket action) {
         // Set generic fields for action packet
-        action.lamportClk = ++Mazewar.lamportClk;
+        synchronized (Mazewar.lamportClk) {
+            action.lamportClk = ++Mazewar.lamportClk;
+        }
         action.seqNum = action.lamportClk;
         action.owner = Mazewar.myName;
 
-        synchronized (Mazewar.ackTracker) {
-            // ACK to myself
-            Set<String> receivedACK = new HashSet<String>();
-            receivedACK.add(Mazewar.myName);
-            Mazewar.ackTracker.put(action, receivedACK);
-        }
+        // ACK to myself
+        Set<String> receivedACK = new HashSet<String>();
+        receivedACK.add(Mazewar.myName);
+        Mazewar.ackTracker.put(action, receivedACK);
 
         // Add action to queue
         Mazewar.actionQueue.add(action);
 
         // Multicast action packet to all clients
         multicast(action);
-        logger.info("Finished sending action packet all clients with seq num: " + action.seqNum);
+        logger.info("Finished sending action packet all clients with seq num: " + action.seqNum + "\n");
     }
 
     public void multicastACK(MazewarPacket action) {
         // Create ack packet and set neccessary fields
         MazewarPacket ack = new MazewarPacket();
         ack.lamportClk = action.lamportClk;
-        ack.seqNum = ++Mazewar.lamportClk;
+        synchronized (Mazewar.lamportClk) {
+            ack.seqNum = ++Mazewar.lamportClk;
+        }
         ack.owner = action.owner;
         ack.ACKer = Mazewar.myName;
 
         multicast(ack);
-        logger.info("Finished sending ACK to all clients with seq num: " + ack.seqNum);
+        logger.info("Finished sending ACK to all clients with seq num: " + ack.seqNum + "\n");
     }
 
     private void multicast(MazewarPacket outgoing) {

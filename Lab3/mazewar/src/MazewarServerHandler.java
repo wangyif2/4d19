@@ -37,7 +37,7 @@ public class MazewarServerHandler implements Runnable {
     @Override
     public void run() {
         try {
-            synchronized (MazewarServer.connectedClients) {
+            synchronized (MazewarServer.clientAddresses) {
                 MazewarPacket fromClient = (MazewarPacket) in.readObject();
                 switch (fromClient.type) {
                     case MazewarPacket.REGISTER:
@@ -63,7 +63,7 @@ public class MazewarServerHandler implements Runnable {
     private void registerClient(MazewarPacket fromClient) {
         MazewarPacket toClient;
         try {
-            while (MazewarServer.connectedClients.containsKey(fromClient.owner)) {
+            while (MazewarServer.clientAddresses.containsKey(fromClient.owner)) {
                 // Notify new client to change name
                 toClient = new MazewarPacket();
                 toClient.type = MazewarPacket.ERROR_DUPLICATED_CLIENT;
@@ -77,10 +77,10 @@ public class MazewarServerHandler implements Runnable {
             // Reply with all connected clients
             toClient = new MazewarPacket();
             toClient.type = MazewarPacket.REGISTER_SUCCESS;
-            toClient.connectedClients = MazewarServer.connectedClients;
+            toClient.clientAddresses = MazewarServer.clientAddresses;
             out.writeObject(toClient);
 
-            MazewarServer.connectedClients.put(fromClient.owner, fromClient.address);
+            MazewarServer.clientAddresses.put(fromClient.owner, fromClient.address);
             logger.info("Successfully registered " + fromClient.owner.toUpperCase() + " with " + fromClient.address + " to naming service\n");
         } catch (IOException e) {
             e.printStackTrace();
@@ -90,7 +90,7 @@ public class MazewarServerHandler implements Runnable {
     }
 
     private void unregisterClient(MazewarPacket fromClient) {
-        MazewarServer.connectedClients.remove(fromClient.owner);
+        MazewarServer.clientAddresses.remove(fromClient.owner);
         logger.info("Successfully unregistered " + fromClient.owner.toUpperCase() + " from naming service\n");
 
     }

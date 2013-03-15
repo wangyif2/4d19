@@ -45,7 +45,7 @@ public class ConnectionListener implements Runnable {
                     Mazewar.connectedIns.put(incoming.owner, in);
                     Mazewar.connectedOuts.put(incoming.owner, out);
                     Mazewar.connectedClients.add(incoming.owner);
-                    logger.info("Received connection request!\n");
+                    logger.info("Received connection request from " + incoming.owner + "!\n");
                 }
 
                 // Spawn new packet listener
@@ -53,7 +53,6 @@ public class ConnectionListener implements Runnable {
 
                 // Multicast an Add_NOTICE to all clients
                 notifyClientAddition(incoming.owner);
-
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
@@ -69,10 +68,8 @@ public class ConnectionListener implements Runnable {
 
         // Multicast ADD_NOTICE to all clients
         Mazewar.multicaster.multicastAction(outgoing);
-        logger.info("Lamport clk is updated to: " + Mazewar.lamportClk);
 
         // Multicast the ACK to all clients
         Mazewar.multicaster.multicastACK(outgoing);
-        logger.info("Lamport clk is updated to: " + Mazewar.lamportClk + "\n");
     }
 }

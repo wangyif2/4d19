@@ -36,7 +36,7 @@ import java.awt.event.KeyListener;
 
 public abstract class LocalClient extends Client implements KeyListener {
     private static final Logger logger = LoggerFactory.getLogger(LocalClient.class);
-    private LocalUpdateHandler localUpdate;
+
     protected boolean pause = false;
 
     /**
@@ -47,16 +47,10 @@ public abstract class LocalClient extends Client implements KeyListener {
     public LocalClient(String name) {
         super(name);
         assert (name != null);
-        localUpdate = new LocalUpdateHandler();
-    }
-
-    public void start() {
-        //localUpdate.start();
     }
 
     public void registerMaze(Maze maze) {
         super.registerMaze(maze);
-        localUpdate.registerMaze(maze);
     }
 
     protected void pause() {
@@ -65,6 +59,35 @@ public abstract class LocalClient extends Client implements KeyListener {
 
     protected void resume() {
         pause = false;
+    }
+
+    protected void quit() {
+        Mazewar.quit();
+    }
+
+    /**
+     * Notify connected clients adding me.
+     */
+    protected void notifyAdd() {
+        // Wait until all existing clients have reported their locations
+        while (Mazewar.maze.getNumOfClients() < Mazewar.connectedOuts.size()) try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Clear queue
+        Mazewar.actionQueue.clear();
+
+        MazewarPacket outgoing = new MazewarPacket();
+        outgoing.type = MazewarPacket.ADD;
+        outgoing.directedPoint = Mazewar.maze.addLocalClient(this);
+
+        multicastAction(outgoing);
+
+        logger.info("Notify addClient: " + getName() +
+                " at location " + outgoing.directedPoint.getX() + " " + outgoing.directedPoint.getY() + " " +
+                outgoing.directedPoint.getDirection() + "\n");
     }
 
     /**
@@ -79,11 +102,7 @@ public abstract class LocalClient extends Client implements KeyListener {
             MazewarPacket outgoing = new MazewarPacket();
             outgoing.type = MazewarPacket.MOVE_FORWARD;
 
-            // Multicast the moving forward action
-            Mazewar.multicaster.multicastAction(outgoing);
-
-            // Multicast ACK to all clients
-            Mazewar.multicaster.multicastACK(outgoing);
+            multicastAction(outgoing);
 
             Point oldPoint = getPoint();
             Direction d = getOrientation();
@@ -114,10 +133,7 @@ public abstract class LocalClient extends Client implements KeyListener {
             outgoing.type = MazewarPacket.MOVE_BACKWARD;
 
             // Multicast the moving backward action
-            Mazewar.multicaster.multicastAction(outgoing);
-
-            // Multicast ACK to all clients
-            Mazewar.multicaster.multicastACK(outgoing);
+            multicastAction(outgoing);
 
             Point oldPoint = getPoint();
             Direction d = getOrientation();
@@ -139,18 +155,15 @@ public abstract class LocalClient extends Client implements KeyListener {
      * Notify connected clients turning the client left.
      */
     protected void notifyTurnLeftAction() {
-        Point oldPoint = getPoint();
-        Direction d = getOrientation();
-        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
-
         MazewarPacket outgoing = new MazewarPacket();
         outgoing.type = MazewarPacket.TURN_LEFT;
 
         // Multicast the turning left action
-        Mazewar.multicaster.multicastAction(outgoing);
+        multicastAction(outgoing);
 
-        // Multicast ACK to all clients
-        Mazewar.multicaster.multicastACK(outgoing);
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
         logger.info("Nofity rotateClient: " + getName() +
                 "\n\tfrom X: " + oldPoint.getX() +
                 "\n\t     Y: " + oldPoint.getY() +
@@ -164,18 +177,15 @@ public abstract class LocalClient extends Client implements KeyListener {
      * Notify connected clients turning the client right.
      */
     protected void notifyTurnRightAction() {
-        Point oldPoint = getPoint();
-        Direction d = getOrientation();
-        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnRight());
-
         MazewarPacket outgoing = new MazewarPacket();
         outgoing.type = MazewarPacket.TURN_RIGHT;
 
         // Multicast the turning right action
-        Mazewar.multicaster.multicastAction(outgoing);
+        multicastAction(outgoing);
 
-        // Multicast ACK to all clients
-        Mazewar.multicaster.multicastACK(outgoing);
+        Point oldPoint = getPoint();
+        Direction d = getOrientation();
+        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnRight());
         logger.info("Nofity rotateClient: " + getName() +
                 "\n\tfrom X: " + oldPoint.getX() +
                 "\n\t     Y: " + oldPoint.getY() +
@@ -196,10 +206,7 @@ public abstract class LocalClient extends Client implements KeyListener {
             outgoing.type = MazewarPacket.FIRE;
 
             // Multicast the fire action
-            Mazewar.multicaster.multicastAction(outgoing);
-
-            // Multicast ACK to all clients
-            Mazewar.multicaster.multicastACK(outgoing);
+            multicastAction(outgoing);
 
             logger.info("Notify client: " + getName() + " fired\n");
             return true;
@@ -221,10 +228,7 @@ public abstract class LocalClient extends Client implements KeyListener {
         outgoing.directedPoint = newDp;
 
         // Multicast the kill action
-        Mazewar.multicaster.multicastAction(outgoing);
-
-        // Multicast ACK to all clients
-        Mazewar.multicaster.multicastACK(outgoing);
+        multicastAction(outgoing);
 
         logger.info("Notify client: " + getName() + " killed " + victim +
                 "\n\t reSpawning at location " + newDp.getX() + " " + newDp.getY() + " " +
@@ -233,14 +237,21 @@ public abstract class LocalClient extends Client implements KeyListener {
 
     protected void notifyQuit() {
         assert (maze != null);
+
         MazewarPacket outgoing = new MazewarPacket();
         outgoing.type = MazewarPacket.QUIT;
 
         // Multicast the turning right action
+        multicastAction(outgoing);
+
+        logger.info("Nofity " + getName() + " quitting\n");
+    }
+
+    private void multicastAction(MazewarPacket outgoing) {
+        // Multicast add action
         Mazewar.multicaster.multicastAction(outgoing);
 
         // Multicast ACK to all clients
         Mazewar.multicaster.multicastACK(outgoing);
-        logger.info("Nofity " + getName() + " quitting\n");
     }
 }

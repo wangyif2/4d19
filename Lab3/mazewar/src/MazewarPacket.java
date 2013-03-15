@@ -38,7 +38,7 @@ public class MazewarPacket extends MazewarPacketIdentifier implements Serializab
     public int seqNum;
 
     public InetSocketAddress address;
-    public HashMap<String, InetSocketAddress> connectedClients;
+    public HashMap<String, InetSocketAddress> clientAddresses;
 
     public int type = MazewarPacket.NULL;
     public DirectedPoint directedPoint;

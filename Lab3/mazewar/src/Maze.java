@@ -61,7 +61,7 @@ public abstract class Maze {
      *
      * @param client {@link Client} to be added to the {@link Maze}.
      */
-    public abstract DirectedPoint addClient(Client client);
+    public abstract DirectedPoint addLocalClient(Client client);
 
     /**
      * Add a {@link RemoteClient} at its current location in the {@link Maze}.

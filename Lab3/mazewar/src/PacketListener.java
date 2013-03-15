@@ -14,6 +14,7 @@ import java.util.Set;
 public class PacketListener implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(PacketListener.class);
 
+    private boolean listening = true;
     private Thread thread;
     private String clientName;
     private Socket clientSocket;
@@ -31,7 +32,7 @@ public class PacketListener implements Runnable {
     @Override
     public void run() {
         MazewarPacket incoming;
-        while (true) {
+        while (listening) {
             try {
                 // Listen to new incoming packet
                 incoming = (MazewarPacket) in.readObject();
@@ -44,10 +45,10 @@ public class PacketListener implements Runnable {
                 }
 
                 /**
-                 * For all other types of packets:
+                 * For all other types of action packets:
                  */
                 // Update local lamport clock
-                Mazewar.lamportClk = incoming.seqNum > Mazewar.lamportClk ? incoming.seqNum : Mazewar.lamportClk;
+                updateLamportClk(incoming.seqNum);
 
                 if (incoming.ACKer == null) {
                     /* Action packet*/
@@ -56,14 +57,17 @@ public class PacketListener implements Runnable {
 
                     // Make sure all connection has been established when receiving a ADD_NOTICE packet
                     if (incoming.type == MazewarPacket.ADD_NOTICE)
-                        while (!Mazewar.connectedClients.contains(incoming.newClient) || !Mazewar.allConnected) ;
+                        while (!Mazewar.connectedClients.contains(incoming.newClient) || !Mazewar.allConnected) try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
 
-                    synchronized (Mazewar.ackTracker) {
-                        // ACK to myself
-                        Set<String> receivedACK = new HashSet<String>();
-                        receivedACK.add(Mazewar.myName);
-                        Mazewar.ackTracker.put(incoming, receivedACK);
-                    }
+                    // ACK to myself
+                    Set<String> receivedACK = new HashSet<String>();
+                    receivedACK.add(Mazewar.myName);
+                    Mazewar.ackTracker.put(incoming, receivedACK);
+
 
                     // Add action to queue
                     Mazewar.actionQueue.add(incoming);
@@ -72,11 +76,11 @@ public class PacketListener implements Runnable {
                     Mazewar.multicaster.multicastACK(incoming);
 
                     // Be ready to kill the thread if QUIT packet comes
-                    if (incoming.type == MazewarPacket.QUIT) break;
+                    if (incoming.type == MazewarPacket.QUIT) listening = false;
                 } else {
                     /* ACK packet*/
                     // Make sure the packet has arrived before receiving the ACK
-                    while (!Mazewar.ackTracker.containsKey(incoming)) ;
+                    packetExists(incoming);
 
                     // Add ACK to ackTracker
                     Mazewar.ackTracker.get(incoming).add(incoming.ACKer);
@@ -93,14 +97,14 @@ public class PacketListener implements Runnable {
             }
         }
 
-        // Receive a final packet and close the socket
+        // Receive a final ack packet and close the socket
         try {
             incoming = (MazewarPacket) in.readObject();
             // Update local lamport clock
-            Mazewar.lamportClk = incoming.seqNum > Mazewar.lamportClk ? incoming.seqNum : Mazewar.lamportClk;
+            updateLamportClk(incoming.seqNum);
 
             // Make sure the packet has arrived before receiving the ACK
-            while (!Mazewar.ackTracker.containsKey(incoming)) ;
+            packetExists(incoming);
 
             // Add ACK to ackTracker
             Mazewar.ackTracker.get(incoming).add(incoming.ACKer);
@@ -114,14 +118,30 @@ public class PacketListener implements Runnable {
         }
 
         try {
-            in.close();
-            Mazewar.connectedIns.remove(clientName);
-            Mazewar.connectedOuts.get(clientName).close();
-            Mazewar.connectedOuts.remove(clientName);
+            synchronized (Mazewar.connectedOuts) {
+                Mazewar.connectedClients.remove(clientName);
+                in.close();
+                Mazewar.connectedIns.remove(clientName);
+                Mazewar.connectedOuts.get(clientName).close();
+                Mazewar.connectedOuts.remove(clientName);
+            }
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    private void packetExists(MazewarPacket incoming) {
+        while (!Mazewar.ackTracker.containsKey(incoming)) try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateLamportClk(Integer seqNum) {
+        synchronized (Mazewar.lamportClk) {
+            Mazewar.lamportClk = seqNum > Mazewar.lamportClk ? seqNum : Mazewar.lamportClk;
+        }
     }
 }
