@@ -214,7 +214,8 @@ public abstract class Client {
     /**
      * Kill a client.
      */
-    protected void kill(String victim, DirectedPoint newDp) {
+    protected void kill(String victim, DirectedPoint newDp, boolean isInstant) {
+        maze.killClient(this, maze.getClientByName(victim), newDp, isInstant);
     }
 
     /**

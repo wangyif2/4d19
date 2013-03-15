@@ -260,40 +260,19 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         }
     }
 
-    public synchronized Cell canFire(Client client) {
+    public synchronized boolean canFire(Client client) {
         synchronized (clientFired) {
             assert (client != null);
             // If the client already has a projectile in play
             // fail.
             if (clientFired.contains(client)) {
-                return null;
+                return false;
             }
 
-            Point point = getClientPoint(client);
-            Direction d = getClientOrientation(client);
-            CellImpl cell = getCellImpl(point);
-
-            /* Check that you can fire in that direction */
-            if (cell.isWall(d)) {
-                return null;
-            }
-
-            DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
-            /* Is the point withint the bounds of maze? */
-            assert (checkBounds(newPoint));
-
-            CellImpl newCell = getCellImpl(newPoint);
-            return newCell;
-        }
-    }
-
-    public synchronized DirectedPoint canKill(Object contents) {
-        // If it is a Client, kill it outright
-        if (contents instanceof Client) {
-            return pickRandomLocation();
-        } else {
-            // Otherwise fail (bullets will destroy each other)
-            return null;
+            // If the client is facing a wall
+            // fail.
+            Direction d = client.getOrientation();
+            return !facingWall(client, d);
         }
     }
 
@@ -305,6 +284,20 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             Direction d = getClientOrientation(client);
             DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
             CellImpl newCell = getCellImpl(newPoint);
+            Object contents = newCell.getContents();
+
+            if (contents != null) {
+                // If it is a Client and I am the killer, instant kill happens
+                if (contents instanceof Client && client instanceof LocalClient) {
+                    ((LocalClient) client).notifyKill(((Client) contents).getName(), pickRandomLocation(), true);
+                    return false;
+                } else {
+                    // Otherwise either fail (bullets will destroy each other)
+                    // Or I am not the victim
+                    logger.info("Projectile canceled or someone is killed!\n");
+                    return false;
+                }
+            }
 
             clientFired.add(client);
             Projectile prj = new Projectile(client);
@@ -320,12 +313,12 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
     public synchronized boolean canMoveForward(Client client) {
         Direction d = client.getOrientation();
-        return !hitWall(client, d);
+        return !facingWall(client, d);
     }
 
     public synchronized boolean canMoveBackward(Client client) {
         Direction d = client.getOrientation().invert();
-        return !hitWall(client, d);
+        return !facingWall(client, d);
     }
 
     public synchronized boolean moveClientForward(Client client) {
@@ -471,11 +464,10 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             CellImpl newCell = getCellImpl(newPoint);
             Object contents = newCell.getContents();
             if (contents != null) {
-                // If it is a Client, kill it outright
-                if (contents instanceof Client) {
-                    DirectedPoint newDp = pickRandomLocation();
-                    // Notify server the kill update
-                    prj.getOwner().kill(((Client) contents).getName(), newDp);
+                // If it is a Client and I am the killer, kill it outright
+                if (contents instanceof Client && prj.getOwner() instanceof LocalClient) {
+                    // Notify the kill update
+                    ((LocalClient) prj.getOwner()).notifyKill(((Client) contents).getName(), pickRandomLocation(), false);
                     cell.setContents(null);
                     deadPrj.add(prj);
                     return deadPrj;
@@ -565,7 +557,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         }
     }
 
-    private synchronized boolean hitWall(Client client, Direction d) {
+    private synchronized boolean facingWall(Client client, Direction d) {
         assert (client != null);
         assert (d != null);
         Point oldPoint = getClientPoint(client);

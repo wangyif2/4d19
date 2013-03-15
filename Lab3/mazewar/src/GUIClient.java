@@ -61,7 +61,7 @@ public class GUIClient extends LocalClient {
             notifyTurnRightAction();
             // Spacebar fires.
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            notifyServerFire();
+            notifyFireAction();
         }
     }
 

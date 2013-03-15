@@ -80,9 +80,7 @@ public abstract class Maze {
      */
     public abstract boolean clientFire(Client client);
 
-    public abstract Cell canFire(Client client);
-
-    public abstract DirectedPoint canKill(Object contents);
+    public abstract boolean canFire(Client client);
 
     public abstract void killClient(Client killer, Client victim, DirectedPoint newDp, boolean isInstant);
 

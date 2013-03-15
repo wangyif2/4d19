@@ -68,16 +68,6 @@ public abstract class LocalClient extends Client implements KeyListener {
     }
 
     /**
-     * Notify server a kill.
-     */
-    protected void kill(String victim, DirectedPoint newDp) {
-        notifyServerKill(victim, newDp, false);
-        logger.info("Notify client: " + getName() + " killed " + victim +
-                "\n\t reSpawning at location " + newDp.getX() + " " + newDp.getY() + " " +
-                newDp.getDirection() + "\n");
-    }
-
-    /**
      * Notify connected clients moving the client forward.
      *
      * @return <code>true</code> if move was successful, otherwise <code>false</code>.
@@ -86,18 +76,17 @@ public abstract class LocalClient extends Client implements KeyListener {
         assert (maze != null);
 
         if (maze.canMoveForward(this)) {
-            Point oldPoint = getPoint();
-            Direction d = getOrientation();
-
             MazewarPacket outgoing = new MazewarPacket();
             outgoing.type = MazewarPacket.MOVE_FORWARD;
 
-            // Multicast the moving backward action
+            // Multicast the moving forward action
             Mazewar.multicaster.multicastAction(outgoing);
 
             // Multicast ACK to all clients
             Mazewar.multicaster.multicastACK(outgoing);
 
+            Point oldPoint = getPoint();
+            Direction d = getOrientation();
             DirectedPoint newDp = new DirectedPoint(oldPoint.move(d), d);
             logger.info("Notify moveClient: " + getName() +
                     "\n\tfrom X: " + oldPoint.getX() +
@@ -121,9 +110,6 @@ public abstract class LocalClient extends Client implements KeyListener {
         assert (maze != null);
 
         if (maze.canMoveBackward(this)) {
-            Point oldPoint = getPoint();
-            Direction d = getOrientation();
-
             MazewarPacket outgoing = new MazewarPacket();
             outgoing.type = MazewarPacket.MOVE_BACKWARD;
 
@@ -133,6 +119,8 @@ public abstract class LocalClient extends Client implements KeyListener {
             // Multicast ACK to all clients
             Mazewar.multicaster.multicastACK(outgoing);
 
+            Point oldPoint = getPoint();
+            Direction d = getOrientation();
             DirectedPoint newDp = new DirectedPoint(oldPoint.move(d.invert()), d);
             logger.info("Notify moveClient: " + getName() +
                     "\n\tfrom X: " + oldPoint.getX() +
@@ -200,35 +188,47 @@ public abstract class LocalClient extends Client implements KeyListener {
     /**
      * Notify server the client fired.
      */
-    protected void notifyServerFire() {
+    protected boolean notifyFireAction() {
         assert (maze != null);
 
-        MazewarPacket toServer = new MazewarPacket();
-        toServer.owner = getName();
-        Cell newCell = maze.canFire(this);
-        if (newCell == null) {
-            logger.info(getName() + " Cannot fire!\n");
-            return;
-        }
+        if (maze.canFire(this)) {
+            MazewarPacket outgoing = new MazewarPacket();
+            outgoing.type = MazewarPacket.FIRE;
 
-        Object contents = newCell.getContents();
-        if (contents != null) {
-            // Check if instant kill happens
-            DirectedPoint newDp = maze.canKill(contents);
-            if (newDp != null) {
-                String victim = ((Client) contents).getName();
-                notifyServerKill(victim, newDp, true);
-                logger.info("Notify client: " + getName() + " instantly killed " + victim +
-                        "\n\t reSpawning at location " + newDp.getX() + " " + newDp.getY() + " " +
-                        newDp.getDirection() + "\n");
-            } else {
-                logger.info(getName() + " cancels projectile!\n");
-            }
-        } else {
-            toServer.type = MazewarPacket.FIRE;
-            //notifyServer(toServer);
+            // Multicast the fire action
+            Mazewar.multicaster.multicastAction(outgoing);
+
+            // Multicast ACK to all clients
+            Mazewar.multicaster.multicastACK(outgoing);
+
             logger.info("Notify client: " + getName() + " fired\n");
+            return true;
+        } else {
+            logger.info(getName() + " Cannot fire!\n");
+            return false;
         }
+    }
+
+    /**
+     * Notify connected clients a kill.
+     */
+    protected void notifyKill(String victim, DirectedPoint newDp, boolean isInstant) {
+        assert (maze != null);
+
+        MazewarPacket outgoing = new MazewarPacket();
+        outgoing.type = isInstant ? MazewarPacket.INSTANT_KILL : MazewarPacket.KILL;
+        outgoing.victim = victim;
+        outgoing.directedPoint = newDp;
+
+        // Multicast the kill action
+        Mazewar.multicaster.multicastAction(outgoing);
+
+        // Multicast ACK to all clients
+        Mazewar.multicaster.multicastACK(outgoing);
+
+        logger.info("Notify client: " + getName() + " killed " + victim +
+                "\n\t reSpawning at location " + newDp.getX() + " " + newDp.getY() + " " +
+                newDp.getDirection() + "\n");
     }
 
     protected void notifyQuit() {
@@ -243,14 +243,4 @@ public abstract class LocalClient extends Client implements KeyListener {
         Mazewar.multicaster.multicastACK(outgoing);
         logger.info("Nofity " + getName() + " quitting\n");
     }
-
-    private void notifyServerKill(String victim, DirectedPoint newDp, boolean isInstant) {
-        MazewarPacket toServer = new MazewarPacket();
-        toServer.type = isInstant ? MazewarPacket.INSTANT_KILL : MazewarPacket.KILL;
-        toServer.owner = getName();
-        toServer.victim = victim;
-        //toServer.mazeMap.put(victim, newDp);
-        //notifyServer(toServer);
-    }
-
 }

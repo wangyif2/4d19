@@ -57,6 +57,22 @@ public class ActionProcessor implements Runnable {
                             Mazewar.maze.getClientByName(nextAction.owner).turnRight();
                             logger.info("Rotated client: " + nextAction.owner + " right\n");
                             break;
+                        case MazewarPacket.FIRE:
+                            if (Mazewar.maze.getClientByName(nextAction.owner).fire())
+                                logger.info("Client: " + nextAction.owner + " fired\n");
+                            break;
+                        case MazewarPacket.INSTANT_KILL:
+                            Mazewar.maze.getClientByName(nextAction.owner).kill(nextAction.victim, nextAction.directedPoint, true);
+                            logger.info(nextAction.owner + " instantly killed client: " + nextAction.victim +
+                                    "\n\t reSpawning at location " + nextAction.directedPoint.getX() + " " + nextAction.directedPoint.getY() + " " +
+                                    nextAction.directedPoint.getDirection() + "\n");
+                            break;
+                        case MazewarPacket.KILL:
+                            Mazewar.maze.getClientByName(nextAction.owner).kill(nextAction.victim, nextAction.directedPoint, false);
+                            logger.info(nextAction.owner + " killed client: " + nextAction.victim +
+                                    "\n\t reSpawning at location " + nextAction.directedPoint.getX() + " " + nextAction.directedPoint.getY() + " " +
+                                    nextAction.directedPoint.getDirection() + "\n");
+                            break;
                         case MazewarPacket.QUIT:
                             Mazewar.maze.getClientByName(nextAction.owner).quit();
                             logger.info("Client: " + nextAction.owner + " quiting\n");
