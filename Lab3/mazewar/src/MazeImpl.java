@@ -274,20 +274,29 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     }
 
     public synchronized boolean moveClientForward(Client client) {
-        return moveClient(client, client.getOrientation());
+        return moveClient(client, getClientOrientation(client));
     }
 
     public synchronized boolean moveClientBackward(Client client) {
-        return moveClient(client, client.getOrientation().invert());
+        return moveClient(client, getClientOrientation(client).invert());
     }
 
     public synchronized boolean clientFire(Client client) {
         synchronized (clientFired) {
             assert (client != null);
 
-            Point point = getClientPoint(client);
+            // If the client is facing a wall
+            // fail.
+            Point oldPoint = getClientPoint(client);
+            CellImpl oldCell = getCellImpl(oldPoint);
+            if (oldCell.isWall(getClientOrientation(client))) {
+                /* Attempt firing towards wall */
+                logger.info("Firing towards wall\n");
+                return false;
+            }
+
             Direction d = getClientOrientation(client);
-            DirectedPoint newPoint = new DirectedPoint(point.move(d), d);
+            DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), d);
             CellImpl newCell = getCellImpl(newPoint);
             Object contents = newCell.getContents();
 
@@ -347,11 +356,11 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     }
 
     public synchronized boolean canMoveForward(Client client) {
-        return !canMove(client, client.getOrientation());
+        return canMove(client, getClientOrientation(client));
     }
 
     public synchronized boolean canMoveBackward(Client client) {
-        return !canMove(client, client.getOrientation().invert());
+        return canMove(client, getClientOrientation(client).invert());
     }
 
     public synchronized boolean canFire(Client client) {
@@ -365,7 +374,13 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
             // If the client is facing a wall
             // fail.
-            return !canMove(client, client.getOrientation());
+            Point oldPoint = getClientPoint(client);
+            CellImpl oldCell = getCellImpl(oldPoint);
+            if (oldCell.isWall(getClientOrientation(client))) {
+                /* Attempt firing towards wall */
+                return false;
+            }
+            return true;
         }
     }
 
@@ -464,7 +479,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         /* Check that you can move in the given direction */
         if (oldCell.isWall(d)) {
             /* Attempt moving towards wall */
-            return true;
+            return false;
         }
 
         DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
@@ -479,7 +494,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             return false;
         }
 
-        return false;
+        return true;
     }
 
     private synchronized Collection moveProjectile(Projectile prj) {
@@ -617,6 +632,12 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             Point oldPoint = getClientPoint(client);
             CellImpl oldCell = getCellImpl(oldPoint);
 
+            /* Check that you can move in the given direction */
+            if (oldCell.isWall(d)) {
+                /* Attempt moving towards wall */
+                return false;
+            }
+
             DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
 
             /* Is the point withint the bounds of maze? */
@@ -628,12 +649,10 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 /* Move failed */
                 if (newCell.getContents() instanceof Projectile) {
                     logger.info("FOUND prj, so reject move!");
-                }
-                else if (newCell.getContents() instanceof Client) {
+                } else if (newCell.getContents() instanceof Client) {
                     logger.info("FOUND client " + ((Client) newCell.getContents()).getName() + ", so reject move!");
                     return false;
-                }
-                else {
+                } else {
                     logger.info("FOUND weird shit, so reject move!");
                 }
                 //return false;

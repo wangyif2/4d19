@@ -208,7 +208,10 @@ public abstract class LocalClient extends Client implements KeyListener {
             // Multicast the fire action
             multicastAction(outgoing);
 
-            logger.info("Notify client: " + getName() + " fired\n");
+            logger.info("Notify client: " + getName() + " fired" +
+                    "\n\t@ X: " + getPoint().getX() +
+                    "\n\t  Y: " + getPoint().getY() +
+                    "\n\t  orientation: " + getOrientation() + "\n");
             return true;
         } else {
             logger.info(getName() + " Cannot fire!\n");

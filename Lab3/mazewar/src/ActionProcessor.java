@@ -127,6 +127,12 @@ public class ActionProcessor implements Runnable {
         // Suspend user input and random generator
         me.pause();
 
+        // Wait 100ms for all packets to be queued
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         // Clear queue
         Mazewar.actionQueue.clear();
         Mazewar.ackTracker.clear();
