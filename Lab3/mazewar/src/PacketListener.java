@@ -4,8 +4,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * User: Ivan
@@ -64,9 +62,7 @@ public class PacketListener implements Runnable {
                         }
 
                     // ACK to myself
-                    Set<String> receivedACK = new HashSet<String>();
-                    receivedACK.add(Mazewar.myName);
-                    Mazewar.ackTracker.put(incoming, receivedACK);
+                    PacketMulticaster.trackAck(incoming, Mazewar.myName);
 
 
                     // Add action to queue
@@ -79,11 +75,8 @@ public class PacketListener implements Runnable {
                     if (incoming.type == MazewarPacket.QUIT) listening = false;
                 } else {
                     /* ACK packet*/
-                    // Make sure the packet has arrived before receiving the ACK
-                    packetExists(incoming);
-
-                    // Add ACK to ackTracker
-                    Mazewar.ackTracker.get(incoming).add(incoming.ACKer);
+                    // Add ACKer to track map
+                    PacketMulticaster.trackAck(incoming, incoming.ACKer);
                     logger.info("Received ACK  from: " + incoming.ACKer.toUpperCase() + " for packet: " + incoming.lamportClk +
                             " with seq num " + incoming.seqNum);
                 }
@@ -103,11 +96,10 @@ public class PacketListener implements Runnable {
             // Update local lamport clock
             updateLamportClk(incoming.seqNum);
 
-            // Make sure the packet has arrived before receiving the ACK
-            packetExists(incoming);
-
             // Add ACK to ackTracker
-            Mazewar.ackTracker.get(incoming).add(incoming.ACKer);
+            synchronized (Mazewar.ackTracker) {
+                Mazewar.ackTracker.get(incoming).add(incoming.ACKer);
+            }
             logger.info("FINAL PACKET: Received ACK  from: " + incoming.ACKer.toUpperCase() + " for packet: " + incoming.lamportClk +
                     " with seq num " + incoming.seqNum);
             logger.info("Lamport clk is updated to: " + Mazewar.lamportClk + "\n");
@@ -127,14 +119,6 @@ public class PacketListener implements Runnable {
             }
             clientSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void packetExists(MazewarPacket incoming) {
-        while (!Mazewar.ackTracker.containsKey(incoming)) try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

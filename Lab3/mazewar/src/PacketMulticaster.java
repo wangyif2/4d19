@@ -6,7 +6,6 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * User: Ivan
@@ -30,9 +29,7 @@ public class PacketMulticaster {
         action.owner = Mazewar.myName;
 
         // ACK to myself
-        Set<String> receivedACK = new HashSet<String>();
-        receivedACK.add(Mazewar.myName);
-        Mazewar.ackTracker.put(action, receivedACK);
+        trackAck(action, Mazewar.myName);
 
         // Add action to queue
         Mazewar.actionQueue.add(action);
@@ -66,6 +63,14 @@ public class PacketMulticaster {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    public static void trackAck(MazewarPacketIdentifier action, String ACKer) {
+        synchronized (Mazewar.ackTracker) {
+            if (!Mazewar.ackTracker.containsKey(action))
+                Mazewar.ackTracker.put(action, new HashSet<String>());
+            Mazewar.ackTracker.get(action).add(ACKer);
         }
     }
 }

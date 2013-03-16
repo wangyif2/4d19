@@ -25,7 +25,7 @@ public class ActionProcessor implements Runnable {
         while (true) {
             if ((nextAction = Mazewar.actionQueue.peek()) != null) {
                 // Perform action when all connected clients have acknowledged the action
-                if (Mazewar.ackTracker.get(nextAction).equals(Mazewar.connectedClients)) {
+                if (Mazewar.ackTracker.get(nextAction).size() >= Mazewar.connectedClients.size()) {
                     Mazewar.actionQueue.poll();
                     Mazewar.ackTracker.remove(nextAction);
                     switch (nextAction.type) {
@@ -53,23 +53,53 @@ public class ActionProcessor implements Runnable {
                             break;
                         case MazewarPacket.MOVE_FORWARD:
                             if (Mazewar.maze.getClientByName(nextAction.owner).forward())
-                                logger.info("Moved client: " + nextAction.owner + " forward with clk " + nextAction.lamportClk + "\n");
+                                logger.info("Moved client: " + nextAction.owner + " forward" +
+                                        "\n\tto X: " + Mazewar.maze.getClientByName(nextAction.owner).getPoint().getX() + " Y: " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getPoint().getY() + " facing " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getOrientation() + "\n\twith clk " + nextAction.lamportClk + "\n");
+                            else
+                                logger.info("REJECTING: Move client: " + nextAction.owner + " forward" +
+                                        "\n\tto X: " + Mazewar.maze.getClientByName(nextAction.owner).getPoint().getX() + " Y: " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getPoint().getY() + " facing " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getOrientation() + "\n\twith clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.MOVE_BACKWARD:
                             if (Mazewar.maze.getClientByName(nextAction.owner).backup())
-                                logger.info("Moved client: " + nextAction.owner + " backward with clk " + nextAction.lamportClk + "\n");
+                                logger.info("Moved client: " + nextAction.owner + " backward" +
+                                        "\n\tto X: " + Mazewar.maze.getClientByName(nextAction.owner).getPoint().getX() + " Y: " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getPoint().getY() + " facing " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getOrientation() + "\n\twith clk " + nextAction.lamportClk + "\n");
+                            else
+                                logger.info("REJECTING: Move client: " + nextAction.owner + " backward" +
+                                        "\n\tto X: " + Mazewar.maze.getClientByName(nextAction.owner).getPoint().getX() + " Y: " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getPoint().getY() + " facing " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getOrientation() + "\n\twith clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.TURN_LEFT:
                             Mazewar.maze.getClientByName(nextAction.owner).turnLeft();
-                            logger.info("Rotated client: " + nextAction.owner + " left with clk " + nextAction.lamportClk + "\n");
+                            logger.info("Rotated client: " + nextAction.owner + " left" +
+                                    "\n\tto X: " + Mazewar.maze.getClientByName(nextAction.owner).getPoint().getX() + " Y: " +
+                                    Mazewar.maze.getClientByName(nextAction.owner).getPoint().getY() + " facing " +
+                                    Mazewar.maze.getClientByName(nextAction.owner).getOrientation() + "\n\twith clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.TURN_RIGHT:
                             Mazewar.maze.getClientByName(nextAction.owner).turnRight();
-                            logger.info("Rotated client: " + nextAction.owner + " right with clk " + nextAction.lamportClk + "\n");
+                            logger.info("Rotated client: " + nextAction.owner + " right" +
+                                    "\n\tto X: " + Mazewar.maze.getClientByName(nextAction.owner).getPoint().getX() + " Y: " +
+                                    Mazewar.maze.getClientByName(nextAction.owner).getPoint().getY() + " facing " +
+                                    Mazewar.maze.getClientByName(nextAction.owner).getOrientation() + "\n\twith clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.FIRE:
                             if (Mazewar.maze.getClientByName(nextAction.owner).fire())
-                                logger.info("Client: " + nextAction.owner + " fired with clk " + nextAction.lamportClk + "\n");
+                                logger.info("Client: " + nextAction.owner + " fired" +
+                                        "\n\tto X: " + Mazewar.maze.getClientByName(nextAction.owner).getPoint().getX() + " Y: " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getPoint().getY() + " facing " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getOrientation() + "\n\twith clk " + nextAction.lamportClk + "\n");
+                            else
+                                logger.info("REJECTING: Client: " + nextAction.owner + " fire" +
+                                        "\n\tto X: " + Mazewar.maze.getClientByName(nextAction.owner).getPoint().getX() + " Y: " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getPoint().getY() + " facing " +
+                                        Mazewar.maze.getClientByName(nextAction.owner).getOrientation() + "\n\twith clk " + nextAction.lamportClk + "\n");
                             break;
                         case MazewarPacket.INSTANT_KILL:
                             Mazewar.maze.getClientByName(nextAction.owner).kill(nextAction.victim, nextAction.directedPoint, true);

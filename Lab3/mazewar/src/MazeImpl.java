@@ -347,11 +347,11 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     }
 
     public synchronized boolean canMoveForward(Client client) {
-        return !facingWall(client, client.getOrientation());
+        return !canMove(client, client.getOrientation());
     }
 
     public synchronized boolean canMoveBackward(Client client) {
-        return !facingWall(client, client.getOrientation().invert());
+        return !canMove(client, client.getOrientation().invert());
     }
 
     public synchronized boolean canFire(Client client) {
@@ -365,7 +365,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
 
             // If the client is facing a wall
             // fail.
-            return !facingWall(client, client.getOrientation());
+            return !canMove(client, client.getOrientation());
         }
     }
 
@@ -455,7 +455,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         return false;
     }
 
-    private synchronized boolean facingWall(Client client, Direction d) {
+    private synchronized boolean canMove(Client client, Direction d) {
         assert (client != null);
         assert (d != null);
         Point oldPoint = getClientPoint(client);
@@ -466,6 +466,19 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             /* Attempt moving towards wall */
             return true;
         }
+
+        DirectedPoint newPoint = new DirectedPoint(oldPoint.move(d), getClientOrientation(client));
+
+        /* Is the point withint the bounds of maze? */
+        assert (checkBounds(newPoint));
+
+        /* Is move valid */
+        CellImpl newCell = getCellImpl(newPoint);
+        if (newCell.getContents() != null) {
+            /* Move failed */
+            return false;
+        }
+
         return false;
     }
 
@@ -613,7 +626,17 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             CellImpl newCell = getCellImpl(newPoint);
             if (newCell.getContents() != null) {
                 /* Move failed */
-                return false;
+                if (newCell.getContents() instanceof Projectile) {
+                    logger.info("FOUND prj, so reject move!");
+                }
+                else if (newCell.getContents() instanceof Client) {
+                    logger.info("FOUND client " + ((Client) newCell.getContents()).getName() + ", so reject move!");
+                    return false;
+                }
+                else {
+                    logger.info("FOUND weird shit, so reject move!");
+                }
+                //return false;
             }
 
             /* Write the new cell */
