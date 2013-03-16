@@ -36,7 +36,6 @@ public class PacketMulticaster {
 
         // Multicast action packet to all clients
         multicast(action);
-        logger.info("Finished sending action packet all clients with seq num: " + action.seqNum + "\n");
     }
 
     public void multicastACK(MazewarPacket action) {
@@ -50,7 +49,6 @@ public class PacketMulticaster {
         ack.ACKer = Mazewar.myName;
 
         multicast(ack);
-        logger.info("Finished sending ACK to all clients with seq num: " + ack.seqNum + "\n");
     }
 
     private void multicast(MazewarPacket outgoing) {
@@ -58,7 +56,6 @@ public class PacketMulticaster {
             for (Map.Entry<String, ObjectOutputStream> entry : connectedOuts.entrySet()) {
                 try {
                     entry.getValue().writeObject(outgoing);
-                    logger.info("Multicast to " + entry.getKey().toUpperCase() + " with seq num: " + outgoing.seqNum);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

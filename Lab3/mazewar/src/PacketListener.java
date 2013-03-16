@@ -1,6 +1,3 @@
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -10,7 +7,6 @@ import java.net.Socket;
  * Date: 02/03/13
  */
 public class PacketListener implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(PacketListener.class);
 
     private boolean listening = true;
     private Thread thread;
@@ -37,7 +33,6 @@ public class PacketListener implements Runnable {
 
                 // Add remote client to maze if the packet is REPORT_LOCATION type
                 if (incoming.type == MazewarPacket.REPORT_LOCATION) {
-                    logger.info("Received location report from: " + incoming.owner);
                     Mazewar.maze.addRemoteClient(incoming.owner, incoming.directedPoint, incoming.score);
                     continue;
                 }
@@ -50,9 +45,6 @@ public class PacketListener implements Runnable {
 
                 if (incoming.ACKer == null) {
                     /* Action packet*/
-                    logger.info("Received packet from: " + incoming.owner.toUpperCase() +
-                            " with lamport clock " + incoming.lamportClk);
-
                     // Make sure all connection has been established when receiving a ADD_NOTICE packet
                     if (incoming.type == MazewarPacket.ADD_NOTICE)
                         while (!Mazewar.connectedClients.contains(incoming.newClient) || !Mazewar.allConnected) try {
@@ -77,10 +69,7 @@ public class PacketListener implements Runnable {
                     /* ACK packet*/
                     // Add ACKer to track map
                     PacketMulticaster.trackAck(incoming, incoming.ACKer);
-                    logger.info("Received ACK  from: " + incoming.ACKer.toUpperCase() + " for packet: " + incoming.lamportClk +
-                            " with seq num " + incoming.seqNum);
                 }
-                logger.info("Lamport clk is updated to: " + Mazewar.lamportClk + "\n");
             } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println("Stream corrupted!");
@@ -100,9 +89,6 @@ public class PacketListener implements Runnable {
             synchronized (Mazewar.ackTracker) {
                 Mazewar.ackTracker.get(incoming).add(incoming.ACKer);
             }
-            logger.info("FINAL PACKET: Received ACK  from: " + incoming.ACKer.toUpperCase() + " for packet: " + incoming.lamportClk +
-                    " with seq num " + incoming.seqNum);
-            logger.info("Lamport clk is updated to: " + Mazewar.lamportClk + "\n");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {

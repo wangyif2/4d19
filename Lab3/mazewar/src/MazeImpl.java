@@ -17,9 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.*;
 import java.util.*;
 
@@ -31,7 +28,6 @@ import java.util.*;
  */
 
 public class MazeImpl extends Maze implements Serializable, ClientListener, Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(MazeImpl.class);
 
     /**
      * Create a {@link Maze}.
@@ -238,9 +234,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         do {
             newDp = pickRandomLocation();
         } while (isPointOccupied(newDp));
-        logger.info("Added LocalClient: " + client.getName() +
-                " @ X: " + newDp.getX() + " Y: " + newDp.getY() +
-                " facing " + newDp.getDirection() + " with score 0\n");
 
         // Add LocalClient to maze
         addClient(client, newDp, 0);
@@ -252,9 +245,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     public synchronized void addRemoteClient(String clientName, DirectedPoint dirPoint, Integer score) {
         RemoteClient client = new RemoteClient(clientName);
         addClient(client, new DirectedPoint(dirPoint), score);
-        logger.info("Added RemoteClient: " + clientName +
-                " @ X: " + dirPoint.getX() + " Y: " + dirPoint.getY() +
-                " facing " + dirPoint.getDirection() + " with score " + score + "\n");
     }
 
     public synchronized void removeClient(Client client) {
@@ -291,7 +281,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             CellImpl oldCell = getCellImpl(oldPoint);
             if (oldCell.isWall(getClientOrientation(client))) {
                 /* Attempt firing towards wall */
-                logger.info("Firing towards wall\n");
                 return false;
             }
 
@@ -314,11 +303,9 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 } else if (contents instanceof Projectile) {
                     // bullets will destroy each other
                     notifyClientFired(client);
-                    logger.info("Projectile canceled\n");
                     return true;
                 } else {
                     // someone is killed but I am not the victim
-                    logger.info("Someone is killed!\n");
                     return false;
                 }
             }
@@ -647,15 +634,9 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             CellImpl newCell = getCellImpl(newPoint);
             if (newCell.getContents() != null) {
                 /* Move failed */
-                if (newCell.getContents() instanceof Projectile) {
-                    logger.info("FOUND prj, so reject move!");
-                } else if (newCell.getContents() instanceof Client) {
-                    logger.info("FOUND client " + ((Client) newCell.getContents()).getName() + ", so reject move!");
+                if (newCell.getContents() instanceof Client) {
                     return false;
-                } else {
-                    logger.info("FOUND weird shit, so reject move!");
                 }
-                //return false;
             }
 
             /* Write the new cell */

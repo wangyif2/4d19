@@ -17,9 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.awt.event.KeyListener;
 
 /**
@@ -35,7 +32,6 @@ import java.awt.event.KeyListener;
 
 
 public abstract class LocalClient extends Client implements KeyListener {
-    private static final Logger logger = LoggerFactory.getLogger(LocalClient.class);
 
     protected boolean pause = false;
 
@@ -85,9 +81,6 @@ public abstract class LocalClient extends Client implements KeyListener {
 
         multicastAction(outgoing);
 
-        logger.info("Notify addClient: " + getName() +
-                " at location " + outgoing.directedPoint.getX() + " " + outgoing.directedPoint.getY() + " " +
-                outgoing.directedPoint.getDirection() + "\n");
     }
 
     /**
@@ -104,18 +97,8 @@ public abstract class LocalClient extends Client implements KeyListener {
 
             multicastAction(outgoing);
 
-            Point oldPoint = getPoint();
-            Direction d = getOrientation();
-            DirectedPoint newDp = new DirectedPoint(oldPoint.move(d), d);
-            logger.info("Notify moveClient: " + getName() +
-                    "\n\tfrom X: " + oldPoint.getX() +
-                    "\n\t     Y: " + oldPoint.getY() +
-                    "\n\tto   X: " + newDp.getX() +
-                    "\n\t     Y: " + newDp.getY() +
-                    "\n\t     orientation : " + newDp.getDirection() + "\n");
             return true;
         } else {
-            logger.info(getName() + " Cannot move forward!\n");
             return false;
         }
     }
@@ -135,18 +118,8 @@ public abstract class LocalClient extends Client implements KeyListener {
             // Multicast the moving backward action
             multicastAction(outgoing);
 
-            Point oldPoint = getPoint();
-            Direction d = getOrientation();
-            DirectedPoint newDp = new DirectedPoint(oldPoint.move(d.invert()), d);
-            logger.info("Notify moveClient: " + getName() +
-                    "\n\tfrom X: " + oldPoint.getX() +
-                    "\n\t     Y: " + oldPoint.getY() +
-                    "\n\tto   X: " + newDp.getX() +
-                    "\n\t     Y: " + newDp.getY() +
-                    "\n\t     orientation : " + newDp.getDirection() + "\n");
             return true;
         } else {
-            logger.info(getName() + " Cannot move backward!\n");
             return false;
         }
     }
@@ -161,16 +134,6 @@ public abstract class LocalClient extends Client implements KeyListener {
         // Multicast the turning left action
         multicastAction(outgoing);
 
-        Point oldPoint = getPoint();
-        Direction d = getOrientation();
-        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnLeft());
-        logger.info("Nofity rotateClient: " + getName() +
-                "\n\tfrom X: " + oldPoint.getX() +
-                "\n\t     Y: " + oldPoint.getY() +
-                "\n\t     orientation: " + d +
-                "\n\tto   X: " + newDp.getX() +
-                "\n\tto   Y: " + newDp.getY() +
-                "\n\t     orientation : " + newDp.getDirection() + "\n");
     }
 
     /**
@@ -183,16 +146,6 @@ public abstract class LocalClient extends Client implements KeyListener {
         // Multicast the turning right action
         multicastAction(outgoing);
 
-        Point oldPoint = getPoint();
-        Direction d = getOrientation();
-        DirectedPoint newDp = new DirectedPoint(oldPoint, d.turnRight());
-        logger.info("Nofity rotateClient: " + getName() +
-                "\n\tfrom X: " + oldPoint.getX() +
-                "\n\t     Y: " + oldPoint.getY() +
-                "\n\t     orientation: " + d +
-                "\n\tto   X: " + newDp.getX() +
-                "\n\tto   Y: " + newDp.getY() +
-                "\n\t     orientation : " + newDp.getDirection() + "\n");
     }
 
     /**
@@ -208,13 +161,8 @@ public abstract class LocalClient extends Client implements KeyListener {
             // Multicast the fire action
             multicastAction(outgoing);
 
-            logger.info("Notify client: " + getName() + " fired" +
-                    "\n\t@ X: " + getPoint().getX() +
-                    "\n\t  Y: " + getPoint().getY() +
-                    "\n\t  orientation: " + getOrientation() + "\n");
             return true;
         } else {
-            logger.info(getName() + " Cannot fire!\n");
             return false;
         }
     }
@@ -233,9 +181,6 @@ public abstract class LocalClient extends Client implements KeyListener {
         // Multicast the kill action
         multicastAction(outgoing);
 
-        logger.info("Notify client: " + getName() + " killed " + victim +
-                "\n\t reSpawning at location " + newDp.getX() + " " + newDp.getY() + " " +
-                newDp.getDirection() + "\n");
     }
 
     protected void notifyQuit() {
@@ -247,7 +192,6 @@ public abstract class LocalClient extends Client implements KeyListener {
         // Multicast the turning right action
         multicastAction(outgoing);
 
-        logger.info("Nofity " + getName() + " quitting\n");
     }
 
     private void multicastAction(MazewarPacket outgoing) {

@@ -17,9 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -45,7 +42,6 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 
 public class Mazewar extends JFrame {
-    private static final Logger logger = LoggerFactory.getLogger(Mazewar.class);
 
     // Naming service host name and port
     private static String serverHostname;
@@ -166,8 +162,6 @@ public class Mazewar extends JFrame {
             toServer.owner = myName;
             out.writeObject(toServer);
 
-            logger.info("Unregistered from naming service\n");
-
             // Clean up socket connection
             in.close();
             out.close();
@@ -244,8 +238,6 @@ public class Mazewar extends JFrame {
             // Add all clients to clientAddresses Set, including myself
             connectedClients.addAll(clientAddresses.keySet());
             connectedClients.add(myName);
-
-            logger.info("Registered at naming service with name: " + myName.toUpperCase() + " is successful!\n");
 
             // Clean up socket connection
             in.close();

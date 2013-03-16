@@ -17,9 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.awt.event.KeyEvent;
 import java.util.Random;
 
@@ -32,7 +29,6 @@ import java.util.Random;
  */
 
 public class RobotClient extends LocalClient implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(RobotClient.class);
 
     /**
      * Random number generator so that the robot can be

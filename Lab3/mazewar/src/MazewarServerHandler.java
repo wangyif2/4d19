@@ -1,6 +1,3 @@
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -11,7 +8,6 @@ import java.net.Socket;
  * Date: 24/02/13
  */
 public class MazewarServerHandler implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(MazewarServerHandler.class);
 
     private Thread thread;
     private Socket socket;
@@ -31,7 +27,6 @@ public class MazewarServerHandler implements Runnable {
         }
 
         thread.start();
-        logger.info("Created a new thread to handle Mazewar Client");
     }
 
     @Override
@@ -81,7 +76,6 @@ public class MazewarServerHandler implements Runnable {
             out.writeObject(toClient);
 
             MazewarServer.clientAddresses.put(fromClient.owner, fromClient.address);
-            logger.info("Successfully registered " + fromClient.owner.toUpperCase() + " with " + fromClient.address + " to naming service\n");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -91,7 +85,5 @@ public class MazewarServerHandler implements Runnable {
 
     private void unregisterClient(MazewarPacket fromClient) {
         MazewarServer.clientAddresses.remove(fromClient.owner);
-        logger.info("Successfully unregistered " + fromClient.owner.toUpperCase() + " from naming service\n");
-
     }
 }
