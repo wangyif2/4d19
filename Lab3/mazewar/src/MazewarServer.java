@@ -1,6 +1,3 @@
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -11,7 +8,6 @@ import java.util.HashMap;
  * Date: 24/02/13
  */
 public class MazewarServer {
-    private static final Logger logger = LoggerFactory.getLogger(MazewarServer.class);
 
     private static int port;
     public static HashMap<String, InetSocketAddress> clientAddresses;
@@ -39,8 +35,6 @@ public class MazewarServer {
             System.err.println("ERROR: Invalid arguments!");
             System.exit(-1);
         }
-
-        logger.info("Mazewar Server up and running...\n");
 
         while (listening) {
             new MazewarServerHandler(serverSocket.accept());

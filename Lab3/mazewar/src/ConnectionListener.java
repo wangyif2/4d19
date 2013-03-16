@@ -1,6 +1,3 @@
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,7 +9,6 @@ import java.net.Socket;
  * Date: 02/03/13
  */
 public class ConnectionListener implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(ConnectionListener.class);
 
     private Thread thread;
     private boolean listening = true;
@@ -45,7 +41,6 @@ public class ConnectionListener implements Runnable {
                     Mazewar.connectedIns.put(incoming.owner, in);
                     Mazewar.connectedOuts.put(incoming.owner, out);
                     Mazewar.connectedClients.add(incoming.owner);
-                    logger.info("Received connection request from " + incoming.owner + "!\n");
                 }
 
                 // Spawn new packet listener

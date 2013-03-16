@@ -1,6 +1,3 @@
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
@@ -12,7 +9,6 @@ import java.util.Map;
  * Date: 06/03/13
  */
 public class PacketMulticaster {
-    private static final Logger logger = LoggerFactory.getLogger(PacketMulticaster.class);
 
     private HashMap<String, ObjectOutputStream> connectedOuts = new HashMap<String, ObjectOutputStream>();
 

@@ -17,9 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -34,7 +31,6 @@ import java.util.*;
  */
 
 public class ScoreTableModel implements TableModel, MazeListener {
-    private static final Logger logger = LoggerFactory.getLogger(MazeImpl.class);
 
     /**
      * {@link Client} gets eleven points for a kill.
