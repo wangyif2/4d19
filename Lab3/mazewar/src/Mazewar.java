@@ -244,15 +244,12 @@ public class Mazewar extends JFrame {
             out.close();
             socket.close();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
             System.err.println("ERROR: Don't know where to connect.");
             System.exit(1);
         } catch (IOException e) {
-            e.printStackTrace();
             System.err.println("ERROR: Couldn't get I/O for the connection.");
             System.exit(1);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             System.err.println("ERROR: Class not found.");
             System.exit(1);
         }

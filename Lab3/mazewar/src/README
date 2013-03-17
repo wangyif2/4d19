@@ -1,0 +1,13 @@
+Student 1: Yifan Wang (997036666)
+Student 2: Chenzhi Shao (996608489)
+
+*********************************
+Mazewar
+*********************************
+- How to run
+    - To set up the naming service server (This has to be setup first):
+        ./run_server.sh <port number>
+    - To run a Mazewar player instance:
+        ./run_player.sh <server hostname> <server port> <my port>
+    - To run a Mazewar robot instance:
+        ./run_robot.sh <server hostname> <server port> <my port>

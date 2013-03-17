@@ -71,11 +71,8 @@ public class PacketListener implements Runnable {
                     PacketMulticaster.trackAck(incoming, incoming.ACKer);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Stream corrupted!");
                 break;
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
             }
         }
 
@@ -90,9 +87,7 @@ public class PacketListener implements Runnable {
                 Mazewar.ackTracker.get(incoming).add(incoming.ACKer);
             }
         } catch (IOException e) {
-            e.printStackTrace();
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
         }
 
         try {
