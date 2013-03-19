@@ -22,7 +22,13 @@ public class ActionProcessor implements Runnable {
             if ((nextAction = Mazewar.actionQueue.peek()) != null) {
                 // Perform action when all connected clients have acknowledged the action
                 if (Mazewar.ackTracker.get(nextAction).size() >= Mazewar.connectedClients.size()) {
-                    Mazewar.actionQueue.poll();
+                    // Make sure polling the action I peeked
+                    synchronized (Mazewar.actionQueue) {
+                        if (nextAction == Mazewar.actionQueue.peek())
+                            Mazewar.actionQueue.poll();
+                        else
+                            continue;
+                    }
                     Mazewar.ackTracker.remove(nextAction);
                     switch (nextAction.type) {
                         case MazewarPacket.ADD_NOTICE:
