@@ -31,8 +31,10 @@ public class PacketMulticaster {
         // ACK to myself
         trackAck(action, Mazewar.myName);
 
-        // Add action to queue
-        Mazewar.actionQueue.add(action);
+        synchronized (Mazewar.actionQueue) {
+            // Add action to queue
+            Mazewar.actionQueue.add(action);
+        }
 
         // Multicast action packet to all clients
         multicast(action);

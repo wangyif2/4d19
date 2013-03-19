@@ -64,9 +64,10 @@ public class PacketListener implements Runnable {
                     // ACK to myself
                     PacketMulticaster.trackAck(incoming, Mazewar.myName);
 
-
-                    // Add action to queue
-                    Mazewar.actionQueue.add(incoming);
+                    synchronized (Mazewar.actionQueue) {
+                        // Add action to queue
+                        Mazewar.actionQueue.add(incoming);
+                    }
 
                     // Multicast ACK to all clients
                     Mazewar.multicaster.multicastACK(incoming);
@@ -100,7 +101,7 @@ public class PacketListener implements Runnable {
             synchronized (Mazewar.ackTracker) {
                 Mazewar.ackTracker.get(incoming).add(incoming.ACKer);
             }
-            logger.info("FINAL PACKET: Received ACK  from: " + incoming.ACKer.toUpperCase() + " for packet: " + incoming.lamportClk +
+            logger.info("FINAL PACKET: Received ACK  from: " + incoming.ACKer.toUpperCase() + " for packet: " + incoming.lamportClk + " from owner: " + incoming.owner +
                     " with seq num " + incoming.seqNum);
             logger.info("Lamport clk is updated to: " + Mazewar.lamportClk + "\n");
         } catch (IOException e) {
