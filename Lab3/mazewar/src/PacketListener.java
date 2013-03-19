@@ -56,9 +56,10 @@ public class PacketListener implements Runnable {
                     // ACK to myself
                     PacketMulticaster.trackAck(incoming, Mazewar.myName);
 
-
-                    // Add action to queue
-                    Mazewar.actionQueue.add(incoming);
+                    synchronized (Mazewar.actionQueue) {
+                        // Add action to queue
+                        Mazewar.actionQueue.add(incoming);
+                    }
 
                     // Multicast ACK to all clients
                     Mazewar.multicaster.multicastACK(incoming);
