@@ -33,7 +33,11 @@ public class PacketMulticaster {
         }
 
         // Multicast action packet to all clients
-        multicast(action);
+        // Require locak on connectedOuts and record cardinality
+        synchronized (Mazewar.connectedOuts) {
+            action.cardinality = Mazewar.connectedClients.size();
+            multicast(action);
+        }
     }
 
     public void multicastACK(MazewarPacket action) {

@@ -9,7 +9,6 @@ import java.util.HashMap;
 public class MazewarPacket extends MazewarPacketIdentifier implements Serializable, Comparable<MazewarPacket> {
     public static final int NULL = 0;
     public static final int ERROR_DUPLICATED_CLIENT = 1;
-    public static final int ERROR_DUPLICATED_LOCATION = 2;
 
     public static final int REGISTER = 100;
     public static final int REGISTER_SUCCESS = 101;
@@ -17,7 +16,6 @@ public class MazewarPacket extends MazewarPacketIdentifier implements Serializab
     public static final int ADD_NOTICE = 200;
     public static final int REPORT_LOCATION = 201;
     public static final int ADD = 202;
-    public static final int ADD_SUCCESS = 203;
 
     public static final int MOVE_FORWARD = 300;
     public static final int MOVE_BACKWARD = 301;
@@ -43,6 +41,9 @@ public class MazewarPacket extends MazewarPacketIdentifier implements Serializab
     public int type = MazewarPacket.NULL;
     public DirectedPoint directedPoint;
     public Integer score;
+
+    // Additional variable to indicate number of clients that is multicasted with this packet
+    public int cardinality;
 
     @Override
     public int compareTo(MazewarPacket o) {

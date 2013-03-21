@@ -21,7 +21,7 @@ public class ActionProcessor implements Runnable {
         while (true) {
             if ((nextAction = Mazewar.actionQueue.peek()) != null) {
                 // Perform action when all connected clients have acknowledged the action
-                if (Mazewar.ackTracker.get(nextAction).size() >= Mazewar.connectedClients.size()) {
+                if (Mazewar.ackTracker.get(nextAction).size() >= Math.min(nextAction.cardinality, Mazewar.connectedClients.size())) {
                     // Make sure polling the action I peeked
                     synchronized (Mazewar.actionQueue) {
                         if (nextAction == Mazewar.actionQueue.peek())

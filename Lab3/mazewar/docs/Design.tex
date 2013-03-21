@@ -8,7 +8,7 @@ In order for players to communicate with each other without a central server pro
 
 \paragraph*{Client Broadcaster}
 
-For other players to acknowledge movement of local player without a centralized broadcast server, the player must have some way of deliver this information. In our design, we decentralize the role of the broadcast server by splitting it onto each current player. On each local player action such as move, turn or fire, a broadcast packet (See Section \ref{DesignProtocol} for packet structure) will be sent to all current player detailing the movement of the local player. The broadcaster will obtain a hash map containing all current players from the Naming Service, and loop through all the output stream to deliver each packet.
+For other players to acknowledge movement of local player without a centralized broadcast server, the player must have some way of deliver this information. In our design, we decentralize the role of the broadcast server by splitting it onto each current player. On each local player action such as move, turn, fire or kill, a broadcast packet (See Section \ref{DesignProtocol} for packet structure) will be sent to all current player detailing the movement of the local player. The broadcaster will obtain a hash map containing all current players from the Naming Service, and loop through all the output stream to deliver each packet.
 
 \paragraph*{Client Listener}
 
@@ -29,44 +29,67 @@ The second method is the one used in our design. Each player creates a socket fo
 {
 \singlespacing
 \begin{lstlisting}[caption = {[MazewarPacket.java]Structure of packets exchanged between players}, label = CodeMazewarPacket]
-public class MazewarPacket implements Serializable {
+public class MazewarPacketIdentifier implements Serializable {
+    public int lamportClk;
+    public String owner;
+
+    @Override
+    public boolean equals(Object id) {
+        return (this.lamportClk == ((MazewarPacketIdentifier)id).lamportClk && this.owner.equals(((MazewarPacketIdentifier)id).owner));
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 1;
+        hash = 31 * hash + lamportClk;
+        hash = 31 * hash + owner.hashCode();
+        return hash;
+    }
+}
+public class MazewarPacket extends MazewarPacketIdentifier implements Serializable, Comparable<MazewarPacket> {
     public static final int NULL = 0;
     public static final int ERROR_DUPLICATED_CLIENT = 1;
-    public static final int ERROR_DUPLICATED_LOCATION = 1;
 
     public static final int REGISTER = 100;
     public static final int REGISTER_SUCCESS = 101;
 
-    public static final int ADD = 103;
-    public static final int ADD_SUCCESS = 104;
+    public static final int ADD_NOTICE = 200;
+    public static final int REPORT_LOCATION = 201;
+    public static final int ADD = 202;
 
-    public static final int MOVE_FORWARD = 105;
-    public static final int MOVE_BACKWARD = 106;
+    public static final int MOVE_FORWARD = 300;
+    public static final int MOVE_BACKWARD = 301;
 
-    public static final int TURN_LEFT = 206;
-    public static final int TURN_RIGHT = 207;
+    public static final int TURN_LEFT = 302;
+    public static final int TURN_RIGHT = 303;
 
-    public static final int FIRE = 300;
-    public static final int KILLED = 301;
+    public static final int FIRE = 400;
+    public static final int INSTANT_KILL = 401;
+    public static final int KILL = 402;
 
-    public static final int FIRST = 400;
-    public static final int PROPOSE = 401;
-    public static final int FINAL = 402;
+    public static final int QUIT = 500;
 
-    public static final int QUIT = 400;
+    //packet definitions
+    public String newClient;
+    public String ACKer;
+    public String victim;
+    public int seqNum;
 
-    //packet origin identifier
-    public String owner;
-    public String killed;
+    public InetSocketAddress address;
+    public HashMap<String, InetSocketAddress> clientAddresses;
 
-	//packet content
     public int type = MazewarPacket.NULL;
-    public hash map<String, DirectedPoint> mazeMap = 
-    						new hash map<String, DirectedPoint>();
-    public hash map<String, Integer> mazeScore = 
-    						new hash map<String, Integer>();
-    public hash map<String, Integer> mazeSequence = 
-    						new hash map<String, Integer>();
+    public DirectedPoint directedPoint;
+    public Integer score;
+
+    @Override
+    public int compareTo(MazewarPacket o) {
+        if (this.seqNum == o.seqNum)
+            return this.owner.compareTo(o.owner);
+        else
+            return this.seqNum > o.seqNum ? 1 : -1;
+    }
+}
 }
 \end{lstlisting}
 }
