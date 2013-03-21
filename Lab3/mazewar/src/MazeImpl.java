@@ -274,6 +274,10 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     public synchronized boolean clientFire(Client client) {
         synchronized (clientFired) {
             assert (client != null);
+            if (client.isAlive()) {
+                logger.info(client.getName() + " is in zombie state, so ignore the fire action");
+                return false;
+            }
 
             // If the client is facing a wall
             // fail.
@@ -290,8 +294,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             Object contents = newCell.getContents();
 
             if (contents != null) {
-                // If it is a Client and the firing client is alive, instant kill happens
-                if (contents instanceof Client && client.isAlive()) {
+                // If it is a Client, instant kill happens
+                if (contents instanceof Client) {
                     // someone is killed, multicast the kill if I am not the killer
                     if (client instanceof LocalClient) {
                         // Pick an empty location and notify the kill
@@ -513,8 +517,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         CellImpl newCell = getCellImpl(newPoint);
         Object contents = newCell.getContents();
         if (contents != null) {
-            // If it is a Client and the prj owner is alive, kill it outright
-            if (contents instanceof Client && prj.getOwner().isAlive()) {
+            // If it is a Client, kill it outright
+            if (contents instanceof Client) {
                 // A kill happened, multicast the kill if I am the killer
                 if (prj.getOwner() instanceof LocalClient) {
                     // Pick an empty location and notify the kill
