@@ -274,7 +274,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
     public synchronized boolean clientFire(Client client) {
         synchronized (clientFired) {
             assert (client != null);
-            if (client.isAlive()) {
+            if (!client.isAlive()) {
                 return false;
             }
 
