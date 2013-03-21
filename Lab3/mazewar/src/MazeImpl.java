@@ -290,8 +290,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             Object contents = newCell.getContents();
 
             if (contents != null) {
-                // If it is a Client, instant kill happens
-                if (contents instanceof Client) {
+                // If it is a Client and the firing client is alive, instant kill happens
+                if (contents instanceof Client && client.isAlive()) {
                     // someone is killed, multicast the kill if I am not the killer
                     if (client instanceof LocalClient) {
                         // Pick an empty location and notify the kill
@@ -513,8 +513,8 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         CellImpl newCell = getCellImpl(newPoint);
         Object contents = newCell.getContents();
         if (contents != null) {
-            // If it is a Client and I am the killer, kill it outright
-            if (contents instanceof Client) {
+            // If it is a Client and the prj owner is alive, kill it outright
+            if (contents instanceof Client && prj.getOwner().isAlive()) {
                 // A kill happened, multicast the kill if I am the killer
                 if (prj.getOwner() instanceof LocalClient) {
                     // Pick an empty location and notify the kill
