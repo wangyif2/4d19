@@ -3,12 +3,12 @@
 \contentsline {subsection}{\numberline {2.1}Component List and Description}{2}{subsection.2.1}
 \contentsline {subsection}{\numberline {2.2}Communication Protocol}{3}{subsection.2.2}
 \contentsline {subsection}{\numberline {2.3}How a player Locate, Leave and Join}{5}{subsection.2.3}
-\contentsline {subsection}{\numberline {2.4}Maintaining Consistency}{5}{subsection.2.4}
-\contentsline {section}{\numberline {3}Implementation}{7}{section.3}
-\contentsline {subsection}{\numberline {3.1}Component Implementation}{7}{subsection.3.1}
-\contentsline {subsection}{\numberline {3.2}Consistency Implementation}{7}{subsection.3.2}
-\contentsline {section}{\numberline {4}Evaluation}{9}{section.4}
-\contentsline {subsection}{\numberline {4.1}Starting, Maintaining, Exiting}{9}{subsection.4.1}
-\contentsline {subsection}{\numberline {4.2}Performance on Current Platform}{9}{subsection.4.2}
-\contentsline {subsection}{\numberline {4.3}Consistency}{9}{subsection.4.3}
-\contentsline {subsection}{\numberline {4.4}Other Factors for Performance}{9}{subsection.4.4}
+\contentsline {subsection}{\numberline {2.4}Maintaining Consistency}{6}{subsection.2.4}
+\contentsline {section}{\numberline {3}Implementation}{8}{section.3}
+\contentsline {subsection}{\numberline {3.1}Component Implementation}{8}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Consistency Implementation}{8}{subsection.3.2}
+\contentsline {section}{\numberline {4}Evaluation}{10}{section.4}
+\contentsline {subsection}{\numberline {4.1}Starting, Maintaining, Exiting}{10}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Performance on Current Platform}{10}{subsection.4.2}
+\contentsline {subsection}{\numberline {4.3}Consistency}{10}{subsection.4.3}
+\contentsline {subsection}{\numberline {4.4}Other Factors for Performance}{10}{subsection.4.4}
