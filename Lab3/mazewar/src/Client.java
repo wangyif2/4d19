@@ -248,12 +248,7 @@ public abstract class Client {
      * Kill a client.
      */
     protected void kill(String victim, DirectedPoint newDp, boolean isInstant) {
-        if (isAlive()) {
-            maze.killClient(this, maze.getClientByName(victim), newDp, isInstant);
-        }
-        else {
-            logger.info("I am in zombie state, so ignore kill action!");
-        }
+        maze.killClient(this, maze.getClientByName(victim), newDp, isInstant);
     }
 
     /**
