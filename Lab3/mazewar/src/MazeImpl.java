@@ -275,7 +275,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         synchronized (clientFired) {
             assert (client != null);
             if (client.isAlive()) {
-                logger.info(client.getName() + " is in zombie state, so ignore the fire action");
                 return false;
             }
 
