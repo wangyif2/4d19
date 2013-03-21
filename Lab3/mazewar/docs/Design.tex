@@ -82,6 +82,9 @@ public class MazewarPacket extends MazewarPacketIdentifier implements Serializab
     public DirectedPoint directedPoint;
     public Integer score;
 
+    // Additional variable to indicate number of clients that is multicasted with this packet
+    public int cardinality;
+
     @Override
     public int compareTo(MazewarPacket o) {
         if (this.seqNum == o.seqNum)
@@ -94,7 +97,7 @@ public class MazewarPacket extends MazewarPacketIdentifier implements Serializab
 \end{lstlisting}
 }
 
-The packet origin identifier identifies the client who generated the packet, and in the case where two clients are involved (e.g. killing), the source and target of the clients. Packet contents contains a type variable that identifies the action the packet aims to perform, such as moving or turning. MazeMap variable are used to supply clients with a new location of a particular player in case of respawning or new player joining. MazeScore variable is used to update new joined player with current score table. MazeSequence is used to maintain a total ordering of packet delivery acorss all players, the detail of this design is presented in Section \ref{DesignConsistency}.
+The packet identifier class identifies a packet uniquely by its lamport clock and the client's name who generated the packet, and in the case where two clients are involved (e.g. killing), killer will generate the packet and victim's name is recorded in the victim field. Packet contents contains a type variable that identifies the action the packet aims to perform, such as moving or turning. ACKer is the name of the client that acknowledges an action packet. This field is null for action packets. Seqnum is the lamport clock for the packet when the sender sends it. In case of an action packe, it is the same as the lamportClk field. But in the case of an ack packet, it is usually different from the lamportClk field since lamportClk field is to identify the original action packet. Address is the ip address of the sender client to register at the naming service. Client addresses is a map returned from naming service that includes all the connected clients' names and ip addresses. Directied point variable is used to supply clients with a new location of a particular player in case of respawning or new player joining. Score variable is used to update new joined player with current score table. Cardinality variable is to indicate the number of connected clients at the moment of multicasting. LamportClk and seqnum field together are used to maintain a total ordering of packet delivery acorss all players, the detail of this design is presented in Section \ref{DesignConsistency}.
 
 \subsection{How a player Locate, Leave and Join}\label{DesignGameFlow}
 
