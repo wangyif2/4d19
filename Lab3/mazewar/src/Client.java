@@ -118,6 +118,14 @@ public abstract class Client {
         listenerSet.remove(cl);
     }
 
+    /**
+     * Check if the client is alive
+     * @return
+     */
+    public boolean isAlive() {
+        return liveness == "alive" ? true : false;
+    }
+
     /* Internals ******************************************************/
 
     /**
@@ -140,6 +148,11 @@ public abstract class Client {
      * Score of the client
      */
     private Integer score;
+
+    /**
+     * Liveness of the client (alive or zombie)
+     */
+    private String liveness = "alive";
 
     /**
      * Create a new client with the specified name.
@@ -209,6 +222,20 @@ public abstract class Client {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Change the liveness to zombie
+     */
+    protected void killed() {
+        liveness = "zombie";
+    }
+
+    /**
+     * Revive the client
+     */
+    protected void revive() {
+        liveness = "alive";
     }
 
     /**
