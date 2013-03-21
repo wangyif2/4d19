@@ -37,7 +37,7 @@ import java.awt.event.KeyListener;
 public abstract class LocalClient extends Client implements KeyListener {
     private static final Logger logger = LoggerFactory.getLogger(LocalClient.class);
 
-    protected boolean pause = false;
+    protected boolean pause = true;
 
     /**
      * Create a {@link Client} local to this machine.
@@ -84,6 +84,7 @@ public abstract class LocalClient extends Client implements KeyListener {
         outgoing.directedPoint = Mazewar.maze.addLocalClient(this);
 
         multicastAction(outgoing);
+        resume();
 
         logger.info("Notify addClient: " + getName() +
                 " at location " + outgoing.directedPoint.getX() + " " + outgoing.directedPoint.getY() + " " +
