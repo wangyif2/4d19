@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.2.6)  28 FEB 2013 20:10
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.2.6)  21 MAR 2013 17:48
 entering extended mode
  %&-line parsing enabled.
 **\nonstopmode \input{"/home/robert/Documents/Enginnering Science/Fourth Year/W
@@ -440,20 +440,22 @@ File: ./Logos/nscilogo.jpg Graphic file (type jpg)
 <./Logos/utorontologo.jpg, id=60, 112.92188pt x 111.41624pt>
 File: ./Logos/utorontologo.jpg Graphic file (type jpg)
 
-<use ./Logos/utorontologo.jpg> [1
+<use ./Logos/utorontologo.jpg>
+LaTeX Font Info:    Try loading font information for U+msa on input line 27.
+
+(/usr/share/texmf-texlive/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2009/06/22 v3.00 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 27.
+
+(/usr/share/texmf-texlive/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2009/06/22 v3.00 AMS symbols B
+) [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./Logos/nscilogo.jpg> <./L
 ogos/utorontologo.jpg>])
 (/home/robert/Documents/Enginnering Science/Fourth Year/Winter/ECE419H1/Lab/Lab
-3/mazewar/docs/Report.toc
-LaTeX Font Info:    Try loading font information for U+msa on input line 3.
- (/usr/share/texmf-texlive/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2009/06/22 v3.00 AMS symbols A
-)
-LaTeX Font Info:    Try loading font information for U+msb on input line 3.
-(/usr/share/texmf-texlive/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2009/06/22 v3.00 AMS symbols B
-))
+3/mazewar/docs/Report.toc)
 \tf@toc=\write5
 \openout5 = `Report.toc'.
 
@@ -475,43 +477,44 @@ File: omspcr.fd
 )
 LaTeX Font Info:    Font shape `OMS/pcr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 32.
-LaTeX Font Info:    Try loading font information for OML+pcr on input line 64.
+LaTeX Font Info:    Try loading font information for TS1+pcr on input line 45.
+
+(/usr/share/texmf-texlive/tex/latex/psnfss/ts1pcr.fd
+File: ts1pcr.fd 2001/06/04 font definitions for TS1/pcr.
+)
+LaTeX Font Info:    Try loading font information for OML+pcr on input line 51.
 
 (/usr/share/texmf-texlive/tex/latex/psnfss/omlpcr.fd
 File: omlpcr.fd 
 )
 LaTeX Font Info:    Font shape `OML/pcr/m/n' in size <10> not available
-(Font)              Font shape `OML/cmm/m/it' tried instead on input line 64.
- [4] [5]) [6]
-(./Implementation.tex [7]
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 51.
+ [4] [5]) [6] [7]
+(./Implementation.tex [8]
 Missing character: There is no â in font cmr12!
 Missing character: There is no € in font cmr12!
 Missing character: There is no ™ in font cmr12!
-) [8] (./Evaluation.tex [9]) [10]
+) [9] (./Evaluation.tex [10]) [11]
 (/home/robert/Documents/Enginnering Science/Fourth Year/Winter/ECE419H1/Lab/Lab
-3/mazewar/docs/Report.aux)
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
- ) 
+3/mazewar/docs/Report.aux) ) 
 Here is how much of TeX's memory you used:
- 7364 strings out of 493848
- 106413 string characters out of 1152824
- 223706 words of memory out of 3000000
- 10413 multiletter control sequences out of 15000+50000
- 12344 words of font info for 46 fonts, out of 3000000 for 9000
+ 7459 strings out of 493848
+ 107726 string characters out of 1152824
+ 234707 words of memory out of 3000000
+ 10472 multiletter control sequences out of 15000+50000
+ 14336 words of font info for 55 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
- 39i,5n,42p,1224b,1270s stack positions out of 5000i,500n,10000p,200000b,50000s
-{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</usr/share/texmf-texli
-ve/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-texlive/fonts/ty
-pe1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-texlive/fonts/type1/public
-/amsfonts/cm/cmmi10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/c
-m/cmmi12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr12.pfb
-></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/shar
-e/texmf-texlive/fonts/type1/urw/courier/ucrr8a.pfb>
-Output written on Report.pdf (12 pages, 160923 bytes).
+ 39i,8n,42p,1664b,1764s stack positions out of 5000i,500n,10000p,200000b,50000s
+{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.e
+nc}</usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/sh
+are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-
+texlive/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-texlive/fon
+ts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texmf-texlive/fonts/type1/pu
+blic/amsfonts/cm/cmr12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfont
+s/cm/cmsy10.pfb></usr/share/texmf-texlive/fonts/type1/urw/courier/ucrr8a.pfb>
+Output written on Report.pdf (13 pages, 167979 bytes).
 PDF statistics:
- 246 PDF objects out of 1000 (max. 8388607)
- 86 named destinations out of 1000 (max. 500000)
+ 286 PDF objects out of 1000 (max. 8388607)
+ 116 named destinations out of 1000 (max. 500000)
  123 words of extra memory for PDF output out of 10000 (max. 10000000)
 

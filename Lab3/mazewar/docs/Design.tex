@@ -35,7 +35,8 @@ public class MazewarPacketIdentifier implements Serializable {
 
     @Override
     public boolean equals(Object id) {
-        return (this.lamportClk == ((MazewarPacketIdentifier)id).lamportClk && this.owner.equals(((MazewarPacketIdentifier)id).owner));
+        return (this.lamportClk == ((MazewarPacketIdentifier)id).lamportClk 
+        && this.owner.equals(((MazewarPacketIdentifier)id).owner));
     }
 
     @Override
@@ -46,7 +47,8 @@ public class MazewarPacketIdentifier implements Serializable {
         return hash;
     }
 }
-public class MazewarPacket extends MazewarPacketIdentifier implements Serializable, Comparable<MazewarPacket> {
+public class MazewarPacket extends MazewarPacketIdentifier 
+implements Serializable, Comparable<MazewarPacket> {
     public static final int NULL = 0;
     public static final int ERROR_DUPLICATED_CLIENT = 1;
 
@@ -82,7 +84,8 @@ public class MazewarPacket extends MazewarPacketIdentifier implements Serializab
     public DirectedPoint directedPoint;
     public Integer score;
 
-    // Additional variable to indicate number of clients that is multicasted with this packet
+    // Additional variable to indicate number of clients that
+    // is multicasted with this packet
     public int cardinality;
 
     @Override
