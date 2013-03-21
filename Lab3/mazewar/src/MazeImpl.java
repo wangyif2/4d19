@@ -301,25 +301,27 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             Object contents = newCell.getContents();
 
             if (contents != null) {
-                // If it is a Client and I am the killer, instant kill happens
-                if (contents instanceof Client && client instanceof LocalClient) {
-                    // Pick an empty location and notify the kill
-                    DirectedPoint newDp;
-                    do {
-                        newDp = pickRandomLocation();
+                // If it is a Client, instant kill happens
+                if (contents instanceof Client) {
+                    // someone is killed, multicast the kill if I am not the killer
+                    if (client instanceof LocalClient) {
+                        // Pick an empty location and notify the kill
+                        DirectedPoint newDp;
+                        do {
+                            newDp = pickRandomLocation();
+                        }
+                        while (isPointOccupied(newDp));
+                        ((LocalClient) client).notifyKill(((Client) contents).getName(), newDp, true);
                     }
-                    while (isPointOccupied(newDp));
-                    ((LocalClient) client).notifyKill(((Client) contents).getName(), newDp, true);
+
+                    ((Client) contents).killed();
+                    logger.info("Someone is killed!\n");
                     return false;
                 } else if (contents instanceof Projectile) {
                     // bullets will destroy each other
                     notifyClientFired(client);
                     logger.info("Projectile canceled\n");
                     return true;
-                } else {
-                    // someone is killed but I am not the victim
-                    logger.info("Someone is killed!\n");
-                    return false;
                 }
             }
 
@@ -341,6 +343,7 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
             assert (target != null);
             Mazewar.consolePrintLn(source.getName() + " just vaporized " +
                     target.getName());
+            target.revive();
             Object o = clientMap.remove(target);
             assert (o instanceof Point);
             Point point = (Point) o;
@@ -524,16 +527,21 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
         Object contents = newCell.getContents();
         if (contents != null) {
             // If it is a Client and I am the killer, kill it outright
-            if (contents instanceof Client && prj.getOwner() instanceof LocalClient) {
-                // Pick an empty location and notify the kill
-                DirectedPoint newDp;
-                do {
-                    newDp = pickRandomLocation();
+            if (contents instanceof Client) {
+                // A kill happened, multicast the kill if I am the killer
+                if (prj.getOwner() instanceof LocalClient) {
+                    // Pick an empty location and notify the kill
+                    DirectedPoint newDp;
+                    do {
+                        newDp = pickRandomLocation();
+                    }
+                    while (isPointOccupied(newDp));
+                    ((LocalClient) prj.getOwner()).notifyKill(((Client) contents).getName(), newDp, false);
                 }
-                while (isPointOccupied(newDp));
-                ((LocalClient) prj.getOwner()).notifyKill(((Client) contents).getName(), newDp, false);
+
                 cell.setContents(null);
                 deadPrj.add(prj);
+                ((Client) contents).killed();
                 return deadPrj;
             } else if (contents instanceof Projectile) {
                 // Bullets destroy each other
@@ -542,11 +550,6 @@ public class MazeImpl extends Maze implements Serializable, ClientListener, Runn
                 deadPrj.add(prj);
                 deadPrj.add(contents);
                 update();
-                return deadPrj;
-            } else {
-                // A kill happened, but I am not the killer
-                cell.setContents(null);
-                deadPrj.add(prj);
                 return deadPrj;
             }
         }
