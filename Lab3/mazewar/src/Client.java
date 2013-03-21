@@ -17,6 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
 USA.
 */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -28,6 +31,8 @@ import java.util.Set;
  * @version $Id: Client.java 343 2004-01-24 03:43:45Z geoffw $
  */
 public abstract class Client {
+    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+
     /**
      * Register this {@link Client} as being contained by the specified
      * {@link Maze}.  Naturally a {@link Client} cannot be registered with
@@ -120,6 +125,7 @@ public abstract class Client {
 
     /**
      * Check if the client is alive
+     *
      * @return
      */
     public boolean isAlive() {
@@ -242,7 +248,12 @@ public abstract class Client {
      * Kill a client.
      */
     protected void kill(String victim, DirectedPoint newDp, boolean isInstant) {
-        maze.killClient(this, maze.getClientByName(victim), newDp, isInstant);
+        if (isAlive()) {
+            maze.killClient(this, maze.getClientByName(victim), newDp, isInstant);
+        }
+        else {
+            logger.info("I am in zombie state, so ignore kill action!");
+        }
     }
 
     /**
