@@ -42,6 +42,9 @@ public class MazewarPacket extends MazewarPacketIdentifier implements Serializab
     public DirectedPoint directedPoint;
     public Integer score;
 
+    // Additional variable to indicate number of clients that is multicasted with this packet
+    public int cardinality;
+
     @Override
     public int compareTo(MazewarPacket o) {
         if (this.seqNum == o.seqNum)

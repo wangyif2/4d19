@@ -284,6 +284,7 @@ public class Mazewar extends JFrame {
         // Add myself to maze right away if I am the first one
         if (connectedClients.size() == 1) {
             maze.addLocalClient(myClient);
+            myClient.resume();
             isRegisterComplete = true;
         }
 
