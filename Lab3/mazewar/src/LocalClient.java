@@ -33,7 +33,7 @@ import java.awt.event.KeyListener;
 
 public abstract class LocalClient extends Client implements KeyListener {
 
-    protected boolean pause = false;
+    protected boolean pause = true;
 
     /**
      * Create a {@link Client} local to this machine.
@@ -80,6 +80,7 @@ public abstract class LocalClient extends Client implements KeyListener {
         outgoing.directedPoint = Mazewar.maze.addLocalClient(this);
 
         multicastAction(outgoing);
+        resume();
 
     }
 
